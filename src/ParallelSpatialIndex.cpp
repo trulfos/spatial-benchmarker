@@ -5,6 +5,7 @@
 #include <queue>
 #include <vector>
 
+
 ParallelSpatialIndex::ParallelSpatialIndex(const DataSet& dataSet)
 {
 	if (dataSet.empty()) {
@@ -102,16 +103,18 @@ ResultSet ParallelSpatialIndex::knnSearch(unsigned k, const Point& point) const
 			distance += diff * diff;
 		}
 
-		if (distance < maxDistance) {
-			// Alternative: Create <#threads> k sets and merge the results
-#			pragma omp critical
-			{
+		// Alternative: Create <#threads> k sets and merge the results
+		if (distance <= maxDistance) {
+
+#			pragma omp critical (queue_critical)
+			if (distance <= maxDistance) {
 				queue.emplace(distance, ids[i]);
 				if (queue.size() > k) {
 					queue.pop();
 					maxDistance = queue.top().distance;
 				}
 			}
+
 		}
 	}
 
