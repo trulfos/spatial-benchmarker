@@ -5,6 +5,7 @@
 #include "ResultSet.hpp"
 #include "SpatialIndex.hpp"
 #include "SpatialIndexFactory.hpp"
+#include "Timer.hpp"
 #include <algorithm>
 #include <fstream>
 #include <iostream>
@@ -63,7 +64,6 @@ int main(int argc, char *argv[])
 	// Read data from file
 	Benchmark benchmark;
 	std::string filename = dataFilename.getValue();
-	std::cout << "Reading input data...";
 
 	try {
 		std::fstream dataFile;
@@ -74,14 +74,14 @@ int main(int argc, char *argv[])
 	} catch (const std::fstream::failure& e) {
 		std::cerr
 			<< "\033[1;31mError:\033[0m: I/O error while reading data file!"
-			<< std::endl;
+			<< std::endl << e.what() << std::endl;
 		return 1;
 	}
-	std::cout << "\033[1;32mDone!\033[0m" << std::endl << std::endl;
 
 
 	// Run code!
 	SpatialIndexFactory factory (benchmark.getDataSet());
+	Timer timer;
 
 	for (auto alg : algorithm.getValue()) {
 		std::cout << "Testing " << alg << std::endl
@@ -91,10 +91,12 @@ int main(int argc, char *argv[])
 
 		for (auto testCase : benchmark.getTestCases()) {
 
-			std::cout << "Running... ";
-			ResultSet results = index->search(*testCase.first);
+			std::cout << " - Running test case... ";
+			ResultSet results;
+			unsigned long time = timer.timeTask([&]() -> void {
+				results = index->search(*testCase.first);
+			});
 
-			// TODO: Should the results perhaps be a set?
 			std::sort(results.begin(), results.end());
 
 			if (results != *testCase.second) {
@@ -103,11 +105,10 @@ int main(int argc, char *argv[])
 					<< "  " << results << std::endl << std::endl
 					<< "Expected:" << std::endl
 					<< "  " << *testCase.second << std::endl;
-
-				return 1;
+			} else {
+				std::cout << "\033[1;32mSuccess!\033[0m (" << time << " µs)"
+					<< std::endl;
 			}
-
-			std::cout << "\033[1;32mSuccess!\033[0m" << std::endl;
 		}
 	}
 
