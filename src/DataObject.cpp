@@ -1,6 +1,6 @@
-#include <stdexcept>
-
 #include "DataObject.hpp"
+#include <ios>
+#include <stdexcept>
 
 DataObject::DataObject(unsigned int dimension)
 	: dimension(dimension), point(dimension)
@@ -23,7 +23,14 @@ std::istream& operator>>(
 		std::istream& stream,
 		DataObject& object
 ) {
-	stream >> object.id >> object.point;
+	stream >> object.id;
+
+	if (object.id == 0) {
+		stream.setstate(std::ios_base::failbit);
+		return stream;
+	}
+
+	stream >> object.point;
 
 	return stream;
 }
