@@ -5,6 +5,7 @@
 #include "ResultSet.hpp"
 #include "SpatialIndex.hpp"
 #include "SpatialIndexFactory.hpp"
+#include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -92,6 +93,9 @@ int main(int argc, char *argv[])
 
 			std::cout << "Running... ";
 			ResultSet results = index->search(*testCase.first);
+
+			// TODO: Should the results perhaps be a set?
+			std::sort(results.begin(), results.end());
 
 			if (results != *testCase.second) {
 				std::cout << "\033[1;31mError\033[0m" << std::endl
