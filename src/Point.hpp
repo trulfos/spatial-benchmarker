@@ -1,7 +1,8 @@
 #pragma once
-#include <memory>
 #include <istream>
+#include <memory>
 #include <ostream>
+#include <vector>
 
 /**
  * Simple class representing a point in R^d where d is the dimension of the
@@ -11,19 +12,19 @@
  * copy instead of sharing it? Probably not going to copy points all that often
  * anyway.
  */
-class Point
+class Point : private std::vector<float>
 {
 	public:
 
 		/**
 		 * Create a point of the given dimension.
 		 */
-		Point(unsigned int dimension);
+		Point(unsigned dimension);
 
 		/**
 		 * Get the dimension of this point.
 		 */
-		unsigned int getDimension() const;
+		unsigned getDimension() const;
 
 		/**
 		 * Get a pointer to the list of coordinates.
@@ -35,7 +36,7 @@ class Point
 
 	private:
 		std::shared_ptr<float> coordinates;
-		unsigned int dimension;
+		unsigned dimension;
 
 		/**
 		 * Custom read from istreams.

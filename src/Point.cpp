@@ -3,28 +3,25 @@
 
 Point::Point(unsigned int dimension) : dimension(dimension)
 {
-	this->coordinates = std::shared_ptr<float>(
-			new float[dimension], std::default_delete<float[]>()
-		);
+	this->resize(dimension);
 }
 
 unsigned int Point::getDimension() const
 {
-	return dimension;
+	return this->size();
 }
 
 
 const float * Point::getCoordinates() const
 {
-	return coordinates.get();
+	return &this->operator[](0);
 }
 
 
 std::istream& operator>>(std::istream& stream, Point& point)
 {
-	float * coordinates = point.coordinates.get();
-	for (unsigned int i = 0; i < point.dimension; i++) {
-		stream >> coordinates[i];
+	for (float& c : point) {
+		stream >> c;
 	}
 
 	return stream;
@@ -33,9 +30,9 @@ std::istream& operator>>(std::istream& stream, Point& point)
 std::ostream& operator<<(std::ostream& stream, const Point& point)
 {
 	stream << "( " << std::fixed << std::setprecision(2);
-	const float * coordinates = point.coordinates.get();
-	for (unsigned int i = 0; i < point.dimension; i++) {
-		stream << coordinates[i] << ' ';
+
+	for (const float& c : point) {
+		stream << c;
 	}
 
 	stream << ')';
