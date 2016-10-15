@@ -6,10 +6,6 @@
 #include "RangeQuery.hpp"
 #include <ios>
 
-
-//TODO: Remove
-#include <iostream>
-
 Benchmark::~Benchmark()
 {
 	for (auto query : queries) {
@@ -40,15 +36,6 @@ std::vector<TestCase> Benchmark::getTestCases()
 	}
 
 	return testCases;
-}
-
-
-std::ostream& operator<<(std::ostream& stream, const Benchmark& benchmark)
-{
-	stream << "--- Benchmark ---" << std::endl
-		<< "TODO: Implement more here" << std::endl;
-
-	return stream;
 }
 
 

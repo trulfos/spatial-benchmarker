@@ -7,10 +7,6 @@
 /**
  * Simple class representing a point in R^d where d is the dimension of the
  * point.
- *
- * TODO: It's not clear why points work like pointers. Perhaps copy the array on
- * copy instead of sharing it? Probably not going to copy points all that often
- * anyway.
  */
 class Point : private std::vector<float>
 {
@@ -33,6 +29,25 @@ class Point : private std::vector<float>
 		 * been initialized.
 		 */
 		const float * getCoordinates() const;
+
+
+		/**
+		 * Calculate a new point - the difference between two other points.
+		 */
+		Point operator-(const Point& other) const;
+
+		/**
+		 * Calulates the scalar product of this point and another.
+		 */
+		float operator*(const Point& other) const;
+
+
+		/**
+		 * Get a specific coordinate of this point.
+		 */
+		float& operator[](unsigned i);
+		const float& operator[](unsigned i) const;
+
 
 	private:
 		std::shared_ptr<float> coordinates;

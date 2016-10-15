@@ -26,3 +26,28 @@ const std::pair<const Point&, const Point&> AxisAlignedBox::getPoints() const
 {
 	return std::pair<const Point&, const Point&>(points[0], points[1]);
 }
+
+
+unsigned AxisAlignedBox::getDimension() const
+{
+	return points[0].getDimension();
+}
+
+
+bool AxisAlignedBox::contains(const Point& point) const
+{
+	unsigned dimension = point.getDimension();
+
+	if (this->getDimension() != dimension) {
+		throw std::invalid_argument(
+			"Cannot check containment for point and box of different dimension"
+		);
+	}
+
+	bool isWithin = true;
+	for (unsigned i = 0; i < dimension; i++) {
+		isWithin &= points[0][i] <= point[i] && point[i] <= points[1][i];
+	}
+
+	return isWithin;
+}

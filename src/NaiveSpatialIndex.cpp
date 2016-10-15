@@ -3,65 +3,12 @@
 #include <stdexcept>
 #include <cmath>
 
-//TODO: Remove
-#include <iostream>
-
-
 /**
  * Calculates the distance between two points.
- *
- * TODO: Add to point class instead?
- *       sqrt((point1 - point2)^2)
  */
 float d(const Point& a, const Point& b) {
-	unsigned dimension = a.getDimension();
-
-	if (dimension != b.getDimension()) {
-		throw std::invalid_argument(
-			"Cannot calculate distance between points of different dimension"
-		);
-	}
-
-	float d2 = 0;
-	const float * ca = a.getCoordinates();
-	const float * cb = b.getCoordinates();
-
-	for (unsigned i = 0; i < a.getDimension(); ++i) {
-		float diff = ca[i] - cb[i];
-		d2 += diff * diff;
-	}
-
-	return sqrt(d2);
-}
-
-
-/**
- * Check if the point is within the box.
- *
- * TODO: Move to box?
- */
-bool contains(const AxisAlignedBox& box, const Point& point)
-{
-	auto points = box.getPoints();
-	unsigned d = point.getDimension();
-
-	if (
-			points.first.getDimension() != d ||
-			points.second.getDimension() != d
-	) {
-		throw std::invalid_argument(
-			"Cannot check containment for point and box of different dimension"
-		);
-	}
-
-	bool isWithin = true;
-	for (unsigned i = 0; i < point.getDimension(); i++) {
-		isWithin &=
-			points.first.getCoordinates()[i] <= point.getCoordinates()[i] &&
-			point.getCoordinates()[i] <= points.second.getCoordinates()[i];
-	}
-
-	return isWithin;
+	Point diff = a - b;
+	return sqrt(diff * diff);
 }
 
 
@@ -84,7 +31,7 @@ ResultSet NaiveSpatialIndex::rangeSearch(const AxisAlignedBox& box) const
 			dataSet.end(),
 			std::back_inserter(results),
 			[&](const DataObject& object) -> bool {
-				return contains(box, object.getPoint());
+				return box.contains(object.getPoint());
 			}
 		);
 

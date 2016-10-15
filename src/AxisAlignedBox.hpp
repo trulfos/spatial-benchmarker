@@ -22,6 +22,18 @@ class AxisAlignedBox
 		const std::pair<const Point&, const Point&> getPoints() const;
 
 
+		/**
+		 * Get dimension of this box.
+		 */
+		unsigned getDimension() const;
+
+
+		/**
+		 * Check if this axis aligned box contains the given point.
+		 */
+		bool contains(const Point& p) const;
+
+
 	private:
 		Point points[2];
 };

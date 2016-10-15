@@ -18,6 +18,52 @@ const float * Point::getCoordinates() const
 }
 
 
+Point Point::operator-(const Point& other) const
+{
+	if (dimension != other.dimension) {
+		throw new std::logic_error(
+				"Cannot subtract points of different dimension"
+			);
+	}
+
+	Point result (dimension);
+
+	for (unsigned i = 0; i < dimension; i++) {
+		result[i] = (*this)[i] - other[i];
+	}
+
+	return result;
+}
+
+
+float Point::operator*(const Point& other) const
+{
+	if (dimension != other.dimension) {
+		throw new std::logic_error(
+				"Cannot multiply points of different dimension"
+			);
+	}
+
+	float result = 0.0f;
+
+	for (unsigned i = 0; i < dimension; i++) {
+		result += (*this)[i] * other[i];
+	}
+
+	return result;
+}
+
+
+float& Point::operator[](unsigned i)
+{
+	return std::vector<float>::operator[](i);
+}
+
+const float& Point::operator[](unsigned i) const
+{
+	return std::vector<float>::operator[](i);
+}
+
 std::istream& operator>>(std::istream& stream, Point& point)
 {
 	for (float& c : point) {
