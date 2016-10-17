@@ -108,6 +108,8 @@ ResultSet ParallelSpatialIndex::knnSearch(unsigned k, const Point& point) const
 
 #			pragma omp critical (queue_critical)
 			if (distance <= maxDistance) {
+				//TODO: check if the above (additional) check makes any
+				// difference and whether it is positive
 				queue.emplace(distance, ids[i]);
 				if (queue.size() > k) {
 					queue.pop();
