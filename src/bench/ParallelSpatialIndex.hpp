@@ -1,6 +1,6 @@
 #pragma once
-#include "DataObject.hpp"
-#include "DataSet.hpp"
+#include "../common/DataObject.hpp"
+#include "../common/DataSet.hpp"
 #include "SpatialIndex.hpp"
 #include <vector>
 /**

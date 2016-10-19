@@ -1,7 +1,7 @@
 #include "SpatialIndex.hpp"
 
-#include "KnnQuery.hpp"
-#include "RangeQuery.hpp"
+#include "../common/KnnQuery.hpp"
+#include "../common/RangeQuery.hpp"
 #include <stdexcept>
 
 SpatialIndex::~SpatialIndex()

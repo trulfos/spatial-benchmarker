@@ -5,27 +5,24 @@ LDFLAGS=-lm
 DIRS=obj bin .deps
 
 # Find all dependencies of the 
-SRCS=$(wildcard src/*.cpp)
-OBJS=$(SRCS:src/%.cpp=obj/%.o)
+OBJS_COMMON=$(patsubst src/%.cpp,obj/%.o,$(shell find src/common/ -name *.cpp))
 
 # Benchmarks
 BENCHMARKS=$(wildcard benchmarks/*.csv)
 
 .PHONY: clean test
 
-test: bin/main
+test: bin/bench
 	@for b in benchmarks/*.csv; do\
 		echo "\n\033[1m----- Running bechmark $$b -----\033[0m"; \
-		./bin/main -b $$b -a naive -a parallel;\
+		./bin/bench -b $$b -a naive -a parallel;\
 	done;
 
-# Main program with dependencies
-bin/main: $(OBJS) | bin
-	g++ $(OBJS) $(CFLAGS) $(LDFLAGS) -o $@
 
 # Compiles objects and generates dependencies
 obj/%.o: src/%.cpp | obj .deps
-	g++ $(CFLAGS) -MM -MP -MT $@ $< > .deps/$*.d
+	@mkdir -p $(@D)
+	g++ $(CFLAGS) -MM -MP -MT $@ $< > .deps/$(subst /,__,$*).d
 	g++ -c $< $(CPPFLAGS) $(CFLAGS) -o $@
 
 # Remove bulid files
@@ -37,7 +34,13 @@ $(DIRS):
 	mkdir -p $@
 
 # Dependencies are made during compilation - don't try to make them
-$(DEP_DIR)/%.d:;
+.deps/%.d:;
 
 # Include dependencies
 -include .deps/*.d
+
+# Main programs with dependencies
+pc:=%
+.SECONDEXPANSION:
+bin/%: $$(patsubst src/$$(pc).cpp,obj/$$(pc).o,$$(wildcard src/$$*/*.cpp)) $(OBJS_COMMON)  | bin
+	g++ $^ $(CFLAGS) $(LDFLAGS) -o $@

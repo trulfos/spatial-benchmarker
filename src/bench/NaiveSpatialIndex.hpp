@@ -1,5 +1,5 @@
 #pragma once
-#include "DataSet.hpp"
+#include "../common/DataSet.hpp"
 #include "SpatialIndex.hpp"
 /**
  * Simplest algorithm just for checking the results.

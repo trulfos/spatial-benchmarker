@@ -1,7 +1,7 @@
 #pragma once
-#include "AxisAlignedBox.hpp"
-#include "ResultSet.hpp"
-#include "Query.hpp"
+#include "../common/Query.hpp"
+#include "../common/ResultSet.hpp"
+#include "../common/AxisAlignedBox.hpp"
 
 /**
  * This abstract class is a common interface to all spatial indexes.
