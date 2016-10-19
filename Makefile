@@ -15,7 +15,7 @@ BENCHMARKS=$(wildcard benchmarks/*.csv)
 
 test: bin/main
 	@for b in benchmarks/*.csv; do\
-		echo "\n\033[1m----- Running bechmark $$b\033[0m -----"; \
+		echo "\n\033[1m----- Running bechmark $$b -----\033[0m"; \
 		./bin/main -b $$b -a naive -a parallel;\
 	done;
 
@@ -40,4 +40,4 @@ $(DIRS):
 $(DEP_DIR)/%.d:;
 
 # Include dependencies
--include $(DEP_DIR)/*.d
+-include .deps/*.d
