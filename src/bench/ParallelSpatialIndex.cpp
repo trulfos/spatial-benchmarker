@@ -69,6 +69,10 @@ ResultSet ParallelSpatialIndex::rangeSearch(const AxisAlignedBox& box) const
 
 ResultSet ParallelSpatialIndex::knnSearch(unsigned k, const Point& point) const
 {
+	if (k < 1) {
+		return ResultSet();
+	}
+
 	const float * reference = point.getCoordinates();
 	float maxDistance = std::numeric_limits<float>::infinity();
 
