@@ -50,7 +50,6 @@ class Point : private std::vector<float>
 
 
 	private:
-		std::shared_ptr<float> coordinates;
 		unsigned dimension;
 
 		/**
