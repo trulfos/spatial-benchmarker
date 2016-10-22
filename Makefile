@@ -15,7 +15,7 @@ BENCHMARKS=$(wildcard benchmarks/*.csv)
 test: bin/bench
 	@for b in benchmarks/*.csv; do\
 		echo "\n\033[1m----- Running bechmark $$b -----\033[0m"; \
-		./bin/bench -b $$b -a naive -a parallel;\
+		./bin/bench -b $$b -a naive -a parallel -a rtree;\
 	done;
 
 
