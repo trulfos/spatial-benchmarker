@@ -1,4 +1,5 @@
 #pragma once
+#include "../common/Coordinate.hpp"
 #include "../common/DataObject.hpp"
 #include "../common/DataSet.hpp"
 #include "SpatialIndex.hpp"
@@ -23,6 +24,6 @@ class ParallelSpatialIndex : public SpatialIndex
 	private:
 		unsigned nObjects;
 		unsigned dimension;
-		float * positions;
+		Coordinate * positions;
 		DataObject::Id * ids;
 };

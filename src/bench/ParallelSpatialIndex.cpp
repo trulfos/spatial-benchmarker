@@ -17,7 +17,7 @@ ParallelSpatialIndex::ParallelSpatialIndex(const DataSet& dataSet)
 	dimension = dataSet[0].getPoint().getDimension();
 
 	// Allocate buffers
-	positions = new float[nObjects * dimension];
+	positions = new Coordinate[nObjects * dimension];
 	ids = new DataObject::Id[nObjects];
 
 	// Copy data into buffers
@@ -25,7 +25,7 @@ ParallelSpatialIndex::ParallelSpatialIndex(const DataSet& dataSet)
 
 		ids[i] = dataSet[i].getId();
 
-		const float * point = dataSet[i].getPoint().getCoordinates();
+		const Point& point = dataSet[i].getPoint();
 		for (unsigned j = 0; j < dimension; j++) {
 			positions[dimension * i + j] = point[j];
 		}
@@ -43,8 +43,8 @@ ParallelSpatialIndex::~ParallelSpatialIndex()
 ResultSet ParallelSpatialIndex::rangeSearch(const AxisAlignedBox& box) const
 {
 	ResultSet results;
-	const float * pointA = box.getPoints().first.getCoordinates();
-	const float * pointB = box.getPoints().second.getCoordinates();
+	const Point& pointA = box.getPoints().first;
+	const Point& pointB = box.getPoints().second;
 
 	// Scan through data
 #	pragma omp parallel for
@@ -52,7 +52,7 @@ ResultSet ParallelSpatialIndex::rangeSearch(const AxisAlignedBox& box) const
 		bool inside = true;
 
 		for (unsigned j = 0; j < dimension; j++) {
-			const float& coordinate = positions[dimension * i + j];
+			const Coordinate& coordinate = positions[dimension * i + j];
 			inside &= pointA[j] <= coordinate && coordinate <= pointB[j];
 		}
 
@@ -73,7 +73,6 @@ ResultSet ParallelSpatialIndex::knnSearch(unsigned k, const Point& point) const
 		return ResultSet();
 	}
 
-	const float * reference = point.getCoordinates();
 	float maxDistance = std::numeric_limits<float>::infinity();
 
 	// Construct priority queue
@@ -103,7 +102,7 @@ ResultSet ParallelSpatialIndex::knnSearch(unsigned k, const Point& point) const
 		float distance = 0.0f;
 
 		for (unsigned j = 0; j < dimension; j++) {
-			float diff = positions[dimension * i + j] - reference[j];
+			float diff = positions[dimension * i + j] - point[j];
 			distance += diff * diff;
 		}
 

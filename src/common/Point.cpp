@@ -6,19 +6,13 @@ Point::Point(unsigned int dimension)
 	resize(dimension);
 }
 
-Point::Point(std::initializer_list<float> list) : std::vector<float>(list)
+Point::Point(std::initializer_list<Coordinate> list) : std::vector<Coordinate>(list)
 {
 }
 
 unsigned int Point::getDimension() const
 {
 	return size();
-}
-
-
-const float * Point::getCoordinates() const
-{
-	return data();
 }
 
 
@@ -62,19 +56,26 @@ float Point::operator*(const Point& other) const
 }
 
 
-float& Point::operator[](unsigned i)
+Coordinate& Point::operator[](unsigned i)
 {
-	return std::vector<float>::operator[](i);
+	return std::vector<Coordinate>::operator[](i);
 }
 
-const float& Point::operator[](unsigned i) const
+const Coordinate& Point::operator[](unsigned i) const
 {
-	return std::vector<float>::operator[](i);
+	return std::vector<Coordinate>::operator[](i);
+}
+
+
+bool Point::operator==(const Point& other) const
+{
+	// Delegate to vector
+	return static_cast<const std::vector<Coordinate>&>(*this) == other;
 }
 
 std::istream& operator>>(std::istream& stream, Point& point)
 {
-	for (float& c : point) {
+	for (Coordinate& c : point) {
 		stream >> c;
 	}
 
@@ -85,7 +86,7 @@ std::ostream& operator<<(std::ostream& stream, const Point& point)
 {
 	stream << "( " << std::fixed << std::setprecision(2);
 
-	for (const float& c : point) {
+	for (const Coordinate& c : point) {
 		stream << c;
 	}
 

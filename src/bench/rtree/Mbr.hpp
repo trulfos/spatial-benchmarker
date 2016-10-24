@@ -1,5 +1,6 @@
 #pragma once
 #include "../../common/AxisAlignedBox.hpp"
+#include "../../common/Coordinate.hpp"
 #include "../../common/Point.hpp"
 
 namespace Rtree
@@ -147,8 +148,8 @@ class Mbr
 
 			for (unsigned i = 0; i < D; i++) {
 				float diff = std::max(
-						std::max(0.0f, bottom[i] - other.top[i]),
-						other.bottom[i] - top[i]
+						std::max(0.0f, (float) bottom[i] - other.top[i]),
+						(float) other.bottom[i] - top[i]
 					);
 
 				d += diff * diff;
@@ -158,8 +159,8 @@ class Mbr
 		};
 
 	private:
-		float top[D];
-		float bottom[D];
+		Coordinate top[D];
+		Coordinate bottom[D];
 };
 
 }

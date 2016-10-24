@@ -1,4 +1,5 @@
 #pragma once
+#include "Coordinate.hpp"
 #include <istream>
 #include <memory>
 #include <ostream>
@@ -8,7 +9,7 @@
  * Simple class representing a point in R^d where d is the dimension of the
  * point.
  */
-class Point : private std::vector<float>
+class Point : private std::vector<Coordinate>
 {
 	public:
 
@@ -20,20 +21,12 @@ class Point : private std::vector<float>
 		/**
 		 * Create a point from a list of coordinates.
 		 */
-		Point(std::initializer_list<float> list);
+		Point(std::initializer_list<Coordinate> list);
 
 		/**
 		 * Get the dimension of this point.
 		 */
 		unsigned getDimension() const;
-
-		/**
-		 * Get a pointer to the list of coordinates.
-		 *
-		 * Note that this list may contain garbage if this point has not yet
-		 * been initialized.
-		 */
-		const float * getCoordinates() const;
 
 
 		/**
@@ -50,9 +43,13 @@ class Point : private std::vector<float>
 		/**
 		 * Get a specific coordinate of this point.
 		 */
-		float& operator[](unsigned i);
-		const float& operator[](unsigned i) const;
+		Coordinate& operator[](unsigned i);
+		const Coordinate& operator[](unsigned i) const;
 
+		/**
+		 * Compare works as for vector.
+		 */
+		bool operator==(const Point& other) const;
 
 	private:
 		/**
