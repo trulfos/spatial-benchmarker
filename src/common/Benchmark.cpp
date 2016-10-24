@@ -70,7 +70,7 @@ std::istream& operator>>(std::istream& stream, Benchmark& benchmark)
 	results.resize(nQueries);
 	queries.resize(nQueries);
 
-	// Read queries and results
+	// Read queries
 	for (unsigned i = 0; i < nQueries; i++) {
 		std::string type;
 		stream >> type;
@@ -88,7 +88,10 @@ std::istream& operator>>(std::istream& stream, Benchmark& benchmark)
 			stream.setstate(std::ios_base::failbit);
 			return stream;
 		}
-		
+	}
+
+	// Read results
+	for (unsigned i = 0; i < nQueries; i++) {
 		stream >> results[i];
 	}
 
