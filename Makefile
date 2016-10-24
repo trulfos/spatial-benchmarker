@@ -5,10 +5,13 @@ LDFLAGS=-lm
 DIRS=obj bin .deps test
 
 # Find all dependencies
-OBJS_COMMON=$(patsubst src/%.cpp,obj/%.o,$(shell find src/common/ -name *.cpp))
+OBJS_COMMON=$(patsubst src/%.cpp,obj/%.o,$(filter-out %.test.cpp,$(wildcard src/common/*.cpp)))
 
 # Find tests
 TESTS=$(patsubst src/%.test.cpp,test/%,$(shell find src/ -name *.test.cpp))
+ifdef VIM # Make quickfix in vim work
+	TEST_SUFFIX=--ascii 2>&1 | sed 's/^\[-\+\] //'
+endif
 
 # Benchmarks
 BENCHMARKS=$(wildcard benchmarks/*.csv)
@@ -23,9 +26,8 @@ run: bin/bench
 
 test_all: $(TESTS)
 	@for t in $(TESTS); do\
-		./$$t;\
+		./$$t $(TEST_SUFFIX);\
 	done;
-
 
 # Compiles objects and generates dependencies
 obj/%.o: src/%.cpp | obj .deps
@@ -40,7 +42,7 @@ test/%: src/%.test.cpp | test .deps
 
 # Remove bulid files
 clean:
-	rm -r $(DIRS)
+	rm -rf $(DIRS)
 
 # Creates missing folders
 $(DIRS):
@@ -55,5 +57,5 @@ $(DIRS):
 # Main programs with dependencies
 pc:=%
 .SECONDEXPANSION:
-bin/%: $$(patsubst src/$$(pc).cpp,obj/$$(pc).o,$$(wildcard src/$$*/*.cpp)) $(OBJS_COMMON)  | bin
+bin/%: $$(patsubst src/$$(pc).cpp,obj/$$(pc).o,$$(filter-out %.test.cpp,$$(wildcard src/$$*/*.cpp))) $(OBJS_COMMON)  | bin
 	g++ $^ $(CFLAGS) $(LDFLAGS) -o $@
