@@ -1,15 +1,14 @@
 #pragma once
-#include "../SpatialIndex.hpp"
 #include "../../common/DataSet.hpp"
+#include "../SpatialIndex.hpp"
 #include "Entry.hpp"
-#include "Node.hpp"
+#include "KnnQueueEntry.hpp"
 #include "Mbr.hpp"
+#include "Node.hpp"
 #include <algorithm>
-#include <stdexcept>
-#include <limits>
-#include <stack>
-#include <queue>
 #include <forward_list>
+#include <queue>
+#include <stack>
 
 
 namespace Rtree
@@ -102,73 +101,31 @@ class SpatialIndex : public ::SpatialIndex
 		 */
 		ResultSet knnSearch(unsigned k, const Point& point) const
 		{
-			struct QueueEntry {
-				union {
-					N * node;
-					Id id;
-				};
-				unsigned depth;
-				float distance;
-
-				QueueEntry(Id id, unsigned depth, float d)
-					: id(id), depth(depth), distance(d) {};
-
-				QueueEntry(N * node, unsigned depth, float d)
-					: node(node), depth(depth), distance(d) {};
-			};
-
 			ResultSet results;
+			std::priority_queue<KnnQueueEntry<N>> queue;
 
-			std::priority_queue<
-					QueueEntry,
-					std::vector<QueueEntry>,
-					std::function<bool(const QueueEntry&, const QueueEntry&)>
-				> queue (
-					[&](const QueueEntry& a, const QueueEntry& b) -> bool {
-						if (
-							a.distance == b.distance &&
-							a.depth == height &&
-							b.depth == height
-						) {
-								return a.id > b.id;
-						}
-
-						return a.distance > b.distance;
-					}
-				);
-
-			queue.emplace(root, 0, 0.0f);
+			queue.emplace(root, height, 0.0f);
 
 			while (!queue.empty() && results.size() < k) {
-				const QueueEntry& top = queue.top();
-				unsigned depth = top.depth;
+				const auto& top = queue.top();
 
-				if (depth == height) {
-					results.push_back(top.id);
-					queue.pop();
-					continue;
-				}
-
-				E * entries = top.node->entries;
-				auto  nEntries = top.node->nEntries;
+				unsigned elevation = top.elevation;
+				N * node = top.node;
+				Id id = top.id;
 
 				queue.pop();
 
-				if (depth == height - 1) {
-					for (E * e = entries; e != entries + nEntries; ++e) {
-						queue.emplace(
-								e->id,
-								height,
-								e->mbr.distance2(point)
-							);
+				if (elevation == 0) {
+					results.push_back(id);
+				} else if (elevation == 1) {
+					for (auto& e : *node) {
+						queue.emplace(e.id, 0, e.mbr.distance2(point));
 					}
 				} else {
-					for (E * e = entries; e != entries + nEntries; ++e) {
-						queue.emplace(
-								e->node,
-								depth + 1,
-								e->mbr.distance2(point)
-							);
+					unsigned el = elevation - 1;
+
+					for (auto& e : *node) {
+						queue.emplace(e.node, el, e.mbr.distance2(point));
 					}
 				}
 			}
@@ -183,6 +140,7 @@ class SpatialIndex : public ::SpatialIndex
 		unsigned height;
 		N * root;
 
+
 		/**
 		 * Insert a data object in the tree.
 		 *
@@ -196,35 +154,18 @@ class SpatialIndex : public ::SpatialIndex
 			N * node = root;
 
 			// Find leaf node
-			for (unsigned i = 0; i < height - 1; i++) { // while (node not leaf)
-				struct {
-					unsigned index = 0;
-					float enlargement = std::numeric_limits<float>::infinity();
-				} best;
+			for (unsigned i = 0; i < height - 1; i++) {
+				E& entry = node->leastEnlargement(point);
 
-				if (node->nEntries < 1) {
-					throw std::logic_error("Trying to find child of empty node");
-				}
+				// Update MBR
+				entry.mbr += M(point);
 
-				// Find best child
-				for (unsigned j = 0; j < node->nEntries; j++) {
-					M& mbr = node->entries[j].mbr;
-					float enlargement = mbr.enlargement(point);
-
-					if (enlargement < best.enlargement) {
-						best.enlargement = enlargement;
-						best.index = j;
-					}
-				}
-
-				// Enlarge the entry MBR
-				node->entries[best.index].mbr += M(point);
-
-				E& entry = node->entries[best.index];
-				node = entry.node;
+				// Add to path and recurse
 				path.push_back(&entry);
+				node = entry.node;
 			}
 
+			// Add object
 			if (node->isFull()) {
 				split(path, object);
 			} else {
@@ -246,29 +187,48 @@ class SpatialIndex : public ::SpatialIndex
 		void split(std::vector<E *> path, const E& newEntry)
 		{
 			E e = newEntry;
-			std::reverse(path.begin(), path.end());
-			auto top = path.begin();
+			auto top = path.rbegin();
 
-			while (top != path.end() && (*(top))->node->isFull()) {
+			while (top != path.rend() && (*(top))->node->isFull()) {
 				e = (*top)->split(e, allocate());
 				top++;
 			}
 
-			if (top != path.end()) {
+			// Can we add to an internal node (not root)?
+			if (top != path.rend()) {
 				(*top)->node->add(e);
 				return;
 			}
 
-			if (root->isFull()) {
-				E oldRoot (root, M());
-				root = allocate();
-				root->add(oldRoot);
-				root->add(root->entries[0].split(e, allocate()));
-				height += 1;
-			} else {
+			// Can we add to the root?
+			if (!root->isFull()) {
 				root->add(e);
+				return;
 			}
+
+			// All else fails - split root
+			splitRoot(e);
 		};
+
+
+		/**
+		 * Split the root node to make room for the new entry.
+		 *
+		 * @param newEntry New entry to add
+		 */
+		void splitRoot(const E& newEntry)
+		{
+			E oldRoot (root, M());
+			root = allocate();
+			root->add(oldRoot);
+
+			// This will also recalculate the MBR for oldRoot
+			root->add(
+					root->entries[0].split(newEntry, allocate())
+				);
+
+			height += 1;
+		}
 
 
 		/**
