@@ -1,26 +1,32 @@
 #include "Point.hpp"
 #include <iomanip>
 
-Point::Point(unsigned int dimension) : dimension(dimension)
+Point::Point(unsigned int dimension)
 {
-	this->resize(dimension);
+	resize(dimension);
+}
+
+Point::Point(std::initializer_list<float> list) : std::vector<float>(list)
+{
 }
 
 unsigned int Point::getDimension() const
 {
-	return this->size();
+	return size();
 }
 
 
 const float * Point::getCoordinates() const
 {
-	return &this->operator[](0);
+	return data();
 }
 
 
 Point Point::operator-(const Point& other) const
 {
-	if (dimension != other.dimension) {
+	unsigned dimension = getDimension();
+
+	if (dimension != other.getDimension()) {
 		throw new std::logic_error(
 				"Cannot subtract points of different dimension"
 			);
@@ -38,7 +44,9 @@ Point Point::operator-(const Point& other) const
 
 float Point::operator*(const Point& other) const
 {
-	if (dimension != other.dimension) {
+	unsigned dimension = getDimension();
+
+	if (dimension != other.getDimension()) {
 		throw new std::logic_error(
 				"Cannot multiply points of different dimension"
 			);

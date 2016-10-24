@@ -18,6 +18,11 @@ class Point : private std::vector<float>
 		Point(unsigned dimension);
 
 		/**
+		 * Create a point from a list of coordinates.
+		 */
+		Point(std::initializer_list<float> list);
+
+		/**
 		 * Get the dimension of this point.
 		 */
 		unsigned getDimension() const;
@@ -50,8 +55,6 @@ class Point : private std::vector<float>
 
 
 	private:
-		unsigned dimension;
-
 		/**
 		 * Custom read from istreams.
 		 */
