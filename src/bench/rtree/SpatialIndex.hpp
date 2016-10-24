@@ -8,6 +8,7 @@
 #include <stdexcept>
 #include <limits>
 #include <stack>
+#include <queue>
 #include <forward_list>
 
 
@@ -94,9 +95,83 @@ class SpatialIndex : public ::SpatialIndex
 			return resultSet;
 		};
 
+
+		/**
+		 * Knn search using the optimal algorithm in the number of nodes
+		 * accessed.
+		 */
 		ResultSet knnSearch(unsigned k, const Point& point) const
 		{
+			struct QueueEntry {
+				union {
+					N * node;
+					Id id;
+				};
+				unsigned depth;
+				float distance;
+
+				QueueEntry(Id id, unsigned depth, float d)
+					: id(id), depth(depth), distance(d) {};
+
+				QueueEntry(N * node, unsigned depth, float d)
+					: node(node), depth(depth), distance(d) {};
+			};
+
 			ResultSet results;
+
+			std::priority_queue<
+					QueueEntry,
+					std::vector<QueueEntry>,
+					std::function<bool(const QueueEntry&, const QueueEntry&)>
+				> queue (
+					[&](const QueueEntry& a, const QueueEntry& b) -> bool {
+						if (
+							a.distance == b.distance &&
+							a.depth == height &&
+							b.depth == height
+						) {
+								return a.id > b.id;
+						}
+
+						return a.distance > b.distance;
+					}
+				);
+
+			queue.emplace(root, 0, 0.0f);
+
+			while (!queue.empty() && results.size() < k) {
+				const QueueEntry& top = queue.top();
+				unsigned depth = top.depth;
+
+				if (depth == height) {
+					results.push_back(top.id);
+					queue.pop();
+					continue;
+				}
+
+				E * entries = top.node->entries;
+				auto  nEntries = top.node->nEntries;
+
+				queue.pop();
+
+				if (depth == height - 1) {
+					for (E * e = entries; e != entries + nEntries; ++e) {
+						queue.emplace(
+								e->id,
+								height,
+								e->mbr.distance2(point)
+							);
+					}
+				} else {
+					for (E * e = entries; e != entries + nEntries; ++e) {
+						queue.emplace(
+								e->node,
+								depth + 1,
+								e->mbr.distance2(point)
+							);
+					}
+				}
+			}
 
 			return results;
 		};
