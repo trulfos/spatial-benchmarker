@@ -8,10 +8,11 @@
 #include <stdexcept>
 #include <limits>
 #include <stack>
+#include <forward_list>
+
 
 namespace Rtree
 {
-
 
 /**
  * R-tree algorithms without optimizations.
@@ -19,8 +20,8 @@ namespace Rtree
  * Does not consider disk pages, as this is memory resident anyway.
  *
  * Template parameters:
- * D is the dimensionality
- * C is the maximal number of entries in each node
+ *  - D is the dimensionality
+ *  - C is the maximal number of entries in each node
  */
 template <unsigned D, unsigned C>
 class SpatialIndex : public ::SpatialIndex
@@ -28,20 +29,20 @@ class SpatialIndex : public ::SpatialIndex
 	using M = Mbr<D>;
 	using N = Node<D, C>;
 	using E = Entry<D, C>;
+	using Id = DataObject::Id;
 
 	public:
-		~SpatialIndex()
-		{
-			//TODO: Delete tree
-		};
 
+		/**
+		 * Construct a new index from the given data set.
+		 */
 		SpatialIndex(const DataSet& dataSet)
 		{
 			if (dataSet.empty()) {
 				return;
 			}
 
-			root = new N();
+			root = allocate();
 			height = 1;
 
 			for (auto& object : dataSet) {
@@ -49,15 +50,24 @@ class SpatialIndex : public ::SpatialIndex
 			}
 		};
 
+		~SpatialIndex()
+		{
+			for (N * node : nodes) {
+				delete node;
+			}
+		};
+
 
 	protected:
+
+		/**
+		 * Range search with Guttman's algorithm.
+		 */
 		ResultSet rangeSearch(const AxisAlignedBox& box) const
 		{
 			ResultSet resultSet;
-
-			//TODO: Iterate the other way
-
 			std::stack<std::pair<E *, unsigned>> path;
+
 			path.emplace(root->entries, root->nEntries);
 
 			while (!path.empty()) {
@@ -69,7 +79,7 @@ class SpatialIndex : public ::SpatialIndex
 				}
 
 				top.second -= 1;
-				E& entry = top.first[top.second];
+				E& entry = *(top.first++);
 
 				if (entry.mbr.intersects(box)) {
 					if (path.size() == height) {
@@ -93,11 +103,16 @@ class SpatialIndex : public ::SpatialIndex
 
 
 	private:
-		using Id = DataObject::Id;
 
+		std::forward_list<N *> nodes;
 		unsigned height;
 		N * root;
 
+		/**
+		 * Insert a data object in the tree.
+		 *
+		 * @param object DataObject to insert
+		 */
 		void insert(const DataObject& object)
 		{
 			const Point& point = object.getPoint();
@@ -143,31 +158,55 @@ class SpatialIndex : public ::SpatialIndex
 		};
 
 
+		/**
+		 * Split nodes and insert the new entry when done.
+		 *
+		 * The method starts at the bottom node and splits it if necessary. If
+		 * the parent node is full, it is plit as well. Should there be no more
+		 * nodes to be split, a new root node is created.
+		 *
+		 * @param path List of entries from top of tree to bottom
+		 * @param newEntry New entry to insert at the bottom level
+		 */
 		void split(std::vector<E *> path, const E& newEntry)
 		{
 			E e = newEntry;
 			std::reverse(path.begin(), path.end());
 			auto top = path.begin();
 
-			// Split from bottom and upwards
 			while (top != path.end() && (*(top))->node->isFull()) {
-				e = (*top)->split(e);
+				e = (*top)->split(e, allocate());
 				top++;
 			}
 
-			if (top == path.end()) {
-				if (root->isFull()) {
-					E oldRoot (root, M());
-					root = new N();
-					root->add(oldRoot);
-					root->add(root->entries[0].split(e));
-					height += 1;
-				} else {
-					root->add(e);
-				}
-			} else {
-				(*(top - 1))->node->add(e);
+			if (top != path.end()) {
+				(*top)->node->add(e);
+				return;
 			}
+
+			if (root->isFull()) {
+				E oldRoot (root, M());
+				root = allocate();
+				root->add(oldRoot);
+				root->add(root->entries[0].split(e, allocate()));
+				height += 1;
+			} else {
+				root->add(e);
+			}
+		};
+
+
+		/**
+		 * Allocate a new node.
+		 * The node will be deleted with this object.
+		 *
+		 * @return New node
+		 */
+		N * allocate()
+		{
+			N * node = new N();
+			nodes.push_front(node);
+			return node;
 		};
 };
 

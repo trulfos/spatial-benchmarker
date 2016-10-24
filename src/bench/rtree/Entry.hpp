@@ -63,13 +63,12 @@ class Entry
 		 *
 		 * @return A new entry
 		 */
-		Entry split(const Entry& e)
+		Entry split(const Entry& e, N * newNode)
 		{
 			if (!node->isFull()) {
 				throw std::logic_error("Node not full when splitting");
 			}
 
-			N * newNode = new N();
 			Entry other (newNode, M());
 
 			// Contruct buffer with all entries
