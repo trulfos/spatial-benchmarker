@@ -21,7 +21,7 @@ NaiveSpatialIndex::~NaiveSpatialIndex()
 };
 
 
-ResultSet NaiveSpatialIndex::rangeSearch(const AxisAlignedBox& box) const
+Results NaiveSpatialIndex::rangeSearch(const AxisAlignedBox& box) const
 {
 	std::vector<DataObject> results;
 
@@ -36,7 +36,7 @@ ResultSet NaiveSpatialIndex::rangeSearch(const AxisAlignedBox& box) const
 		);
 
 	// Extract ids
-	ResultSet resultSet (results.size());
+	Results resultSet (results.size());
 	std::transform(
 			results.begin(),
 			results.end(),
@@ -49,7 +49,7 @@ ResultSet NaiveSpatialIndex::rangeSearch(const AxisAlignedBox& box) const
 	return resultSet;
 };
 
-ResultSet NaiveSpatialIndex::knnSearch(unsigned k, const Point& point) const
+Results NaiveSpatialIndex::knnSearch(unsigned k, const Point& point) const
 {
 	// Copy the data set
 	DataSet sortedDataSet = dataSet;
@@ -66,7 +66,7 @@ ResultSet NaiveSpatialIndex::knnSearch(unsigned k, const Point& point) const
 		);
 
 	unsigned resultSize = std::min(k, (unsigned) sortedDataSet.size());
-	ResultSet results (resultSize);
+	Results results (resultSize);
 
 	std::transform(
 			sortedDataSet.begin(),

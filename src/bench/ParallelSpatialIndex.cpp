@@ -40,9 +40,9 @@ ParallelSpatialIndex::~ParallelSpatialIndex()
 };
 
 
-ResultSet ParallelSpatialIndex::rangeSearch(const AxisAlignedBox& box) const
+Results ParallelSpatialIndex::rangeSearch(const AxisAlignedBox& box) const
 {
-	ResultSet results;
+	Results results;
 	const Point& pointA = box.getPoints().first;
 	const Point& pointB = box.getPoints().second;
 
@@ -67,10 +67,10 @@ ResultSet ParallelSpatialIndex::rangeSearch(const AxisAlignedBox& box) const
 };
 
 
-ResultSet ParallelSpatialIndex::knnSearch(unsigned k, const Point& point) const
+Results ParallelSpatialIndex::knnSearch(unsigned k, const Point& point) const
 {
 	if (k < 1) {
-		return ResultSet();
+		return Results();
 	}
 
 	float maxDistance = std::numeric_limits<float>::infinity();
@@ -125,7 +125,7 @@ ResultSet ParallelSpatialIndex::knnSearch(unsigned k, const Point& point) const
 
 
 	// Construct results
-	ResultSet results;
+	Results results;
 
 	while (!queue.empty()) {
 		results.push_back(queue.top().id);

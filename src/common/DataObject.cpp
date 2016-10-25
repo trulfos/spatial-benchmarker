@@ -2,8 +2,7 @@
 #include <ios>
 #include <stdexcept>
 
-DataObject::DataObject(unsigned int dimension)
-	: dimension(dimension), point(dimension)
+DataObject::DataObject(unsigned int dimension) : point(dimension)
 {
 }
 

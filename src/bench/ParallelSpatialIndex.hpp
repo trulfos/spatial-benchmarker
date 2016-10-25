@@ -18,8 +18,8 @@ class ParallelSpatialIndex : public SpatialIndex
 		ParallelSpatialIndex(const ParallelSpatialIndex&) = delete;
 
 	protected:
-		ResultSet rangeSearch(const AxisAlignedBox& box) const;
-		ResultSet knnSearch(unsigned k, const Point& point) const;
+		Results rangeSearch(const AxisAlignedBox& box) const;
+		Results knnSearch(unsigned k, const Point& point) const;
 
 	private:
 		unsigned nObjects;

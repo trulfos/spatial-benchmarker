@@ -1,16 +1,16 @@
 #include "ResultSet.hpp"
-#include "DataObject.hpp"
+#include <iostream>
 
 std::istream& operator>>(std::istream& stream, ResultSet& resultSet)
 {
-	unsigned n;
+	unsigned dimension;
+	unsigned nResults;
 
-	stream >> n;
+	stream >> dimension >> nResults;
 
-	for (unsigned i = 0; i < n; i++) {
-		DataObject::Id id;
-		stream >> id;
-		resultSet.push_back(id);
+	resultSet.resize(nResults);
+	for (unsigned i = 0; i < nResults; ++i) {
+		stream >> resultSet[i];
 	}
 
 	return stream;

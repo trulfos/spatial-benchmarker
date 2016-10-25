@@ -1,6 +1,6 @@
 #pragma once
 #include "../common/Query.hpp"
-#include "../common/ResultSet.hpp"
+#include "../common/Results.hpp"
 #include "../common/AxisAlignedBox.hpp"
 
 /**
@@ -14,9 +14,9 @@ class SpatialIndex
 		/**
 		 * Perform a search using the given query.
 		 */
-		ResultSet search(const Query& query);
+		Results search(const Query& query);
 
 	protected:
-		virtual ResultSet rangeSearch(const AxisAlignedBox& box) const = 0;
-		virtual ResultSet knnSearch(unsigned k, const Point& point) const = 0;
+		virtual Results rangeSearch(const AxisAlignedBox& box) const = 0;
+		virtual Results knnSearch(unsigned k, const Point& point) const = 0;
 };

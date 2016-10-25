@@ -2,6 +2,8 @@
 #include "../common/DataObject.hpp"
 #include "../common/DataSet.hpp"
 #include "../common/KnnQuery.hpp"
+#include "../common/Results.hpp"
+#include "../common/QuerySet.hpp"
 #include "../common/ResultSet.hpp"
 #include "SpatialIndex.hpp"
 #include "SpatialIndexFactory.hpp"
@@ -62,15 +64,29 @@ int main(int argc, char *argv[])
 
 
 	// Read data from file
-	Benchmark benchmark;
+	DataSet dataSet;
+	QuerySet querySet;
+	ResultSet resultSet;
 	std::string filename = dataFilename.getValue();
 
 	try {
 		std::fstream dataFile;
 		dataFile.exceptions(std::fstream::badbit | std::fstream::failbit);
-		dataFile.open(filename, std::fstream::in);
+		dataFile.open(filename + ".data.csv", std::fstream::in);
 
-		dataFile >> benchmark;
+		std::fstream queryFile;
+		queryFile.exceptions(std::fstream::badbit | std::fstream::failbit);
+		queryFile.open(filename + ".queries.csv", std::fstream::in);
+
+		std::fstream resultFile;
+		resultFile.exceptions(std::fstream::badbit | std::fstream::failbit);
+		resultFile.open(filename + ".results.csv", std::fstream::in);
+
+		dataFile >> dataSet;
+		queryFile >> querySet;
+		resultFile >> resultSet;
+
+
 	} catch (const std::fstream::failure& e) {
 		std::cerr
 			<< "\033[1;31mError:\033[0m: I/O error while reading data file!"
@@ -79,8 +95,16 @@ int main(int argc, char *argv[])
 	}
 
 
+	if (querySet.size() != resultSet.size()) {
+		std::cerr
+			<< "\033[1;31mError:\033[0m: Query and result sets differ in size!"
+			<< std::endl;
+		return 1;
+	}
+
+
 	// Run code!
-	SpatialIndexFactory factory (benchmark.getDataSet());
+	SpatialIndexFactory factory (dataSet);
 	Timer timer;
 
 	for (auto alg : algorithm.getValue()) {
@@ -89,22 +113,23 @@ int main(int argc, char *argv[])
 
 		auto index = factory.create(alg);
 
-		for (auto testCase : benchmark.getTestCases()) {
+		//for (auto testCase : Zipped<QuerySet, ResultSet>(querySet, resultSet)) {
+		for (unsigned i = 0; i < querySet.size(); i++) {
+			const Query& query = querySet[i];
 
-			std::cout << " - Running test case... ";
-			ResultSet results;
+			Results results;
 			unsigned long time = timer.timeTask([&]() -> void {
-				results = index->search(*testCase.first);
+				results = index->search(query);
 			});
 
 			std::sort(results.begin(), results.end());
 
-			if (results != *testCase.second) {
+			if (results != resultSet[i]) {
 				std::cout << "\033[1;31mError\033[0m" << std::endl
 					<< "Invalid results returned: " << std::endl
 					<< "  " << results << std::endl << std::endl
 					<< "Expected:" << std::endl
-					<< "  " << *testCase.second << std::endl;
+					<< "  " << resultSet[i] << std::endl;
 			} else {
 				std::cout << "\033[1;32mSuccess!\033[0m (" << time << " µs)"
 					<< std::endl;

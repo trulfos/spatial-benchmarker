@@ -18,8 +18,6 @@ class DataObject
 	public:
 		using Id = unsigned int;
 
-		unsigned int dimension;
-
 		/**
 		 * Create a new spatial object.
 		 */

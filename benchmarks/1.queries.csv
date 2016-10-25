@@ -1,19 +1,20 @@
-Knn: 0 P: 0 0
-Knn: 1 P: 0 0
-Knn: 2 P: 0 0
-Knn: 3 P: 0 0
-Knn: 4 P: 0 0
-Knn: 5 P: 0 0
-Knn: 6 P: 0 0
-Knn: 7 P: 0 0
-Knn: 8 P: 0 0
-Knn: 9 P: 0 0
-Knn: 10 P: 0 0
-Knn: 11 P: 0 0
-Knn: 12 P: 0 0
-Range: P: -2 -2 P: 3 3.5
-Range: P: -5 2 P: 4 4
-Range: P: -5 -2 P: -4 -1
-Range: P: -2 -5 P: 0 -3
-Range: P: 0 1 P: 0 1
-Range: P: -6 -6 P: 5 5
+2 19
+knn 0 0 0
+knn 1 0 0
+knn 2 0 0
+knn 3 0 0
+knn 4 0 0
+knn 5 0 0
+knn 6 0 0
+knn 7 0 0
+knn 8 0 0
+knn 9 0 0
+knn 10 0 0
+knn 11 0 0
+knn 12 0 0
+range -2 -2 3 3.5
+range -5 2 4 4
+range -5 -2 -4 -1
+range -2 -5 0 -3
+range 0 1 0 1
+range -6 -6 5 5

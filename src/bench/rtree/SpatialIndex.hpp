@@ -63,9 +63,9 @@ class SpatialIndex : public ::SpatialIndex
 		/**
 		 * Range search with Guttman's algorithm.
 		 */
-		ResultSet rangeSearch(const AxisAlignedBox& box) const
+		Results rangeSearch(const AxisAlignedBox& box) const
 		{
-			ResultSet resultSet;
+			Results resultSet;
 			std::stack<std::pair<E *, unsigned>> path;
 
 			path.emplace(root->entries, root->nEntries);
@@ -99,9 +99,9 @@ class SpatialIndex : public ::SpatialIndex
 		 * Knn search using the optimal algorithm in the number of nodes
 		 * accessed.
 		 */
-		ResultSet knnSearch(unsigned k, const Point& point) const
+		Results knnSearch(unsigned k, const Point& point) const
 		{
-			ResultSet results;
+			Results results;
 			std::priority_queue<KnnQueueEntry<N>> queue;
 
 			queue.emplace(root, height, 0.0f);

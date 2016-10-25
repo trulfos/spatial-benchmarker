@@ -1,12 +1,12 @@
 #pragma once
 #include "DataSet.hpp"
 #include "Query.hpp"
-#include "ResultSet.hpp"
+#include "Results.hpp"
 #include <istream>
 #include <ostream>
 #include <vector>
 
-typedef std::pair<const Query *, const ResultSet *> TestCase;
+typedef std::pair<const Query *, const Results *> TestCase;
 
 /**
  * A benchmark consists of a test data set, a set of queries and their expected
@@ -26,7 +26,7 @@ class Benchmark
 		unsigned dimension;
 		DataSet dataSet;
 		std::vector<Query *> queries;
-		std::vector<ResultSet> results;
+		std::vector<Results> results;
 
 		friend std::ostream& operator<<(
 				std::ostream& stream,
