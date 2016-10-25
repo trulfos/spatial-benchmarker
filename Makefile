@@ -14,12 +14,12 @@ ifdef VIM # Make quickfix in vim work
 endif
 
 # Benchmarks
-BENCHMARKS=$(wildcard benchmarks/*.csv)
+BENCHMARKS=$(patsubst %.results.csv,%,$(wildcard benchmarks/*.results.csv))
 
 .PHONY: clean run test_all
 
 run: bin/bench
-	@for b in benchmarks/*.csv; do\
+	@for b in $(BENCHMARKS); do\
 		echo "\n\033[1m----- Running bechmark $$b -----\033[0m"; \
 		./bin/bench -b $$b -a naive -a parallel -a rtree;\
 	done;
