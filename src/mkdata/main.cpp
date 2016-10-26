@@ -1,4 +1,3 @@
-#include "DistributionFactory.hpp"
 #include "../common/Benchmark.hpp"
 #include "../common/QuerySet.hpp"
 #include <iostream>
