@@ -5,6 +5,7 @@
 #include "../common/Results.hpp"
 #include "../common/QuerySet.hpp"
 #include "../common/ResultSet.hpp"
+#include "Zipped.hpp"
 #include "SpatialIndex.hpp"
 #include "SpatialIndexFactory.hpp"
 #include "Timer.hpp"
@@ -28,6 +29,7 @@ std::ostream& operator<<(std::ostream& stream, std::vector<T> vector)
 
 	return stream << "}";
 }
+
 
 int main(int argc, char *argv[])
 {
@@ -113,23 +115,20 @@ int main(int argc, char *argv[])
 
 		auto index = factory.create(alg);
 
-		//for (auto testCase : Zipped<QuerySet, ResultSet>(querySet, resultSet)) {
-		for (unsigned i = 0; i < querySet.size(); i++) {
-			const Query& query = querySet[i];
-
+		for (auto testCase : zip(querySet, resultSet)) {
 			Results results;
 			unsigned long time = timer.timeTask([&]() -> void {
-				results = index->search(query);
+				results = index->search(testCase.first);
 			});
 
 			std::sort(results.begin(), results.end());
 
-			if (results != resultSet[i]) {
+			if (results != testCase.second) {
 				std::cout << "\033[1;31mError\033[0m" << std::endl
 					<< "Invalid results returned: " << std::endl
 					<< "  " << results << std::endl << std::endl
 					<< "Expected:" << std::endl
-					<< "  " << resultSet[i] << std::endl;
+					<< "  " << testCase.second << std::endl;
 			} else {
 				std::cout << "\033[1;32mSuccess!\033[0m (" << time << " µs)"
 					<< std::endl;
