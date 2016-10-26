@@ -22,6 +22,14 @@ Run benchmarker on all benchmarks
 make run
 ```
 
+Build `mkdata` and `mkqueries` using
+```bash
+make bin/mkdata
+make bin/mkqueries
+```
+Use the `--help` option for printing command line options for these two
+commands.
+
 Run all unit tests
 ```bash
 make test_all
