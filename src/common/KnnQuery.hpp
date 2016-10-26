@@ -10,3 +10,5 @@ class KnnQuery : public Query
 
 		KnnQuery(unsigned k, const Point& point);
 };
+
+std::ostream& operator<<(std::ostream& stream, const KnnQuery& query);
