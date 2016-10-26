@@ -13,6 +13,8 @@ std::istream& operator>>(std::istream& stream, DataSet& dataSet)
 		dataSet.emplace_back(dimension);
 		stream >> dataSet.back();
 	}
+
+	return stream;
 }
 
 std::ostream& operator<<(std::ostream& stream, const DataSet& dataSet)
