@@ -22,16 +22,16 @@ struct KnnQueueEntry {
 		: node(node), elevation(elevation), distance(d) {};
 
 	/**
-	 * Compare for queue sorting. Note that this reverses the sort order
-	 * to create a min queue instead of a max queue.
 	 */
-	bool operator<(const KnnQueueEntry& other) const
+	bool operator>(const KnnQueueEntry& other) const
 	{
-		if (
-			distance == other.distance &&
-			elevation == 0 && other.elevation == 0
-		) {
+		if (distance == other.distance) {
+			if (elevation == 0 && other.elevation == 0) {
 				return id > other.id;
+			}
+
+			// Prioritize blocks over objects - necessary to get correct order
+			return elevation < other.elevation;
 		}
 
 		return distance > other.distance;

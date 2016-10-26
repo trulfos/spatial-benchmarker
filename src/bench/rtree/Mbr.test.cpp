@@ -5,7 +5,7 @@
 
 using namespace Rtree;
 
-const float EPSILON = 0.01f;
+const float EPSILON = 0.001f;
 
 Test(mbr, point_point_distance)
 {

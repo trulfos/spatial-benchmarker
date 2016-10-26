@@ -19,9 +19,8 @@ namespace Rtree
  *
  * Does not consider disk pages, as this is memory resident anyway.
  *
- * Template parameters:
- *  - D is the dimensionality
- *  - C is the maximal number of entries in each node
+ * @tparam D Dimensionality
+ * @tparam C Maximal number of entries in each node
  */
 template <unsigned D, unsigned C>
 class SpatialIndex : public ::SpatialIndex
@@ -102,7 +101,11 @@ class SpatialIndex : public ::SpatialIndex
 		Results knnSearch(unsigned k, const Point& point) const
 		{
 			Results results;
-			std::priority_queue<KnnQueueEntry<N>> queue;
+			std::priority_queue<
+					KnnQueueEntry<N>,
+					std::vector<KnnQueueEntry<N>>,
+					std::greater<KnnQueueEntry<N>>
+				> queue;
 
 			queue.emplace(root, height, 0.0f);
 
