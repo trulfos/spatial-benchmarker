@@ -12,13 +12,11 @@ AxisAlignedBox::AxisAlignedBox(const Point& a, const Point& b)
 			);
 	}
 
-	// Check point domination
+	points[0] = points[1] = Point(dimension);
+
 	for (unsigned i = 0; i < dimension; i++) {
-		if (a[i] > b[i]) {
-			throw new std::logic_error(
-					"Point a passed to axis aligned box does not dominate point 2"
-				);
-		}
+		points[0][i] = std::min(a[i], b[i]);
+		points[1][i] = std::max(a[i], b[i]);
 	}
 }
 
