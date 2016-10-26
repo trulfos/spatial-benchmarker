@@ -97,7 +97,7 @@ class Entry
 				}
 			}
 
-			if (best.wasted < 0.0f) {
+			if (best.wasted < -0.1f) {
 				throw std::logic_error("No pair found!?");
 			}
 
