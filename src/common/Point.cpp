@@ -21,7 +21,7 @@ Point Point::operator-(const Point& other) const
 	unsigned dimension = getDimension();
 
 	if (dimension != other.getDimension()) {
-		throw new std::logic_error(
+		throw std::logic_error(
 				"Cannot subtract points of different dimension"
 			);
 	}
@@ -41,7 +41,7 @@ float Point::operator*(const Point& other) const
 	unsigned dimension = getDimension();
 
 	if (dimension != other.getDimension()) {
-		throw new std::logic_error(
+		throw std::logic_error(
 				"Cannot multiply points of different dimension"
 			);
 	}

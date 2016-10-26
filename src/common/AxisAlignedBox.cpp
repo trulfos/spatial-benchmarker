@@ -7,7 +7,7 @@ AxisAlignedBox::AxisAlignedBox(const Point& a, const Point& b)
 
 	// Check point dimensions match
 	if (dimension != b.getDimension()) {
-		throw new std::logic_error(
+		throw std::logic_error(
 				"Dimensions of points for axis aligned box do not match"
 			);
 	}
