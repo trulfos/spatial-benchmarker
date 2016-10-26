@@ -56,17 +56,6 @@ float Point::operator*(const Point& other) const
 }
 
 
-Coordinate& Point::operator[](unsigned i)
-{
-	return std::vector<Coordinate>::operator[](i);
-}
-
-const Coordinate& Point::operator[](unsigned i) const
-{
-	return std::vector<Coordinate>::operator[](i);
-}
-
-
 bool Point::operator==(const Point& other) const
 {
 	// Delegate to vector

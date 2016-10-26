@@ -43,8 +43,7 @@ class Point : private std::vector<Coordinate>
 		/**
 		 * Get a specific coordinate of this point.
 		 */
-		Coordinate& operator[](unsigned i);
-		const Coordinate& operator[](unsigned i) const;
+		using std::vector<Coordinate>::operator[];
 
 		/**
 		 * Compare works as for vector.
