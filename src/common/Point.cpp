@@ -1,5 +1,6 @@
 #include "Point.hpp"
 #include <iomanip>
+#include <iterator>
 
 Point::Point(unsigned int dimension)
 {
@@ -73,13 +74,13 @@ std::istream& operator>>(std::istream& stream, Point& point)
 
 std::ostream& operator<<(std::ostream& stream, const Point& point)
 {
-	stream << "( " << std::fixed << std::setprecision(2);
+	stream << std::fixed << std::setprecision(2);
 
-	for (const Coordinate& c : point) {
-		stream << c;
-	}
-
-	stream << ')';
+	std::copy(
+			point.begin(),
+			point.end(),
+			std::ostream_iterator<Coordinate>(stream, " ")
+		);
 
 	return stream;
 };

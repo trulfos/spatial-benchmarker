@@ -13,3 +13,4 @@ typedef std::vector<DataObject> DataSet;
 
 
 std::istream& operator>>(std::istream& stream, DataSet& dataSet);
+std::ostream& operator<<(std::ostream& stream, const DataSet& dataSet);

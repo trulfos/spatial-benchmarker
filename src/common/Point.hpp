@@ -24,6 +24,18 @@ class Point : private std::vector<Coordinate>
 		Point(std::initializer_list<Coordinate> list);
 
 		/**
+		 * Initialize a point with random distribution.
+		 */
+		template<class D, class G>
+		Point(unsigned dimension, D& distribution, G& generator)
+			: Point(dimension)
+		{
+			for (auto& c : *this) {
+				c = distribution(generator);
+			}
+		};
+
+		/**
 		 * Get the dimension of this point.
 		 */
 		unsigned getDimension() const;

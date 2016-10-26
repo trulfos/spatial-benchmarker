@@ -7,6 +7,10 @@ DataObject::DataObject(unsigned int dimension) : point(dimension)
 }
 
 
+DataObject::DataObject(Id id, Point point) : id(id), point(point)
+{
+}
+
 DataObject::Id DataObject::getId() const
 {
 	return this->id;
@@ -39,6 +43,5 @@ std::ostream& operator<<(
 		std::ostream& stream,
 		const DataObject& object
 ) {
-	return stream << "Data object " << object.id << std::endl
-		<< "  " << object.point;
+	return stream << object.id << ' ' << object.point;
 }

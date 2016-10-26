@@ -22,6 +22,7 @@ class DataObject
 		 * Create a new spatial object.
 		 */
 		DataObject(unsigned int dimension);
+		DataObject(Id id, Point point);
 
 		/**
 		 * Get the id of this object.
