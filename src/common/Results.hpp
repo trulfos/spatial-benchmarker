@@ -17,4 +17,5 @@ typedef std::vector<DataObject::Id> Results;
 /**
  * Specialized method for extraction from stream.
  */
-std::istream& operator>>(std::istream& stream, Results& resultSet);
+std::istream& operator>>(std::istream& stream, Results& results);
+std::ostream& operator<<(std::ostream& stream, const Results& results);

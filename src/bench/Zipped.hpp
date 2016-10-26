@@ -7,7 +7,7 @@ class Zipped
 {
 	public:
 
-		using value_type = std::pair<typename A::value_type, typename B::value_type>;
+		using value_type = std::pair<typename A::value_type&, typename B::value_type&>;
 
 		class ZipIterator : public std::iterator<std::forward_iterator_tag, value_type>
 		{

@@ -16,21 +16,6 @@
 #include <tclap/CmdLine.h>
 
 
-/**
- * For convenience
- */
-template<typename T>
-std::ostream& operator<<(std::ostream& stream, std::vector<T> vector)
-{
-	stream << "std::vector(" << vector.size() << "){ ";
-	for (auto element : vector) {
-		stream << element << ' ';
-	}
-
-	return stream << "}";
-}
-
-
 int main(int argc, char *argv[])
 {
 
@@ -43,13 +28,18 @@ int main(int argc, char *argv[])
 	TCLAP::MultiArg<std::string> algorithm(
 			"a", "algorithm", "Algorithm(s) to run.", false, "algorithm"
 		);
+	cmd.add(algorithm);
 
 	TCLAP::ValueArg<std::string> dataFilename(
 			"b", "benchmark", "File containing benchmark.", true, "", "filename"
 		);
-
-	cmd.add(algorithm);
 	cmd.add(dataFilename);
+
+	TCLAP::SwitchArg generate(
+			"g", "generate", "Generate and output result set"
+		);
+	cmd.add(generate);
+
 
 	// Parse arguments
 	try {
@@ -72,21 +62,27 @@ int main(int argc, char *argv[])
 	std::string filename = dataFilename.getValue();
 
 	try {
+		// Read data
 		std::fstream dataFile;
 		dataFile.exceptions(std::fstream::badbit | std::fstream::failbit);
 		dataFile.open(filename + ".data.csv", std::fstream::in);
+		dataFile >> dataSet;
 
+		// Read queries
 		std::fstream queryFile;
 		queryFile.exceptions(std::fstream::badbit | std::fstream::failbit);
 		queryFile.open(filename + ".queries.csv", std::fstream::in);
-
-		std::fstream resultFile;
-		resultFile.exceptions(std::fstream::badbit | std::fstream::failbit);
-		resultFile.open(filename + ".results.csv", std::fstream::in);
-
-		dataFile >> dataSet;
 		queryFile >> querySet;
-		resultFile >> resultSet;
+
+		// Read or generate result set
+		if (!generate.getValue()) {
+			std::fstream resultFile;
+			resultFile.exceptions(std::fstream::badbit | std::fstream::failbit);
+			resultFile.open(filename + ".results.csv", std::fstream::in);
+			resultFile >> resultSet;
+		} else {
+			resultSet.resize(querySet.size());
+		}
 
 
 	} catch (const std::fstream::failure& e) {
@@ -110,8 +106,10 @@ int main(int argc, char *argv[])
 	Timer timer;
 
 	for (auto alg : algorithm.getValue()) {
-		std::cout << "Testing " << alg << std::endl
-			<< " - Constructing index" << std::endl;
+		if (!generate.getValue()) {
+			std::cout << "Testing " << alg << std::endl
+				<< " - Constructing index" << std::endl;
+		}
 
 		auto index = factory.create(alg);
 
@@ -123,6 +121,11 @@ int main(int argc, char *argv[])
 
 			std::sort(results.begin(), results.end());
 
+			if (generate.getValue()) {
+				testCase.second = results;
+				continue;
+			}
+
 			if (results != testCase.second) {
 				std::cout << "\033[1;31mError\033[0m" << std::endl
 					<< "Invalid results returned: " << std::endl
@@ -133,6 +136,10 @@ int main(int argc, char *argv[])
 				std::cout << "\033[1;32mSuccess!\033[0m (" << time << " µs)"
 					<< std::endl;
 			}
+		}
+
+		if (generate.getValue()) {
+			std::cout << resultSet << std::endl;
 		}
 	}
 

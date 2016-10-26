@@ -1,5 +1,6 @@
 #include "Results.hpp"
 #include "DataObject.hpp"
+#include <iterator>
 
 std::istream& operator>>(std::istream& stream, Results& results)
 {
@@ -11,6 +12,20 @@ std::istream& operator>>(std::istream& stream, Results& results)
 		stream >> id;
 		results.push_back(id);
 	}
+
+	return stream;
+}
+
+
+std::ostream& operator<<(std::ostream& stream, const Results& results)
+{
+	stream << results.size() << ' ';
+
+	std::copy(
+			results.begin(),
+			results.end(),
+			std::ostream_iterator<DataObject::Id>(stream, " ")
+		);
 
 	return stream;
 }

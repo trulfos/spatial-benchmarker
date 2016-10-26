@@ -8,9 +8,6 @@
 class QuerySet : private std::vector<Query *>
 {
 	public:
-		using iterator = std::vector<Query *>::iterator;
-		using value_type = Query&;
-
 		class QuerySetIterator : public std::vector<Query *>::const_iterator
 		{
 			public:
@@ -25,6 +22,9 @@ class QuerySet : private std::vector<Query *>
 				}
 
 		};
+
+		using iterator = QuerySetIterator;
+		using value_type = const Query;
 
 
 		~QuerySet();
