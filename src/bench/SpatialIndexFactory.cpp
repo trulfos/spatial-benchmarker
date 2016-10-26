@@ -24,24 +24,25 @@ std::shared_ptr<SpatialIndex> SpatialIndexFactory::create(
 			throw std::logic_error("Cannot infer dimension without any points");
 		}
 
+		const unsigned M = 64;
 		unsigned d = dataSet[0].getPoint().getDimension();
 		switch (d) {
 			case 2:
-				return std::make_shared<Rtree::SpatialIndex<2, 3>>(dataSet);
+				return std::make_shared<Rtree::SpatialIndex<2, M>>(dataSet);
 			case 3:
-				return std::make_shared<Rtree::SpatialIndex<3, 3>>(dataSet);
+				return std::make_shared<Rtree::SpatialIndex<3, M>>(dataSet);
 			case 4:
-				return std::make_shared<Rtree::SpatialIndex<4, 3>>(dataSet);
+				return std::make_shared<Rtree::SpatialIndex<4, M>>(dataSet);
 			case 5:
-				return std::make_shared<Rtree::SpatialIndex<5, 3>>(dataSet);
+				return std::make_shared<Rtree::SpatialIndex<5, M>>(dataSet);
 			case 6:
-				return std::make_shared<Rtree::SpatialIndex<6, 3>>(dataSet);
+				return std::make_shared<Rtree::SpatialIndex<6, M>>(dataSet);
 			case 7:
-				return std::make_shared<Rtree::SpatialIndex<7, 3>>(dataSet);
+				return std::make_shared<Rtree::SpatialIndex<7, M>>(dataSet);
 			case 8:
-				return std::make_shared<Rtree::SpatialIndex<8, 3>>(dataSet);
+				return std::make_shared<Rtree::SpatialIndex<8, M>>(dataSet);
 			case 9:
-				return std::make_shared<Rtree::SpatialIndex<9, 3>>(dataSet);
+				return std::make_shared<Rtree::SpatialIndex<9, M>>(dataSet);
 
 			default:
 				throw std::domain_error(
