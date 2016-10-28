@@ -28,6 +28,8 @@ class QuerySet : private std::vector<Query *>
 
 
 		~QuerySet();
+		QuerySet() = default;
+		QuerySet(const QuerySet&) = delete;
 
 		using std::vector<Query *>::size;
 
