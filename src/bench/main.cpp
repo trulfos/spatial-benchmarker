@@ -5,6 +5,7 @@
 #include "../common/Results.hpp"
 #include "../common/QuerySet.hpp"
 #include "../common/ResultSet.hpp"
+#include "../common/Color.hpp"
 #include "Zipped.hpp"
 #include "SpatialIndex.hpp"
 #include "SpatialIndexFactory.hpp"
@@ -16,22 +17,28 @@
 #include <tclap/CmdLine.h>
 
 
+template <typename T>
+void readFrom(T& data, std::string filename)
+{
+	std::fstream file;
+	file.exceptions(std::fstream::badbit | std::fstream::failbit);
+	file.open(filename, std::fstream::in);
+	file >> data;
+}
+
 int main(int argc, char *argv[])
 {
 
-	//TODO: Recommended error handling?
-	// Construct command line
+	// Command line options
 	TCLAP::CmdLine cmd("Specialication project test framework", ' ', "0.1");
-	cmd.setExceptionHandling(false);
 
-	// Algorithm selection
 	TCLAP::MultiArg<std::string> algorithm(
 			"a", "algorithm", "Algorithm(s) to run.", false, "algorithm"
 		);
 	cmd.add(algorithm);
 
 	TCLAP::ValueArg<std::string> dataFilename(
-			"b", "benchmark", "File containing benchmark.", true, "", "filename"
+			"b", "benchmark", "Prefix for files containing the benchmark.", true, "", "fileprefix"
 		);
 	cmd.add(dataFilename);
 
@@ -40,19 +47,7 @@ int main(int argc, char *argv[])
 		);
 	cmd.add(generate);
 
-
-	// Parse arguments
-	try {
-		cmd.parse(argc, argv);
-	} catch (TCLAP::ArgException &e) {
-		// Ups! User input was not correct
-		std::cerr << "\033[1;31mError:\033[0m Invalid command line argument"
-			<< std::endl << e.what() << std::endl;
-		return 1;
-	} catch (TCLAP::ExitException &e) {
-		// Exited early, e.g. due to --version being used
-		return 0;
-	}
+	cmd.parse(argc, argv);
 
 
 	// Read data from file
@@ -62,32 +57,17 @@ int main(int argc, char *argv[])
 	std::string filename = dataFilename.getValue();
 
 	try {
-		// Read data
-		std::fstream dataFile;
-		dataFile.exceptions(std::fstream::badbit | std::fstream::failbit);
-		dataFile.open(filename + ".data.csv", std::fstream::in);
-		dataFile >> dataSet;
+		readFrom(dataSet, filename + ".data.csv");
+		readFrom(querySet, filename + ".queries.csv");
 
-		// Read queries
-		std::fstream queryFile;
-		queryFile.exceptions(std::fstream::badbit | std::fstream::failbit);
-		queryFile.open(filename + ".queries.csv", std::fstream::in);
-		queryFile >> querySet;
-
-		// Read or generate result set
-		if (!generate.getValue()) {
-			std::fstream resultFile;
-			resultFile.exceptions(std::fstream::badbit | std::fstream::failbit);
-			resultFile.open(filename + ".results.csv", std::fstream::in);
-			resultFile >> resultSet;
-		} else {
+		if (generate.getValue()) {
 			resultSet.resize(querySet.size());
+		} else {
+			readFrom(resultSet, filename + ".results.csv");
 		}
-
-
 	} catch (const std::fstream::failure& e) {
 		std::cerr
-			<< "\033[1;31mError:\033[0m: I/O error while reading data file!"
+			<< C::red("Error:") << " I/O error while reading data file!"
 			<< std::endl << e.what() << std::endl;
 		return 1;
 	}
@@ -95,7 +75,7 @@ int main(int argc, char *argv[])
 
 	if (querySet.size() != resultSet.size()) {
 		std::cerr
-			<< "\033[1;31mError:\033[0m: Query and result sets differ in size!"
+			<< C::red("Error:") << " Query and result sets differ in size!"
 			<< std::endl;
 		return 1;
 	}
@@ -107,14 +87,14 @@ int main(int argc, char *argv[])
 
 	for (auto alg : algorithm.getValue()) {
 		if (!generate.getValue()) {
-			std::cout << "Testing " << alg << std::endl
-				<< " - Constructing index" << std::endl;
+			std::cout << alg << std::endl;
 		}
 
 		auto index = factory.create(alg);
 
 		for (auto testCase : zip(querySet, resultSet)) {
 			Results results;
+
 			unsigned long time = timer.timeTask([&]() -> void {
 				results = index->search(testCase.first);
 			});
@@ -127,14 +107,11 @@ int main(int argc, char *argv[])
 			}
 
 			if (results != testCase.second) {
-				std::cout << "\033[1;31mError\033[0m" << std::endl
-					<< "Invalid results returned: " << std::endl
-					<< "  " << results << std::endl << std::endl
-					<< "Expected:" << std::endl
-					<< "  " << testCase.second << std::endl;
+				std::cout << C::red("Error") << "\n"
+					<< "Invalid results returned:\n\t" << results << "\n\n"
+					<< "Expected:\n\t" << testCase.second << std::endl;
 			} else {
-				std::cout << "\033[1;32mSuccess!\033[0m (" << time << " µs)"
-					<< std::endl;
+				std::cout << time << std::endl;
 			}
 		}
 
