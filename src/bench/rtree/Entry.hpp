@@ -1,6 +1,7 @@
 #pragma once
 #include "../../common/DataObject.hpp"
 #include "Mbr.hpp"
+#include <cassert>
 
 namespace Rtree
 {
@@ -97,10 +98,7 @@ class Entry
 				}
 			}
 
-			if (best.wasted < -0.1f) {
-				throw std::logic_error("No pair found!?");
-			}
-
+			assert(best.wasted > -0.1f);
 
 			// Distribute the remaning entries
 			mbr = best.entries[0]->mbr;
@@ -116,7 +114,8 @@ class Entry
 
 				if (
 					newNode->nEntries >= C/2 ||
-					mbr.enlargement(e->mbr) < other.mbr.enlargement(e->mbr)
+					(mbr.enlargement(e->mbr) < other.mbr.enlargement(e->mbr)
+						&& node->nEntries < C/2)
 				) {
 					add(*e);
 				} else {
