@@ -52,13 +52,19 @@ Results NaiveSpatialIndex::rangeSearch(const AxisAlignedBox& box) const
 
 Results NaiveSpatialIndex::knnSearch(unsigned k, const Point& point) const
 {
-	// Copy the data set
-	std::vector<DataObject> sortedData = dataSet;
+	unsigned resultSize = std::min(k, (unsigned) dataSet.size());
+
+	std::vector<DataObject> dataResults (
+			dataSet.begin(),
+			dataSet.begin() + resultSize
+		);
 
 	// Sort it by distance, then by id
-	std::sort(
-			sortedData.begin(),
-			sortedData.end(),
+	std::partial_sort_copy(
+			dataSet.begin(),
+			dataSet.end(),
+			dataResults.begin(),
+			dataResults.end(),
 			[&point](const DataObject& a, const DataObject& b) -> bool {
 				float da = d(point, a.getPoint());
 				float db = d(point, b.getPoint());
@@ -66,12 +72,13 @@ Results NaiveSpatialIndex::knnSearch(unsigned k, const Point& point) const
 			}
 		);
 
-	unsigned resultSize = std::min(k, (unsigned) sortedData.size());
+
+	// Generate results
 	Results results (resultSize);
 
 	std::transform(
-			sortedData.begin(),
-			sortedData.begin() + resultSize,
+			dataResults.begin(),
+			dataResults.begin() + resultSize,
 			results.begin(),
 			[](const DataObject& object) -> DataObject::Id {
 				return object.getId();
