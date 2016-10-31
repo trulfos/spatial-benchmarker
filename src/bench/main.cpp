@@ -15,6 +15,9 @@
 #include <string>
 #include <tclap/CmdLine.h>
 
+const unsigned CACHE_SIZE = 4096; // kilobytes
+const unsigned CACHE_LINE_SIZE = 64; // bytes
+
 
 template <typename T>
 void readFrom(T& data, std::string filename)
@@ -23,6 +26,24 @@ void readFrom(T& data, std::string filename)
 	file.exceptions(std::fstream::badbit | std::fstream::failbit);
 	file.open(filename, std::fstream::in);
 	file >> data;
+}
+
+
+/**
+ * "Clears" the cache by writing data to a large array.
+ * To save time, only one value in each cache line is written.
+ */
+void clearCache()
+{
+	unsigned size = CACHE_SIZE * 1024;
+	char * buffer = new char[CACHE_SIZE * 1024];
+
+	// write bullshit
+	for (unsigned i = 0; i < size; i += CACHE_LINE_SIZE) {
+		buffer[i] = (char) i;
+	}
+
+	delete[] buffer;
 }
 
 int main(int argc, char *argv[])
@@ -78,8 +99,10 @@ int main(int argc, char *argv[])
 			auto index = SpatialIndexFactory::create(alg, dataSet);
 
 			for (auto testCase : zip(querySet, resultSet)) {
-				Results results;
 
+				clearCache();
+
+				Results results;
 				unsigned long time = timer.timeTask([&]() -> void {
 					results = index->search(testCase.first);
 				});
@@ -108,6 +131,8 @@ int main(int argc, char *argv[])
 		std::cerr << C::red("I/O error:") << '\n' << e.what() << std::endl;
 	} catch (const std::logic_error& e) {
 		std::cerr << C::red("Logic error:") << '\n' << e.what() << std::endl;
+	} catch (const std::bad_alloc& e) {
+		std::cerr << C::red("Bad allocation:") << '\n' << e.what() << std::endl;
 	}
 
 	return 1;
