@@ -5,14 +5,14 @@
 #include <fstream>
 #include "../common/DataObject.hpp"
 #include "../common/FileHeader.hpp"
-#include "DataSet.hpp"
+#include "LazyDataSet.hpp"
 
 /**
  * Lazy query set.
  * Reads data from file as iteration progresses and does not store the data.
  * This avoids filling the memory with copies of the data while indexing.
  */
-class DataSet
+class LazyDataSet
 {
 	public:
 
@@ -44,7 +44,7 @@ class DataSet
 		/**
 		 * Create a new lazy data set.
 		 */
-		DataSet(std::string filename);
+		LazyDataSet(std::string filename);
 
 
 		/**

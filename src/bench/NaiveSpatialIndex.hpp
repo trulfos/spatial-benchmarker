@@ -1,5 +1,5 @@
 #pragma once
-#include "DataSet.hpp"
+#include "LazyDataSet.hpp"
 #include "SpatialIndex.hpp"
 /**
  * Simplest algorithm just for checking the results.
@@ -12,7 +12,7 @@ class NaiveSpatialIndex : public SpatialIndex
 
 	public:
 		~NaiveSpatialIndex();
-		NaiveSpatialIndex(DataSet& dataSet);
+		NaiveSpatialIndex(LazyDataSet& dataSet);
 
 	protected:
 		Results rangeSearch(const AxisAlignedBox& box) const;

@@ -1,6 +1,6 @@
-#include "DataSet.hpp"
+#include "LazyDataSet.hpp"
 
-using LazyDataSetIterator = DataSet::LazyDataSetIterator;
+using LazyDataSetIterator = LazyDataSet::LazyDataSetIterator;
 
 LazyDataSetIterator::LazyDataSetIterator(
 		std::istream& stream,
@@ -36,7 +36,7 @@ DataObject& LazyDataSetIterator::operator*()
 /**
  * Create a new lazy data set.
  */
-DataSet::DataSet(std::string filename)
+LazyDataSet::LazyDataSet(std::string filename)
 {
 	stream.exceptions(std::fstream::badbit | std::fstream::failbit);
 	stream.open(filename, std::fstream::in);
@@ -47,7 +47,7 @@ DataSet::DataSet(std::string filename)
 /**
  * Start iteration.
  */
-LazyDataSetIterator DataSet::begin()
+LazyDataSetIterator LazyDataSet::begin()
 {
 	//TODO: Be careful about making more than one iterator! This is not
 	// very intuitive
@@ -58,7 +58,7 @@ LazyDataSetIterator DataSet::begin()
 /**
  * Iterator at the end.
  */
-LazyDataSetIterator DataSet::end()
+LazyDataSetIterator LazyDataSet::end()
 {
 	return LazyDataSetIterator(stream, header.getDimension(), size());
 };
@@ -67,7 +67,7 @@ LazyDataSetIterator DataSet::end()
 /**
  * Get size of data set.
  */
-unsigned DataSet::size() const
+unsigned LazyDataSet::size() const
 {
 	return header.getN();
 };
@@ -76,12 +76,12 @@ unsigned DataSet::size() const
 /**
  * Get data dimension.
  */
-unsigned DataSet::dimension() const
+unsigned LazyDataSet::dimension() const
 {
 	return header.getDimension();
 }
 
-bool DataSet::empty() const
+bool LazyDataSet::empty() const
 {
 	return size() == 0;
 }

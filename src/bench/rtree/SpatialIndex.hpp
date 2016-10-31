@@ -1,5 +1,5 @@
 #pragma once
-#include "../DataSet.hpp"
+#include "../LazyDataSet.hpp"
 #include "../SpatialIndex.hpp"
 #include "Entry.hpp"
 #include "KnnQueueEntry.hpp"
@@ -35,7 +35,7 @@ class SpatialIndex : public ::SpatialIndex
 		/**
 		 * Construct a new index from the given data set.
 		 */
-		SpatialIndex(DataSet& dataSet)
+		SpatialIndex(LazyDataSet& dataSet)
 		{
 			if (dataSet.empty()) {
 				return;

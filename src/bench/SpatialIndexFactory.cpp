@@ -7,7 +7,7 @@
 
 std::shared_ptr<SpatialIndex> SpatialIndexFactory::create(
 		const std::string& algorithm,
-		DataSet& dataSet
+		LazyDataSet& dataSet
 ) {
 	if (algorithm == "naive") {
 		return std::make_shared<NaiveSpatialIndex>(dataSet);

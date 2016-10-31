@@ -6,7 +6,7 @@
 #include <vector>
 
 
-ParallelSpatialIndex::ParallelSpatialIndex(DataSet& dataSet)
+ParallelSpatialIndex::ParallelSpatialIndex(LazyDataSet& dataSet)
 {
 	if (dataSet.empty()) {
 		return;

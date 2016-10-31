@@ -1,5 +1,5 @@
 #include "../common/DataObject.hpp"
-#include "DataSet.hpp"
+#include "LazyDataSet.hpp"
 #include "../common/KnnQuery.hpp"
 #include "../common/Results.hpp"
 #include "../common/QuerySet.hpp"
@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
 				std::cout << alg << std::endl;
 			}
 
-			DataSet dataSet (filename + ".data.csv");
+			LazyDataSet dataSet (filename + ".data.csv");
 			auto index = SpatialIndexFactory::create(alg, dataSet);
 
 			for (auto testCase : zip(querySet, resultSet)) {

@@ -1,5 +1,5 @@
 #pragma once
-#include "DataSet.hpp"
+#include "LazyDataSet.hpp"
 #include "SpatialIndex.hpp"
 #include <memory>
 #include <string>
@@ -19,5 +19,5 @@ class SpatialIndexFactory
 		 * Create a spatial index using the given algorithm and with the given
 		 * data set.
 		 */
-		static std::shared_ptr<SpatialIndex> create(const std::string& algorithm, DataSet& dataSet);
+		static std::shared_ptr<SpatialIndex> create(const std::string& algorithm, LazyDataSet& dataSet);
 };
