@@ -16,7 +16,7 @@
 class DataObject
 {
 	public:
-		using Id = unsigned int;
+		using Id = unsigned long long;
 
 		/**
 		 * Create a new spatial object.
