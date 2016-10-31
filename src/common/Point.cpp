@@ -74,8 +74,6 @@ std::istream& operator>>(std::istream& stream, Point& point)
 
 std::ostream& operator<<(std::ostream& stream, const Point& point)
 {
-	stream << std::fixed << std::setprecision(2);
-
 	std::copy(
 			point.begin(),
 			point.end(),

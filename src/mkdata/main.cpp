@@ -32,6 +32,10 @@ int main(int argc, char *argv[])
 		);
 	cmd.add(seed);
 
+	TCLAP::ValueArg<unsigned> precision(
+			"p", "precision", "Number of decimals to output", false, 10, "number"
+		);
+
 
 	cmd.parse(argc, argv);
 
@@ -51,7 +55,11 @@ int main(int argc, char *argv[])
 	}
 
 	// Print benchmark
-	std::cout << dataSet << std::endl;
+	std::cout
+		<< std::fixed
+		<< std::setprecision(precision.getValue())
+		<< dataSet
+		<< std::endl;
 
 	return 0;
 }
