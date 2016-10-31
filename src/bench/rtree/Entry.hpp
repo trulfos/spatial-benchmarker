@@ -66,9 +66,7 @@ class Entry
 		 */
 		Entry split(const Entry& e, N * newNode)
 		{
-			if (!node->isFull()) {
-				throw std::logic_error("Node not full when splitting");
-			}
+			assert(node->isFull());
 
 			Entry other (newNode, M());
 
