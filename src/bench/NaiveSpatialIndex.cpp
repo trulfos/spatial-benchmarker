@@ -12,7 +12,8 @@ float d(const Point& a, const Point& b) {
 }
 
 
-NaiveSpatialIndex::NaiveSpatialIndex(const DataSet& dataSet) : dataSet(dataSet)
+NaiveSpatialIndex::NaiveSpatialIndex(DataSet& dataSet)
+	: dataSet(dataSet.begin(), dataSet.end())
 {
 };
 
@@ -52,7 +53,7 @@ Results NaiveSpatialIndex::rangeSearch(const AxisAlignedBox& box) const
 Results NaiveSpatialIndex::knnSearch(unsigned k, const Point& point) const
 {
 	// Copy the data set
-	DataSet sortedDataSet = dataSet;
+	std::vector<DataObject> sortedDataSet = dataSet;
 
 	// Sort it by distance, then by id
 	std::sort(

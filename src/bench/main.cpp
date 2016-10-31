@@ -1,6 +1,5 @@
-#include "../common/Benchmark.hpp"
 #include "../common/DataObject.hpp"
-#include "../common/DataSet.hpp"
+#include "DataSet.hpp"
 #include "../common/KnnQuery.hpp"
 #include "../common/Results.hpp"
 #include "../common/QuerySet.hpp"
@@ -50,75 +49,66 @@ int main(int argc, char *argv[])
 	cmd.parse(argc, argv);
 
 
-	// Read data from file
-	DataSet dataSet;
-	QuerySet querySet;
-	ResultSet resultSet;
-	std::string filename = dataFilename.getValue();
-
 	try {
-		readFrom(dataSet, filename + ".data.csv");
+		QuerySet querySet;
+		ResultSet resultSet;
+		std::string filename = dataFilename.getValue();
+
 		readFrom(querySet, filename + ".queries.csv");
 
 		if (generate.getValue()) {
 			resultSet.resize(querySet.size());
 		} else {
 			readFrom(resultSet, filename + ".results.csv");
-		}
-	} catch (const std::fstream::failure& e) {
-		std::cerr
-			<< C::red("Error:") << " I/O error while reading data file!"
-			<< std::endl << e.what() << std::endl;
-		return 1;
-	}
 
-
-	if (querySet.size() != resultSet.size()) {
-		std::cerr
-			<< C::red("Error:") << " Query and result sets differ in size!"
-			<< std::endl;
-		return 1;
-	}
-
-
-	// Run code!
-	SpatialIndexFactory factory (dataSet);
-	Timer timer;
-
-	for (auto alg : algorithm.getValue()) {
-		if (!generate.getValue()) {
-			std::cout << alg << std::endl;
+			if (querySet.size() != resultSet.size()) {
+				throw std::logic_error("Query and result sets differ in size!");
+			}
 		}
 
-		auto index = factory.create(alg);
 
-		for (auto testCase : zip(querySet, resultSet)) {
-			Results results;
+		// Run code!
+		Timer timer;
+		for (auto alg : algorithm.getValue()) {
+			if (!generate.getValue()) {
+				std::cout << alg << std::endl;
+			}
 
-			unsigned long time = timer.timeTask([&]() -> void {
-				results = index->search(testCase.first);
-			});
+			DataSet dataSet (filename + ".data.csv");
+			auto index = SpatialIndexFactory::create(alg, dataSet);
 
-			std::sort(results.begin(), results.end());
+			for (auto testCase : zip(querySet, resultSet)) {
+				Results results;
+
+				unsigned long time = timer.timeTask([&]() -> void {
+					results = index->search(testCase.first);
+				});
+
+				std::sort(results.begin(), results.end());
+
+				if (generate.getValue()) {
+					testCase.second = results;
+				} else if (results != testCase.second) {
+					std::cout << C::red("Error") << "\n"
+						<< "Invalid results returned:\n\t" << results << "\n\n"
+						<< "Expected:\n\t" << testCase.second << std::endl;
+				} else {
+					std::cout << time << std::endl;
+				}
+			}
 
 			if (generate.getValue()) {
-				testCase.second = results;
-				continue;
-			}
-
-			if (results != testCase.second) {
-				std::cout << C::red("Error") << "\n"
-					<< "Invalid results returned:\n\t" << results << "\n\n"
-					<< "Expected:\n\t" << testCase.second << std::endl;
-			} else {
-				std::cout << time << std::endl;
+				std::cout << resultSet << std::endl;
 			}
 		}
 
-		if (generate.getValue()) {
-			std::cout << resultSet << std::endl;
-		}
+		return 0;
+
+	} catch (const std::fstream::failure& e) {
+		std::cerr << C::red("I/O error:") << '\n' << e.what() << std::endl;
+	} catch (const std::logic_error& e) {
+		std::cerr << C::red("Logic error:") << '\n' << e.what() << std::endl;
 	}
 
-	return 0;
+	return 1;
 }

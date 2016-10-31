@@ -1,5 +1,5 @@
 #pragma once
-#include "../common/DataSet.hpp"
+#include "DataSet.hpp"
 #include "SpatialIndex.hpp"
 #include <memory>
 #include <string>
@@ -16,15 +16,8 @@ class SpatialIndexFactory
 	public:
 
 		/**
-		 * Initialize this spatial index factory with the given data.
+		 * Create a spatial index using the given algorithm and with the given
+		 * data set.
 		 */
-		SpatialIndexFactory(const DataSet& dataSet);
-
-		/**
-		 * Create a spatial index using the given algorithm.
-		 */
-		std::shared_ptr<SpatialIndex> create(const std::string& algorithm);
-
-	private:
-		const DataSet& dataSet;
+		static std::shared_ptr<SpatialIndex> create(const std::string& algorithm, DataSet& dataSet);
 };

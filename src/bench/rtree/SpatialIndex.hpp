@@ -1,5 +1,5 @@
 #pragma once
-#include "../../common/DataSet.hpp"
+#include "../DataSet.hpp"
 #include "../SpatialIndex.hpp"
 #include "Entry.hpp"
 #include "KnnQueueEntry.hpp"
@@ -35,7 +35,7 @@ class SpatialIndex : public ::SpatialIndex
 		/**
 		 * Construct a new index from the given data set.
 		 */
-		SpatialIndex(const DataSet& dataSet)
+		SpatialIndex(DataSet& dataSet)
 		{
 			if (dataSet.empty()) {
 				return;

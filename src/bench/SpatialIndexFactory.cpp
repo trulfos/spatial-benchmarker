@@ -5,13 +5,9 @@
 #include "rtree/SpatialIndex.hpp"
 
 
-SpatialIndexFactory::SpatialIndexFactory(
-		const std::vector<DataObject>& dataSet
-) : dataSet(dataSet) {
-}
-
 std::shared_ptr<SpatialIndex> SpatialIndexFactory::create(
-		const std::string& algorithm
+		const std::string& algorithm,
+		DataSet& dataSet
 ) {
 	if (algorithm == "naive") {
 		return std::make_shared<NaiveSpatialIndex>(dataSet);
@@ -25,7 +21,7 @@ std::shared_ptr<SpatialIndex> SpatialIndexFactory::create(
 		}
 
 		const unsigned M = 64;
-		unsigned d = dataSet[0].getPoint().getDimension();
+		unsigned d = dataSet.dimension();
 		switch (d) {
 			case 2:
 				return std::make_shared<Rtree::SpatialIndex<2, M>>(dataSet);

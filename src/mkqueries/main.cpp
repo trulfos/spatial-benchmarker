@@ -1,4 +1,3 @@
-#include "../common/Benchmark.hpp"
 #include "../common/QuerySet.hpp"
 #include "../common/RangeQuery.hpp"
 #include "../common/KnnQuery.hpp"

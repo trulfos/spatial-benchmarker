@@ -1,6 +1,6 @@
 #pragma once
 
-#include "DataObject.hpp"
+#include "../common/DataObject.hpp"
 #include <istream>
 #include <vector>
 

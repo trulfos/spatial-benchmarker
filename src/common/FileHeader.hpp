@@ -13,6 +13,16 @@ class FileHeader
 		FileHeader() = default;
 		FileHeader(unsigned dimension, unsigned n);
 
+		unsigned getN() const
+		{
+			return n;
+		};
+
+		unsigned getDimension() const
+		{
+			return dimension;
+		};
+
 	private:
 		unsigned dimension;
 		unsigned n;

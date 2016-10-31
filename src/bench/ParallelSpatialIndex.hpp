@@ -1,7 +1,7 @@
 #pragma once
 #include "../common/Coordinate.hpp"
 #include "../common/DataObject.hpp"
-#include "../common/DataSet.hpp"
+#include "DataSet.hpp"
 #include "SpatialIndex.hpp"
 #include <vector>
 /**
@@ -12,7 +12,7 @@ class ParallelSpatialIndex : public SpatialIndex
 
 	public:
 		~ParallelSpatialIndex();
-		ParallelSpatialIndex(const DataSet& dataSet);
+		ParallelSpatialIndex(DataSet& dataSet);
 
 		// Cannot be copied
 		ParallelSpatialIndex(const ParallelSpatialIndex&) = delete;

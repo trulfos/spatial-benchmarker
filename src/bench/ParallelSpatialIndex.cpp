@@ -6,7 +6,7 @@
 #include <vector>
 
 
-ParallelSpatialIndex::ParallelSpatialIndex(const DataSet& dataSet)
+ParallelSpatialIndex::ParallelSpatialIndex(DataSet& dataSet)
 {
 	if (dataSet.empty()) {
 		return;
@@ -14,22 +14,24 @@ ParallelSpatialIndex::ParallelSpatialIndex(const DataSet& dataSet)
 
 	// Initialize sizes
 	nObjects = dataSet.size();
-	dimension = dataSet[0].getPoint().getDimension();
+	dimension = dataSet.dimension();
 
 	// Allocate buffers
 	positions = new Coordinate[nObjects * dimension];
 	ids = new DataObject::Id[nObjects];
 
 	// Copy data into buffers
-	for (unsigned i = 0; i < nObjects; i++) {
+	unsigned i = 0;
+	for (DataObject& object : dataSet) {
 
-		ids[i] = dataSet[i].getId();
+		ids[i] = object.getId();
 
-		const Point& point = dataSet[i].getPoint();
+		const Point& point = object.getPoint();
 		for (unsigned j = 0; j < dimension; j++) {
 			positions[dimension * i + j] = point[j];
 		}
 
+		i++;
 	}
 };
 

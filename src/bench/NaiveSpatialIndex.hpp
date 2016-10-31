@@ -1,5 +1,5 @@
 #pragma once
-#include "../common/DataSet.hpp"
+#include "DataSet.hpp"
 #include "SpatialIndex.hpp"
 /**
  * Simplest algorithm just for checking the results.
@@ -12,7 +12,7 @@ class NaiveSpatialIndex : public SpatialIndex
 
 	public:
 		~NaiveSpatialIndex();
-		NaiveSpatialIndex(const DataSet& dataSet);
+		NaiveSpatialIndex(DataSet& dataSet);
 
 	protected:
 		Results rangeSearch(const AxisAlignedBox& box) const;
@@ -20,5 +20,5 @@ class NaiveSpatialIndex : public SpatialIndex
 		Results knnSearch(unsigned k, const Point& point) const;
 
 	private:
-		DataSet dataSet;
+		std::vector<DataObject> dataSet;
 };
