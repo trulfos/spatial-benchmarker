@@ -101,6 +101,7 @@ class SpatialIndex : public ::SpatialIndex
 		Results knnSearch(unsigned k, const Point& point) const
 		{
 			Results results;
+			M reference (point);
 			std::priority_queue<
 					KnnQueueEntry<N>,
 					std::vector<KnnQueueEntry<N>>,
@@ -122,13 +123,13 @@ class SpatialIndex : public ::SpatialIndex
 					results.push_back(id);
 				} else if (elevation == 1) {
 					for (auto& e : *node) {
-						queue.emplace(e.id, 0, e.mbr.distance2(point));
+						queue.emplace(e.id, 0, e.mbr.distance2(reference));
 					}
 				} else {
 					unsigned el = elevation - 1;
 
 					for (auto& e : *node) {
-						queue.emplace(e.node, el, e.mbr.distance2(point));
+						queue.emplace(e.node, el, e.mbr.distance2(reference));
 					}
 				}
 			}
