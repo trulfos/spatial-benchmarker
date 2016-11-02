@@ -1,5 +1,6 @@
 #include "../common/DataObject.hpp"
 #include "LazyDataSet.hpp"
+#include "reporters/ReporterFactory.hpp"
 #include "../common/KnnQuery.hpp"
 #include "../common/Results.hpp"
 #include "../common/QuerySet.hpp"
@@ -8,7 +9,6 @@
 #include "Zipped.hpp"
 #include "SpatialIndex.hpp"
 #include "SpatialIndexFactory.hpp"
-#include "Timer.hpp"
 #include <algorithm>
 #include <fstream>
 #include <iostream>
@@ -50,22 +50,31 @@ int main(int argc, char *argv[])
 {
 
 	// Command line options
-	TCLAP::CmdLine cmd("Specialication project test framework", ' ', "0.1");
+	TCLAP::CmdLine cmd("Specialication project test framework", ' ', "0.2.0");
 
 	TCLAP::MultiArg<std::string> algorithm(
-			"a", "algorithm", "Algorithm(s) to run.", false, "algorithm"
+			"a", "algorithm",
+			"Algorithm(s) to run.",
+			false, "algorithm", cmd
 		);
-	cmd.add(algorithm);
 
 	TCLAP::ValueArg<std::string> dataFilename(
-			"b", "benchmark", "Prefix for files containing the benchmark.", true, "", "fileprefix"
+			"b", "benchmark",
+			"Prefix for files containing the benchmark.",
+			true, "", "fileprefix", cmd
 		);
-	cmd.add(dataFilename);
 
-	TCLAP::SwitchArg generate(
-			"g", "generate", "Generate and output result set"
+	TCLAP::ValueArg<std::string> reportType(
+			"r", "report",
+			"Generate a report in the give style.",
+			false, "runtime", "style"
 		);
-	cmd.add(generate);
+
+	TCLAP::SwitchArg noCheck(
+			"n", "no-check",
+			"Don't check the results. This avoids the need for a results file.",
+			cmd
+		);
 
 	cmd.parse(argc, argv);
 
@@ -77,7 +86,7 @@ int main(int argc, char *argv[])
 
 		readFrom(querySet, filename + ".queries.csv");
 
-		if (generate.getValue()) {
+		if (noCheck.getValue()) {
 			resultSet.resize(querySet.size());
 		} else {
 			readFrom(resultSet, filename + ".results.csv");
@@ -89,11 +98,9 @@ int main(int argc, char *argv[])
 
 
 		// Run code!
-		Timer timer;
+		auto reporter = ReporterFactory::create(reportType.getValue());
+
 		for (auto alg : algorithm.getValue()) {
-			if (!generate.getValue()) {
-				std::cout << alg << std::endl;
-			}
 
 			LazyDataSet dataSet (filename + ".data.csv");
 			auto index = SpatialIndexFactory::create(alg, dataSet);
@@ -102,29 +109,28 @@ int main(int argc, char *argv[])
 
 				clearCache();
 
-				Results results;
-				unsigned long time = timer.timeTask([&]() -> void {
-					results = index->search(testCase.first);
-				});
+				// Do the search
+				Results results = reporter->run(
+						alg,
+						testCase.first,
+						*index.get()
+					);
 
-				std::sort(results.begin(), results.end());
+				// Check results
+				if (!noCheck.getValue()) {
+					std::sort(results.begin(), results.end());
 
-				if (generate.getValue()) {
-					testCase.second = results;
-				} else if (results != testCase.second) {
-					std::cout << C::red("Error") << "\n"
-						<< "Invalid results returned:\n\t" << results << "\n\n"
-						<< "Expected:\n\t" << testCase.second << std::endl;
-				} else {
-					std::cout << time << std::endl;
+					if (results != testCase.second) {
+						std::cerr << C::red("Error") << "\n"
+							<< "Invalid results returned:\n\t" << results
+							<< "\n\nExpected:\n\t" << testCase.second
+							<< std::endl;
+					}
 				}
-			}
-
-			if (generate.getValue()) {
-				std::cout << resultSet << std::endl;
 			}
 		}
 
+		std::cout << reporter;
 		return 0;
 
 	} catch (const std::fstream::failure& e) {

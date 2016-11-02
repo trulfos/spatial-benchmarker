@@ -14,7 +14,7 @@ class SpatialIndex
 		/**
 		 * Perform a search using the given query.
 		 */
-		Results search(const Query& query);
+		Results search(const Query& query) const;
 
 	protected:
 		virtual Results rangeSearch(const AxisAlignedBox& box) const = 0;

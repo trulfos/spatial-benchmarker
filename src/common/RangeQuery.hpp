@@ -11,6 +11,8 @@ class RangeQuery : public Query
 		RangeQuery(const AxisAlignedBox& box);
 		RangeQuery(const Point& a, const Point& b);
 
+		std::string getName() const;
+
 };
 
 std::ostream& operator<<(std::ostream& stream, const RangeQuery& query);

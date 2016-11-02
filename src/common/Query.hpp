@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Point.hpp"
+#include <string>
 
 /**
  * Represents a query.
@@ -11,7 +12,11 @@ class Query
 {
 	public:
 		enum Type{RANGE, KNN};
+
+		virtual ~Query() = default;
+
 		Type getType() const;
+		virtual std::string getName() const = 0;
 
 	protected:
 		Query(Type type);

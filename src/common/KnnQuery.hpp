@@ -9,6 +9,8 @@ class KnnQuery : public Query
 		const Point point;
 
 		KnnQuery(unsigned k, const Point& point);
+
+		std::string getName() const;
 };
 
 std::ostream& operator<<(std::ostream& stream, const KnnQuery& query);

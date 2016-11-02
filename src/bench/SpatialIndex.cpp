@@ -8,7 +8,7 @@ SpatialIndex::~SpatialIndex()
 {
 };
 
-Results SpatialIndex::search(const Query& query)
+Results SpatialIndex::search(const Query& query) const
 {
 	switch (query.getType()) {
 		case Query::Type::RANGE:

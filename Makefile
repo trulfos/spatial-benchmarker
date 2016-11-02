@@ -63,5 +63,5 @@ $(DIRS):
 # Main programs with dependencies
 pc:=%
 .SECONDEXPANSION:
-bin/%: $$(patsubst src/$$(pc).cpp,obj/$$(pc).o,$$(filter-out %.test.cpp,$$(wildcard src/$$*/*.cpp))) $(OBJS_COMMON)  | bin
+bin/%: $$(patsubst src/$$(pc).cpp,obj/$$(pc).o,$$(filter-out $$(pc).test.cpp,$$(shell find src/$$*/ -name *.cpp))) $(OBJS_COMMON)  | bin
 	g++ $^ $(CFLAGS) $(LDFLAGS) -o $@

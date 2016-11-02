@@ -10,6 +10,11 @@ RangeQuery::RangeQuery(const Point& a, const Point& b)
 {
 }
 
+std::string RangeQuery::getName() const
+{
+	return "range";
+}
+
 std::ostream& operator<<(std::ostream& stream, const RangeQuery& query)
 {
 	auto& points = query.box.getPoints();
