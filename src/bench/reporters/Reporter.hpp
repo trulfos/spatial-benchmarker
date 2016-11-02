@@ -33,3 +33,7 @@ class Reporter
 		 */
 		virtual void generate(std::ostream& stream) const = 0;
 };
+
+std::ostream& operator<<(
+		std::ostream& stream, const std::shared_ptr<Reporter>& reporter
+	);

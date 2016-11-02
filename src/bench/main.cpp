@@ -1,6 +1,5 @@
 #include "../common/DataObject.hpp"
 #include "LazyDataSet.hpp"
-#include "reporters/ReporterFactory.hpp"
 #include "../common/KnnQuery.hpp"
 #include "../common/Results.hpp"
 #include "../common/QuerySet.hpp"
@@ -9,6 +8,7 @@
 #include "Zipped.hpp"
 #include "SpatialIndex.hpp"
 #include "SpatialIndexFactory.hpp"
+#include "ReporterArg.hpp"
 #include <algorithm>
 #include <fstream>
 #include <iostream>
@@ -64,10 +64,10 @@ int main(int argc, char *argv[])
 			true, "", "fileprefix", cmd
 		);
 
-	TCLAP::ValueArg<std::string> reportType(
+	ReporterArg reportType(
 			"r", "report",
 			"Generate a report in the give style.",
-			false, "runtime", "style"
+			false, "runtime", "style", cmd
 		);
 
 	TCLAP::SwitchArg noCheck(
@@ -98,7 +98,7 @@ int main(int argc, char *argv[])
 
 
 		// Run code!
-		auto reporter = ReporterFactory::create(reportType.getValue());
+		auto reporter = reportType.getValue();
 
 		for (auto alg : algorithm.getValue()) {
 
