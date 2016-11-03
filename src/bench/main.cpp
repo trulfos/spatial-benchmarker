@@ -77,6 +77,8 @@ int main(int argc, char *argv[])
 			if (querySet.size() != resultSet.size()) {
 				throw std::logic_error("Query and result sets differ in size!");
 			}
+		} else {
+			resultSet.resize(querySet.size());
 		}
 
 		// Run code!
