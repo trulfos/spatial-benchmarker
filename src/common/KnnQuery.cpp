@@ -7,7 +7,7 @@ KnnQuery::KnnQuery(unsigned k, const Point& point)
 
 std::string KnnQuery::getName() const
 {
-	return std::to_string(k) + "-NN";
+	return std::to_string(k);
 }
 
 std::ostream& operator<<(std::ostream& stream, const KnnQuery& query)
