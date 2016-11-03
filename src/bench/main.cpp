@@ -9,6 +9,7 @@
 #include "SpatialIndex.hpp"
 #include "SpatialIndexFactory.hpp"
 #include "ReporterArg.hpp"
+#include "../common/Logger.hpp"
 #include <algorithm>
 #include <fstream>
 #include <iostream>
@@ -27,6 +28,10 @@ void readFrom(T& data, std::string filename)
 
 int main(int argc, char *argv[])
 {
+
+	Logger logger (std::clog, "Specialication project test framework");
+
+	logger.start("Parsing command line arguments");
 
 	// Command line options
 	TCLAP::CmdLine cmd("Specialication project test framework", ' ', "0.2.0");
@@ -57,12 +62,12 @@ int main(int argc, char *argv[])
 
 	cmd.parse(argc, argv);
 
-
 	try {
 		QuerySet querySet;
 		ResultSet resultSet;
-
 		std::string filename = dataFilename.getValue();
+
+		logger.endStart("Reading queries and results from " + filename);
 
 		readFrom(querySet, filename + "/queries.csv");
 
@@ -74,16 +79,18 @@ int main(int argc, char *argv[])
 			}
 		}
 
-
 		// Run code!
 		auto reporter = reportType.getValue();
 
 		for (auto alg : algorithm.getValue()) {
+			logger.endStart("Benchmarking " + alg);
+			logger.start("Indexing " + filename + "/data.csv");
 
 			LazyDataSet dataSet (filename + "/data.csv");
 			auto index = SpatialIndexFactory::create(alg, dataSet);
 
 			for (auto testCase : zip(querySet, resultSet)) {
+				logger.endStart("Generating data for query");
 
 				// Do the search
 				Results results = reporter->run(
@@ -104,9 +111,14 @@ int main(int argc, char *argv[])
 					}
 				}
 			}
+
+			logger.end();
 		}
 
+
+		logger.endStart("Generating report");
 		std::cout << reporter << std::endl;
+
 		return 0;
 
 	} catch (const std::fstream::failure& e) {

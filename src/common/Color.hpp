@@ -9,9 +9,18 @@ namespace C {
 	/**
 	 * Colors the text red
 	 */
+	inline
 	std::string red(std::string string)
 	{
-		return "\033[1;31m" + string + "\033[0m\n";
+		return "\033[1;31m" + string + "\033[0m";
 	}
 
+	/**
+	 * Colors the text green
+	 */
+	inline
+	std::string green(std::string string)
+	{
+		return "\033[1;32m" + string + "\033[0m";
+	}
 }
