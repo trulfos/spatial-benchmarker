@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
 
 	TCLAP::ValueArg<std::string> dataFilename(
 			"b", "benchmark",
-			"Prefix for files containing the benchmark.",
+			"Folder containing benchmark data.",
 			true, "", "fileprefix", cmd
 		);
 
@@ -61,14 +61,13 @@ int main(int argc, char *argv[])
 	try {
 		QuerySet querySet;
 		ResultSet resultSet;
+
 		std::string filename = dataFilename.getValue();
 
-		readFrom(querySet, filename + ".queries.csv");
+		readFrom(querySet, filename + "/queries.csv");
 
-		if (noCheck.getValue()) {
-			resultSet.resize(querySet.size());
-		} else {
-			readFrom(resultSet, filename + ".results.csv");
+		if (!noCheck.getValue()) {
+			readFrom(resultSet, filename + "/results.csv");
 
 			if (querySet.size() != resultSet.size()) {
 				throw std::logic_error("Query and result sets differ in size!");
@@ -81,7 +80,7 @@ int main(int argc, char *argv[])
 
 		for (auto alg : algorithm.getValue()) {
 
-			LazyDataSet dataSet (filename + ".data.csv");
+			LazyDataSet dataSet (filename + "/data.csv");
 			auto index = SpatialIndexFactory::create(alg, dataSet);
 
 			for (auto testCase : zip(querySet, resultSet)) {
