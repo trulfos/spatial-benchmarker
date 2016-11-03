@@ -10,10 +10,13 @@ class SpeedupReporter : public RunTimeReporter
 
 		/**
 		 * Create a new speedup reporter using the given algorithm as baseline.
+		 * The runtime is measured as the minimum run time over the given number
+		 * of runs.
 		 *
+		 * @param runs Number of runs to measure average over
 		 * @param reference Reference algorithm name
 		 */
-		SpeedupReporter(std::string reference);
+		SpeedupReporter(unsigned runs, std::string reference);
 
 		void generate(std::ostream& stream) const;
 	

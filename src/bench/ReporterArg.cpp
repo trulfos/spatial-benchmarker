@@ -3,18 +3,16 @@
 #include "reporters/SpeedupReporter.hpp"
 #include "reporters/ResultsReporter.hpp"
 
-
-
 ReporterArg::ReporterArg(
 			const std::string& flag,
 			const std::string& name,
 			const std::string& desc,
 			bool req,
-			const std::string& value,
 			const std::string& typeDesc,
 			TCLAP::CmdLineInterface& parser
 		)
-: TCLAP::ValueArg<std::string>(flag, name, desc, req, value, typeDesc, parser)
+: TCLAP::ValueArg<std::string>(flag, name, desc, req, "", typeDesc, parser),
+	reporter(std::make_shared<RunTimeReporter>(20))
 {
 }
 
@@ -30,9 +28,9 @@ bool ReporterArg::processArg(int *i, std::vector<std::string>& args)
 	std::string name = TCLAP::ValueArg<std::string>::getValue();
 
 	if (name == "runtime") {
-		reporter = std::make_shared<RunTimeReporter>();
+		reporter = std::make_shared<RunTimeReporter>(20);
 	} else if (name == "speedup") {
-		reporter = std::make_shared<SpeedupReporter>("naive");
+		reporter = std::make_shared<SpeedupReporter>(20, "naive");
 	} else if (name == "results") {
 		reporter = std::make_shared<ResultsReporter>();
 	} else {

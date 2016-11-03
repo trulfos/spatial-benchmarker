@@ -15,10 +15,6 @@
 #include <string>
 #include <tclap/CmdLine.h>
 
-const unsigned CACHE_SIZE = 4096; // kilobytes
-const unsigned CACHE_LINE_SIZE = 64; // bytes
-
-
 template <typename T>
 void readFrom(T& data, std::string filename)
 {
@@ -28,23 +24,6 @@ void readFrom(T& data, std::string filename)
 	file >> data;
 }
 
-
-/**
- * "Clears" the cache by writing data to a large array.
- * To save time, only one value in each cache line is written.
- */
-void clearCache()
-{
-	unsigned size = CACHE_SIZE * 1024;
-	char * buffer = new char[CACHE_SIZE * 1024];
-
-	// write bullshit
-	for (unsigned i = 0; i < size; i += CACHE_LINE_SIZE) {
-		buffer[i] = (char) i;
-	}
-
-	delete[] buffer;
-}
 
 int main(int argc, char *argv[])
 {
@@ -67,7 +46,7 @@ int main(int argc, char *argv[])
 	ReporterArg reportType(
 			"r", "report",
 			"Generate a report in the give style.",
-			false, "runtime", "style", cmd
+			false, "style", cmd
 		);
 
 	TCLAP::SwitchArg noCheck(
@@ -107,8 +86,6 @@ int main(int argc, char *argv[])
 
 			for (auto testCase : zip(querySet, resultSet)) {
 
-				clearCache();
-
 				// Do the search
 				Results results = reporter->run(
 						alg,
@@ -130,7 +107,7 @@ int main(int argc, char *argv[])
 			}
 		}
 
-		std::cout << reporter;
+		std::cout << reporter << std::endl;
 		return 0;
 
 	} catch (const std::fstream::failure& e) {

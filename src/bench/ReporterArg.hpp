@@ -19,7 +19,6 @@ class ReporterArg : private TCLAP::ValueArg<std::string>
 				const std::string& name,
 				const std::string& desc,
 				bool req,
-				const std::string& value,
 				const std::string& typeDesc,
 				TCLAP::CmdLineInterface& parser
 			);
