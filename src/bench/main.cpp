@@ -30,7 +30,6 @@ int main(int argc, char *argv[])
 {
 
 	Logger logger (std::clog, "Specialication project test framework");
-
 	logger.start("Parsing command line arguments");
 
 	// Command line options
@@ -67,11 +66,13 @@ int main(int argc, char *argv[])
 		ResultSet resultSet;
 		std::string filename = dataFilename.getValue();
 
-		logger.endStart("Reading queries and results from " + filename);
+		logger.endStart("Reading queries from " + filename + "/queries.csv");
 
 		readFrom(querySet, filename + "/queries.csv");
 
 		if (!noCheck.getValue()) {
+			logger.endStart("Reading results from " + filename + "/results.csv");
+
 			readFrom(resultSet, filename + "/results.csv");
 
 			if (querySet.size() != resultSet.size()) {
@@ -120,7 +121,6 @@ int main(int argc, char *argv[])
 
 			logger.end();
 		}
-
 
 		logger.endStart("Generating report");
 		std::cout << reporter << std::endl;
