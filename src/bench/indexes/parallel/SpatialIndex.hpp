@@ -1,21 +1,25 @@
 #pragma once
-#include "../common/Coordinate.hpp"
-#include "../common/DataObject.hpp"
-#include "LazyDataSet.hpp"
-#include "SpatialIndex.hpp"
+#include "common/Coordinate.hpp"
+#include "common/DataObject.hpp"
+#include "bench/LazyDataSet.hpp"
+#include "bench/SpatialIndex.hpp"
 #include <vector>
+
+namespace Parallel
+{
+
 /**
  * Parallel scan of all objects using OpenMP.
  */
-class ParallelSpatialIndex : public SpatialIndex
+class SpatialIndex : public ::SpatialIndex
 {
 
 	public:
-		~ParallelSpatialIndex();
-		ParallelSpatialIndex(LazyDataSet& dataSet);
+		SpatialIndex();
+		SpatialIndex(LazyDataSet& dataSet);
 
 		// Cannot be copied
-		ParallelSpatialIndex(const ParallelSpatialIndex&) = delete;
+		SpatialIndex(const SpatialIndex&) = delete;
 
 	protected:
 		Results rangeSearch(const AxisAlignedBox& box) const;
@@ -27,3 +31,5 @@ class ParallelSpatialIndex : public SpatialIndex
 		Coordinate * positions;
 		DataObject::Id * ids;
 };
+
+}

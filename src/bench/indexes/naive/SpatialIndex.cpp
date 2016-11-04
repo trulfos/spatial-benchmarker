@@ -1,7 +1,10 @@
-#include "NaiveSpatialIndex.hpp"
+#include "SpatialIndex.hpp"
 #include <algorithm>
 #include <stdexcept>
 #include <cmath>
+
+namespace Naive
+{
 
 /**
  * Calculates the distance between two points.
@@ -12,17 +15,17 @@ float d(const Point& a, const Point& b) {
 }
 
 
-NaiveSpatialIndex::NaiveSpatialIndex(LazyDataSet& dataSet)
+SpatialIndex::SpatialIndex(LazyDataSet& dataSet)
 	: dataSet(dataSet.begin(), dataSet.end())
 {
 };
 
-NaiveSpatialIndex::~NaiveSpatialIndex()
+SpatialIndex::SpatialIndex()
 {
 };
 
 
-Results NaiveSpatialIndex::rangeSearch(const AxisAlignedBox& box) const
+Results SpatialIndex::rangeSearch(const AxisAlignedBox& box) const
 {
 	std::vector<DataObject> results;
 
@@ -50,7 +53,7 @@ Results NaiveSpatialIndex::rangeSearch(const AxisAlignedBox& box) const
 	return resultSet;
 };
 
-Results NaiveSpatialIndex::knnSearch(unsigned k, const Point& point) const
+Results SpatialIndex::knnSearch(unsigned k, const Point& point) const
 {
 	unsigned resultSize = std::min(k, (unsigned) dataSet.size());
 
@@ -87,3 +90,5 @@ Results NaiveSpatialIndex::knnSearch(unsigned k, const Point& point) const
 
 	return results;
 };
+
+}

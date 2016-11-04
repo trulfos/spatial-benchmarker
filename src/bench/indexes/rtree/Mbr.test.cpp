@@ -1,7 +1,7 @@
 #include <criterion/criterion.h>
 #include "Mbr.hpp"
-#include "../../common/AxisAlignedBox.cpp"
-#include "../../common/Point.cpp"
+#include "common/AxisAlignedBox.cpp"
+#include "common/Point.cpp"
 
 using namespace Rtree;
 

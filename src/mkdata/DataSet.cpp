@@ -1,5 +1,5 @@
 #include "DataSet.hpp"
-#include "../common/FileHeader.hpp"
+#include "common/FileHeader.hpp"
 #include <iterator>
 
 std::istream& operator>>(std::istream& stream, DataSet& dataSet)

@@ -1,7 +1,7 @@
 #pragma once
-#include "../../common/Query.hpp"
-#include "../../common/Results.hpp"
-#include "../SpatialIndex.hpp"
+#include "common/Query.hpp"
+#include "common/Results.hpp"
+#include "bench/SpatialIndex.hpp"
 #include <functional>
 #include <ostream>
 #include <string>

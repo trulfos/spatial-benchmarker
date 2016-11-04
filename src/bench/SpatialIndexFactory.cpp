@@ -1,8 +1,8 @@
 #include "SpatialIndexFactory.hpp"
 
-#include "indexes/NaiveSpatialIndex.hpp"
-#include "indexes/ParallelSpatialIndex.hpp"
-#include "indexes/rtree/SpatialIndex.hpp"
+#include "bench/indexes/naive/SpatialIndex.hpp"
+#include "bench/indexes/parallel/SpatialIndex.hpp"
+#include "bench/indexes/rtree/SpatialIndex.hpp"
 
 
 std::shared_ptr<SpatialIndex> SpatialIndexFactory::create(
@@ -10,9 +10,9 @@ std::shared_ptr<SpatialIndex> SpatialIndexFactory::create(
 		LazyDataSet& dataSet
 ) {
 	if (algorithm == "naive") {
-		return std::make_shared<NaiveSpatialIndex>(dataSet);
+		return std::make_shared<Naive::SpatialIndex>(dataSet);
 	} else if (algorithm == "parallel") {
-		return std::make_shared<ParallelSpatialIndex>(dataSet);
+		return std::make_shared<Parallel::SpatialIndex>(dataSet);
 	} else if (algorithm == "rtree") {
 
 		//TODO: This can be solved by passing the dimensionality

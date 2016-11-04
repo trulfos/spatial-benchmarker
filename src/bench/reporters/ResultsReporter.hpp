@@ -1,5 +1,5 @@
 #pragma once
-#include "../../common/ResultSet.hpp"
+#include "common/ResultSet.hpp"
 #include "Reporter.hpp"
 #include <vector>
 

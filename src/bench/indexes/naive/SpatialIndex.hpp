@@ -1,18 +1,21 @@
 #pragma once
-#include "LazyDataSet.hpp"
-#include "SpatialIndex.hpp"
+#include "bench/LazyDataSet.hpp"
+#include "bench/SpatialIndex.hpp"
+namespace Naive
+{
+
 /**
  * Simplest algorithm just for checking the results.
  *
  * The simlicity makes it easier to reason about the program such that the
  * results can be used for comparison.
  */
-class NaiveSpatialIndex : public SpatialIndex
+class SpatialIndex : public ::SpatialIndex
 {
 
 	public:
-		~NaiveSpatialIndex();
-		NaiveSpatialIndex(LazyDataSet& dataSet);
+		SpatialIndex();
+		SpatialIndex(LazyDataSet& dataSet);
 
 	protected:
 		Results rangeSearch(const AxisAlignedBox& box) const;
@@ -22,3 +25,5 @@ class NaiveSpatialIndex : public SpatialIndex
 	private:
 		std::vector<DataObject> dataSet;
 };
+
+}

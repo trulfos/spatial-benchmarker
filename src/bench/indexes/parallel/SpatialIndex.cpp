@@ -1,12 +1,15 @@
-#include "ParallelSpatialIndex.hpp"
+#include "SpatialIndex.hpp"
 #include <algorithm>
 #include <functional>
 #include <limits>
 #include <queue>
 #include <vector>
 
+namespace Parallel
+{
 
-ParallelSpatialIndex::ParallelSpatialIndex(LazyDataSet& dataSet)
+
+SpatialIndex::SpatialIndex(LazyDataSet& dataSet)
 {
 	if (dataSet.empty()) {
 		return;
@@ -35,14 +38,14 @@ ParallelSpatialIndex::ParallelSpatialIndex(LazyDataSet& dataSet)
 	}
 };
 
-ParallelSpatialIndex::~ParallelSpatialIndex()
+SpatialIndex::SpatialIndex()
 {
 	delete[] positions;
 	delete[] ids;
 };
 
 
-Results ParallelSpatialIndex::rangeSearch(const AxisAlignedBox& box) const
+Results SpatialIndex::rangeSearch(const AxisAlignedBox& box) const
 {
 	Results results;
 	const Point& pointA = box.getPoints().first;
@@ -69,7 +72,7 @@ Results ParallelSpatialIndex::rangeSearch(const AxisAlignedBox& box) const
 };
 
 
-Results ParallelSpatialIndex::knnSearch(unsigned k, const Point& point) const
+Results SpatialIndex::knnSearch(unsigned k, const Point& point) const
 {
 	if (k < 1) {
 		return Results();
@@ -136,3 +139,5 @@ Results ParallelSpatialIndex::knnSearch(unsigned k, const Point& point) const
 
 	return results;
 };
+
+}

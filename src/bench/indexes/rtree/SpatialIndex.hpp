@@ -1,6 +1,6 @@
 #pragma once
-#include "../LazyDataSet.hpp"
-#include "../SpatialIndex.hpp"
+#include "bench/LazyDataSet.hpp"
+#include "bench/SpatialIndex.hpp"
 #include "Entry.hpp"
 #include "KnnQueueEntry.hpp"
 #include "Mbr.hpp"
@@ -49,7 +49,7 @@ class SpatialIndex : public ::SpatialIndex
 			}
 		};
 
-		~SpatialIndex()
+		SpatialIndex()
 		{
 			for (N * node : nodes) {
 				delete node;

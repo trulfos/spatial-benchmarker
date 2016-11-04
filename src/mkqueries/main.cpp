@@ -1,6 +1,6 @@
-#include "../common/QuerySet.hpp"
-#include "../common/RangeQuery.hpp"
-#include "../common/KnnQuery.hpp"
+#include "common/QuerySet.hpp"
+#include "common/RangeQuery.hpp"
+#include "common/KnnQuery.hpp"
 #include <iostream>
 #include <random>
 #include <tclap/CmdLine.h>

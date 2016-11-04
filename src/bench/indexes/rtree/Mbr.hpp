@@ -1,7 +1,7 @@
 #pragma once
-#include "../../common/AxisAlignedBox.hpp"
-#include "../../common/Coordinate.hpp"
-#include "../../common/Point.hpp"
+#include "common/AxisAlignedBox.hpp"
+#include "common/Coordinate.hpp"
+#include "common/Point.hpp"
 
 namespace Rtree
 {

@@ -3,8 +3,8 @@
 #include <string>
 #include <cassert>
 #include <fstream>
-#include "../common/DataObject.hpp"
-#include "../common/FileHeader.hpp"
+#include "common/DataObject.hpp"
+#include "common/FileHeader.hpp"
 #include "LazyDataSet.hpp"
 
 /**

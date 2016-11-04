@@ -1,5 +1,5 @@
 #pragma once
-#include "../../common/DataObject.hpp"
+#include "common/DataObject.hpp"
 
 /**
  * Entry used in the queue for knn search using the optimal algorithm.
