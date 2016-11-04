@@ -1,8 +1,8 @@
 #include "SpatialIndexFactory.hpp"
 
-#include "NaiveSpatialIndex.hpp"
-#include "ParallelSpatialIndex.hpp"
-#include "rtree/SpatialIndex.hpp"
+#include "indexes/NaiveSpatialIndex.hpp"
+#include "indexes/ParallelSpatialIndex.hpp"
+#include "indexes/rtree/SpatialIndex.hpp"
 
 
 std::shared_ptr<SpatialIndex> SpatialIndexFactory::create(
