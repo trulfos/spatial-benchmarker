@@ -17,11 +17,6 @@ Logger::~Logger()
 
 void Logger::start(const std::string& task)
 {
-	// Are we creating a subtask?
-	if (!done) {
-		stream << "\n";
-	}
-	
 	// Handle indentation
 	for (unsigned i = 0; i < level; i++) {
 		stream << '\t';
@@ -30,19 +25,12 @@ void Logger::start(const std::string& task)
 	level++;
 
 	// Print task
-	stream << " - " << task << "..." << std::flush;
-
-	done = false;
+	stream << " - " << task << std::endl;
 }
 
 
 void Logger::end()
 {
-	if (!done) {
-		stream << C::green("DONE") << '\n';
-		done = true;
-	}
-
 	level--;
 }
 

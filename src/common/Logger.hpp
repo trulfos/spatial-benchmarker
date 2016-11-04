@@ -41,6 +41,5 @@ class Logger
 
 	private:
 		unsigned level = 0;
-		bool done = true;
 		std::ostream& stream;
 };
