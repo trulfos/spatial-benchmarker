@@ -3,6 +3,7 @@
 #include "bench/indexes/naive/SpatialIndex.hpp"
 #include "bench/indexes/parallel/SpatialIndex.hpp"
 #include "bench/indexes/rtree/SpatialIndex.hpp"
+#include "bench/indexes/sequential/SpatialIndex.hpp"
 
 
 std::shared_ptr<SpatialIndex> SpatialIndexFactory::create(
@@ -13,6 +14,8 @@ std::shared_ptr<SpatialIndex> SpatialIndexFactory::create(
 		return std::make_shared<Naive::SpatialIndex>(dataSet);
 	} else if (algorithm == "parallel") {
 		return std::make_shared<Parallel::SpatialIndex>(dataSet);
+	} else if (algorithm == "sequential") {
+		return std::make_shared<Sequential::SpatialIndex>(dataSet);
 	} else if (algorithm == "rtree") {
 
 		//TODO: This can be solved by passing the dimensionality
@@ -54,5 +57,5 @@ std::shared_ptr<SpatialIndex> SpatialIndexFactory::create(
 
 std::vector<std::string> SpatialIndexFactory::keys()
 {
-	return {"naive", "parallel", "rtree"};
+	return {"naive", "parallel", "rtree", "sequential"};
 }
