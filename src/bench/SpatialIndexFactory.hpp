@@ -19,5 +19,13 @@ class SpatialIndexFactory
 		 * Create a spatial index using the given algorithm and with the given
 		 * data set.
 		 */
-		static std::shared_ptr<SpatialIndex> create(const std::string& algorithm, LazyDataSet& dataSet);
+		static std::shared_ptr<SpatialIndex> create(
+				const std::string& algorithm,
+				LazyDataSet& dataSet
+			);
+
+		/**
+		 * Get all index keys.
+		 */
+		static std::vector<std::string> keys();
 };

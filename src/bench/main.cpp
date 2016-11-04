@@ -83,8 +83,12 @@ int main(int argc, char *argv[])
 
 		// Run code!
 		auto reporter = reportType.getValue();
+		std::vector<std::string> algorithms (algorithm.getValue());
+		if (algorithms.empty()) {
+			algorithms = SpatialIndexFactory::keys();
+		}
 
-		for (auto alg : algorithm.getValue()) {
+		for (auto alg : algorithms) {
 			logger.endStart("Benchmarking " + alg);
 			logger.start("Indexing " + filename + "/data.csv");
 
