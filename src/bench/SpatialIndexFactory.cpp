@@ -4,6 +4,7 @@
 #include "bench/indexes/parallel/SpatialIndex.hpp"
 #include "bench/indexes/rtree/SpatialIndex.hpp"
 #include "bench/indexes/sequential/SpatialIndex.hpp"
+#include "bench/indexes/vectorized/SpatialIndex.hpp"
 
 
 std::shared_ptr<SpatialIndex> SpatialIndexFactory::create(
@@ -16,13 +17,9 @@ std::shared_ptr<SpatialIndex> SpatialIndexFactory::create(
 		return std::make_shared<Parallel::SpatialIndex>(dataSet);
 	} else if (algorithm == "sequential") {
 		return std::make_shared<Sequential::SpatialIndex>(dataSet);
+	} else if (algorithm == "vectorized") {
+		return std::make_shared<Vectorized::SpatialIndex>(dataSet);
 	} else if (algorithm == "rtree") {
-
-		//TODO: This can be solved by passing the dimensionality
-		if (dataSet.size() < 1) {
-			throw std::logic_error("Cannot infer dimension without any points");
-		}
-
 		const unsigned M = 128;
 		unsigned d = dataSet.dimension();
 		switch (d) {
