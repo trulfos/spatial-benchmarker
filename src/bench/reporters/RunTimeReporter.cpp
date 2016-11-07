@@ -40,6 +40,8 @@ Results RunTimeReporter::run(
 		Results newResults = index.search(query);
 		auto endTime = clock::now();
 
+		std::sort(newResults.begin(), newResults.end());
+
 		if (i > 0 && results != newResults) {
 			throw std::runtime_error("Unconsistent results from index search");
 		}
