@@ -8,9 +8,6 @@
 #include "xmmintrin.h"
 #include <cstdint>
 
-
-#include <iostream>
-
 namespace Vectorized
 {
 
@@ -90,26 +87,33 @@ Results SpatialIndex::rangeSearch(const AxisAlignedBox& box) const
 	using block = std::uint32_t;
 
 	const auto points = box.getPoints();
+	Results results;
 	const unsigned blockSize = sizeof(block) * 8;
 	const unsigned nBlocks = (nObjects - 1)/blockSize + 1;
 
 	block * resultVector = new std::uint32_t[nBlocks]();
 
-	// Loop through each dimension
-#	pragma omp parallel for
-	for (unsigned d = 0; d < dimension; d++) {
-		// Max and min points
-		__m128 bottom = _mm_broadcast_ss(&points.first[d]);
-		__m128 top = _mm_broadcast_ss(&points.second[d]);
 
-		// Calculate one block at a time
-		for (unsigned i = 0; i < nBlocks; ++i) {
+#	pragma omp parallel
+	{
+		unsigned d = std::numeric_limits<unsigned>::max();
+		__m128 bottom;
+		__m128 top;
+
+#		pragma omp for schedule(static)
+		for (unsigned b = 0; b < dimension * nBlocks; ++b) {
+			if (d != b / nBlocks) {
+				d = b / nBlocks;
+				bottom = _mm_broadcast_ss(&points.first[d]);
+				top = _mm_broadcast_ss(&points.second[d]);
+			}
+
 			block temporary = 0;
 
 			// One SIMD block at a time
 			for (unsigned j = 0; j < blockSize; j += 4) {
 
-				__m128 x = _mm_load_ps(positions + d * nObjects + i * blockSize + j);
+				__m128 x = _mm_load_ps(positions + b * blockSize + j);
 
 				block outside = 
 						_mm_movemask_ps(_mm_cmp_ps(x, top, _CMP_GT_OS)) |
@@ -119,26 +123,28 @@ Results SpatialIndex::rangeSearch(const AxisAlignedBox& box) const
 			}
 
 #			pragma omp atomic
-			resultVector[i] |= temporary;
+			resultVector[b % nBlocks] |= temporary;
 		}
-	}
 
-	// Calculate result
-	Results results;
-	for (unsigned i = 0; i < nBlocks; ++i) {
-		block r = resultVector[i];
+#		pragma omp barrier
 
-		for (unsigned j = 0; j < blockSize; ++j) {
-			unsigned index = blockSize * i + j;
+		// Calculate result
+#		pragma omp for schedule(static)
+		for (unsigned i = 0; i < nBlocks; ++i) {
+			block r = resultVector[i];
 
-			if (index < nObjects && (1 & ~r)) {
-				results.push_back(ids[index]);
+			for (unsigned j = 0; j < blockSize; ++j) {
+				unsigned index = blockSize * i + j;
+
+				if (index < nObjects && (1 & ~r)) {
+#					pragma omp critical
+					results.push_back(ids[index]);
+				}
+				r = r >> 1;
 			}
-			r = r >> 1;
 		}
 	}
 
-	//::operator delete(refBuf);
 	delete[] resultVector;
 
 	return results;
