@@ -6,6 +6,7 @@
 #include <vector>
 #include <memory>
 #include "xmmintrin.h"
+#include <cstdint>
 
 
 #include <iostream>
@@ -53,6 +54,7 @@ SpatialIndex::SpatialIndex(LazyDataSet& dataSet)
 			"Vectorized is currently adapted for floats"
 		);
 
+	//TODO: Make sure there is 4 left at the end
 	positions = aligned_alloc<Coordinate>(
 			4 * sizeof(Coordinate),
 			4 * ((dimension * nObjects - 1) / 4 + 1) * sizeof(Coordinate),
@@ -69,7 +71,7 @@ SpatialIndex::SpatialIndex(LazyDataSet& dataSet)
 
 		const Point& point = object.getPoint();
 		for (unsigned j = 0; j < dimension; j++) {
-			positions[dimension * i + j] = point[j];
+			positions[i + j * nObjects] = point[j];
 		}
 
 		i++;
@@ -85,82 +87,63 @@ SpatialIndex::SpatialIndex()
 
 Results SpatialIndex::rangeSearch(const AxisAlignedBox& box) const
 {
-	Results results;
-	void * refBuf;
+	using block = std::uint32_t;
+
 	const auto points = box.getPoints();
+	const unsigned blockSize = sizeof(block) * 8;
+	const unsigned nBlocks = (nObjects - 1)/blockSize + 1;
 
-	const unsigned blockSize = dimension * (
-			dimension % 2 ? 4 : (dimension % 4 ? 2 : 1)
-		);
+	block * resultVector = new std::uint32_t[nBlocks]();
 
-	Coordinate * references =  aligned_alloc<Coordinate>(
-			4 * sizeof(Coordinate),
-			blockSize * 2 * sizeof(Coordinate),
-			refBuf
-		);
+	// Loop through each dimension
+	for (unsigned d = 0; d < dimension; d++) {
 
+		// Max and min points
+		__m128 bottom = _mm_broadcast_ss(&points.first[d]);
+		__m128 top = _mm_broadcast_ss(&points.second[d]);
 
-	// Copy points to aligned memory
-	for (unsigned i = 0; i < blockSize; ++i) {
-		references[i] = points.first[i % dimension];
-		references[i + blockSize] = points.second[i % dimension];
-	}
+		// Calculate one block at a time
+		for (unsigned i = 0; i < nBlocks; ++i) {
 
+			block& r = resultVector[i];
 
-#	pragma omp parallel for
-	for (unsigned i = 0; i < nObjects * dimension; i += blockSize) {
+			// One SIMD block at a time
+			for (unsigned j = 0; j < blockSize; j += 4) {
 
-		unsigned short remaining = dimension;
-		unsigned char r = 0;
-
-		unsigned end = std::min(i + blockSize, nObjects * dimension);
-
-		for (unsigned j = i; j < end; j += 4) {
-
-			// Load point data
-			//TODO: Shift instead of loading for small values
-			__m128 bottom = _mm_load_ps(references + j - i);
-			__m128 top = _mm_load_ps(references + blockSize + j - i);
-
-			__m128 x = _mm_load_ps(positions + j);
-
-			// Compare
-			unsigned char outside = 
-					_mm_movemask_ps(_mm_cmp_ps(x, top, _CMP_GT_OS)) |
-					_mm_movemask_ps(_mm_cmp_ps(x, bottom, _CMP_LT_OS));
-
-			// We may have to run further before checking the result
-			if (remaining > 4) {
-				r |= outside;
-				remaining -= 4;
-				continue;
-			}
-
-			// Finish this round
-			r |= outside & ((1u << remaining) - 1);
-			if (!r) {
-#				pragma omp critical(results)
-				results.push_back(ids[j / dimension]);
-			}
-
-			// Start next round
-			r = outside & ~((1u << remaining) - 1);
-			remaining = dimension + remaining - 4;
-
-			// Some rounds we have to push twice to keep up (when d < 4)
-			// TODO: Can be skipped if d >= 4.
-			if (remaining == 0) {
-				if (!r) {
-#					pragma omp critical(results)
-					results.push_back(ids[j / dimension + 1]);
+				/* Computation bound - this makes no sense
+				if (!~((0xff << j) & r)) {
+					continue;
 				}
-				r = 0;
-				remaining = dimension;
+				*/
+
+				__m128 x = _mm_load_ps(positions + d * nObjects + i * blockSize + j);
+
+				block outside = 
+						_mm_movemask_ps(_mm_cmp_ps(x, top, _CMP_GT_OS)) |
+						_mm_movemask_ps(_mm_cmp_ps(x, bottom, _CMP_LT_OS));
+
+				r |= (outside << j);
 			}
 		}
 	}
 
-	::operator delete(refBuf);
+	// Calculate result
+	Results results;
+	for (unsigned i = 0; i < nBlocks; ++i) {
+		block r = resultVector[i];
+
+		for (unsigned j = 0; j < blockSize; ++j) {
+			unsigned index = blockSize * i + j;
+
+			if (index < nObjects && (1 & ~r)) {
+				results.push_back(ids[index]);
+			}
+			r = r >> 1;
+		}
+	}
+
+	//::operator delete(refBuf);
+	delete[] resultVector;
 
 	return results;
 };
