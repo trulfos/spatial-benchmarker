@@ -3,3 +3,4 @@ obj/
 test/
 .deps/
 benchmarks/
+optimizations.log

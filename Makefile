@@ -1,7 +1,7 @@
 ifdef DEBUG
 	CFLAGS=-Wall -g -std=c++11 -fopenmp -fsanitize=undefined -Isrc/ -march=native#-D_GLIBCXX_DEBUG
 else
-	CFLAGS=-Wall -g -std=c++11 -O3 -flto -fuse-linker-plugin -fopenmp -DNDEBUG -Isrc/ -march=native
+	CFLAGS=-Wall -g -std=c++11 -O3 -flto -fuse-linker-plugin -fopenmp -DNDEBUG -Isrc/ -march=native -fopt-info-optimized=optimizations.log
 endif
 
 
@@ -19,16 +19,9 @@ ifdef VIM # Make quickfix in vim work
 	TEST_SUFFIX=--ascii 2>&1 | sed 's/^\[-\+\] //'
 endif
 
-# Benchmarks
-BENCHMARKS=$(patsubst %.results.csv,%,$(wildcard benchmarks/*.results.csv))
-
 .PHONY: clean run test_all
 
-run: bin/bench
-	@for b in $(BENCHMARKS); do\
-		echo "\n\033[1m----- Running bechmark $$b -----\033[0m"; \
-		./bin/bench -b $$b -a naive -a parallel -a rtree;\
-	done;
+run: bin/bench;
 
 test_all: $(TESTS)
 	@for t in $(TESTS); do\
