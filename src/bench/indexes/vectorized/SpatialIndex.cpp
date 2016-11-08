@@ -96,25 +96,18 @@ Results SpatialIndex::rangeSearch(const AxisAlignedBox& box) const
 	block * resultVector = new std::uint32_t[nBlocks]();
 
 	// Loop through each dimension
+#	pragma omp parallel for
 	for (unsigned d = 0; d < dimension; d++) {
-
 		// Max and min points
 		__m128 bottom = _mm_broadcast_ss(&points.first[d]);
 		__m128 top = _mm_broadcast_ss(&points.second[d]);
 
 		// Calculate one block at a time
 		for (unsigned i = 0; i < nBlocks; ++i) {
-
-			block& r = resultVector[i];
+			block temporary = 0;
 
 			// One SIMD block at a time
 			for (unsigned j = 0; j < blockSize; j += 4) {
-
-				/* Computation bound - this makes no sense
-				if (!~((0xff << j) & r)) {
-					continue;
-				}
-				*/
 
 				__m128 x = _mm_load_ps(positions + d * nObjects + i * blockSize + j);
 
@@ -122,8 +115,11 @@ Results SpatialIndex::rangeSearch(const AxisAlignedBox& box) const
 						_mm_movemask_ps(_mm_cmp_ps(x, top, _CMP_GT_OS)) |
 						_mm_movemask_ps(_mm_cmp_ps(x, bottom, _CMP_LT_OS));
 
-				r |= (outside << j);
+				temporary |= (outside << j);
 			}
+
+#			pragma omp atomic
+			resultVector[i] |= temporary;
 		}
 	}
 
