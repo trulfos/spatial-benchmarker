@@ -51,9 +51,10 @@ SpatialIndex::SpatialIndex(LazyDataSet& dataSet)
 			"Vectorized is currently adapted for floats"
 		);
 
+	//TODO: Fix allocation size
 	positions = aligned_alloc<Coordinate>(
 			8 * sizeof(Coordinate),
-			8 * ((dimension * nObjects - 1) / 8 + 1) * sizeof(Coordinate),
+			8 * ((dimension * nObjects - 1) / 8 + 1 + dimension * 7) * sizeof(Coordinate),
 			buffer
 		);
 
@@ -95,37 +96,32 @@ Results SpatialIndex::rangeSearch(const AxisAlignedBox& box) const
 
 #	pragma omp parallel
 	{
-		unsigned d = std::numeric_limits<unsigned>::max();
 		__m256 bottom;
 		__m256 top;
 
 #		pragma omp for schedule(static)
-		for (unsigned b = 0; b < dimension * nBlocks; ++b) {
-			if (d != b / nBlocks) {
-				d = b / nBlocks;
-				bottom = _mm256_broadcast_ss(&points.first[d]);
-				top = _mm256_broadcast_ss(&points.second[d]);
-			}
+		for (unsigned b = 0; b < ((nObjects - 1) / 8) + 1; ++b) {
 
 			block temporary = 0;
 
 			// One SIMD block at a time
-			for (unsigned j = 0; j < blockSize; j += 8) {
+			for (unsigned j = 0; j < dimension; ++j) {
 
-				__m256 x = _mm256_load_ps(positions + b * blockSize + j);
+				bottom = _mm256_broadcast_ss(&points.first[j]);
+				top = _mm256_broadcast_ss(&points.second[j]);
+
+				__m256 x = _mm256_load_ps(positions + 8 * (b * dimension + j));
 
 				block outside = 
 						_mm256_movemask_ps(_mm256_cmp_ps(x, top, _CMP_GT_OS)) |
 						_mm256_movemask_ps(_mm256_cmp_ps(x, bottom, _CMP_LT_OS));
 
-				temporary |= (outside << j);
+				temporary |= outside;
 			}
 
 #			pragma omp atomic
-			resultVector[b % nBlocks] |= temporary;
+			resultVector[b / 4] |= (temporary << 8 * (b % 4));
 		}
-
-#		pragma omp barrier
 
 		// Calculate result
 #		pragma omp for schedule(static)
