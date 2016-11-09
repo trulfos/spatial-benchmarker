@@ -66,14 +66,14 @@ int main(int argc, char *argv[])
 		ResultSet resultSet;
 		std::string filename = dataFilename.getValue();
 
-		logger.endStart("Reading queries from " + filename + "/queries.csv");
+		logger.endStart("Reading queries from " + filename + "queries.csv");
 
-		readFrom(querySet, filename + "/queries.csv");
+		readFrom(querySet, filename + "queries.csv");
 
 		if (!noCheck.getValue()) {
-			logger.endStart("Reading results from " + filename + "/results.csv");
+			logger.endStart("Reading results from " + filename + "results.csv");
 
-			readFrom(resultSet, filename + "/results.csv");
+			readFrom(resultSet, filename + "results.csv");
 
 			if (querySet.size() != resultSet.size()) {
 				throw std::logic_error("Query and result sets differ in size!");
@@ -91,9 +91,9 @@ int main(int argc, char *argv[])
 
 		for (auto alg : algorithms) {
 			logger.endStart("Benchmarking " + alg);
-			logger.start("Indexing " + filename + "/data.csv");
+			logger.start("Indexing " + filename + "data.csv");
 
-			LazyDataSet dataSet (filename + "/data.csv");
+			LazyDataSet dataSet (filename + "data.csv");
 			auto index = SpatialIndexFactory::create(alg, dataSet);
 
 			for (auto testCase : zip(querySet, resultSet)) {
