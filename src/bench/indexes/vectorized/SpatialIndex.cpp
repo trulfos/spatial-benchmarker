@@ -37,24 +37,26 @@ T * aligned_alloc(std::size_t alignment, std::size_t size, void *& buffer)
 
 SpatialIndex::SpatialIndex(LazyDataSet& dataSet)
 {
+	// Shortcuts to avoid handling edge cases
 	if (dataSet.empty()) {
-		return;
+		throw std::logic_error("Vectorized needs at least one block");
 	}
+
+	static_assert(
+			std::is_same<float, Coordinate>::value,
+			"Vectorized is currently adapted for floats"
+		);
 
 	// Initialize sizes
 	nObjects = dataSet.size();
 	dimension = dataSet.dimension();
 
 	// Allocate buffers
-	static_assert(
-			std::is_same<float, Coordinate>::value,
-			"Vectorized is currently adapted for floats"
-		);
+	nBlocks = (nObjects - 1) / 8 + 1;
 
-	//TODO: Fix allocation size
 	positions = aligned_alloc<Coordinate>(
-			8 * sizeof(Coordinate),
-			8 * ((dimension * nObjects - 1) / 8 + 1 + dimension * 7) * sizeof(Coordinate),
+			sizeof(__m256),
+			dimension * nBlocks * sizeof(__m256),
 			buffer
 		);
 
@@ -67,8 +69,10 @@ SpatialIndex::SpatialIndex(LazyDataSet& dataSet)
 		ids[i] = object.getId();
 
 		const Point& point = object.getPoint();
+		unsigned base = 8 * dimension * (i / 8) + i % 8;
+
 		for (unsigned j = 0; j < dimension; j++) {
-			positions[8 * (dimension * (i / 8) + j) + i % 8] = point[j];
+			positions[base + 8 * j] = point[j];
 		}
 
 		i++;
@@ -84,63 +88,51 @@ SpatialIndex::SpatialIndex()
 
 Results SpatialIndex::rangeSearch(const AxisAlignedBox& box) const
 {
-	using block = std::uint32_t;
-
 	const auto points = box.getPoints();
 	Results results;
-	const unsigned blockSize = sizeof(block) * 8;
-	const unsigned nBlocks = (nObjects - 1)/blockSize + 1;
 
-	block * resultVector = new std::uint32_t[nBlocks]();
+#	pragma omp parallel for schedule(static)
+	for (unsigned b = 0; b < nBlocks; ++b) {
 
+		// Bit vector where a 1 means the object is outside
+		unsigned short outside = 0;
 
-#	pragma omp parallel
-	{
-		__m256 bottom;
-		__m256 top;
+		// Compare across all dimensions
+		for (unsigned j = 0; j < dimension; ++j) {
 
-#		pragma omp for schedule(static)
-		for (unsigned b = 0; b < ((nObjects - 1) / 8) + 1; ++b) {
-
-			block temporary = 0;
-
-			// One SIMD block at a time
-			for (unsigned j = 0; j < dimension; ++j) {
-
-				bottom = _mm256_broadcast_ss(&points.first[j]);
-				top = _mm256_broadcast_ss(&points.second[j]);
-
-				__m256 x = _mm256_load_ps(positions + 8 * (b * dimension + j));
-
-				block outside = 
-						_mm256_movemask_ps(_mm256_cmp_ps(x, top, _CMP_GT_OS)) |
-						_mm256_movemask_ps(_mm256_cmp_ps(x, bottom, _CMP_LT_OS));
-
-				temporary |= outside;
+			// Skip if we know the result
+			if (!(~outside & 0xff)) {
+				break;
 			}
 
-#			pragma omp atomic
-			resultVector[b / 4] |= (temporary << 8 * (b % 4));
+			__m256 bottom = _mm256_broadcast_ss(&points.first[j]);
+			__m256 top = _mm256_broadcast_ss(&points.second[j]);
+
+			__m256 x = _mm256_load_ps(positions + 8 * (b * dimension + j));
+
+			outside |= _mm256_movemask_ps(_mm256_cmp_ps(x, top, _CMP_GT_OS)) |
+					_mm256_movemask_ps(_mm256_cmp_ps(x, bottom, _CMP_LT_OS));
 		}
 
-		// Calculate result
-#		pragma omp for schedule(static)
-		for (unsigned i = 0; i < nBlocks; ++i) {
-			block r = resultVector[i];
+		// Skip the rest if none were within
+		if (!(~outside & 0xff)) {
+			continue;
+		}
 
-			for (unsigned j = 0; j < blockSize; ++j) {
-				unsigned index = blockSize * i + j;
+		// Push results
+		unsigned baseIndex = b * 8;
+		for (unsigned j = 0; j < 8; j++) {
+			unsigned index = baseIndex + j;
 
-				if (index < nObjects && (1 & ~r)) {
-#					pragma omp critical
-					results.push_back(ids[index]);
-				}
-				r = r >> 1;
+			if (((outside >> j) & 1) && index >= nObjects) {
+				continue;
 			}
+
+#			pragma omp critical
+			results.push_back(ids[index]);
 		}
 	}
 
-	delete[] resultVector;
 	return results;
 };
 
@@ -171,7 +163,7 @@ Results SpatialIndex::knnSearch(unsigned k, const Point& point) const
 		);
 
 #	pragma omp parallel for schedule(static)
-	for (unsigned b = 0; b < nObjects / 8; ++b) {
+	for (unsigned b = 0; b < nBlocks; ++b) {
 
 		// Sum up contributions from each dimension
 		__m256 sum = _mm256_setzero_ps();

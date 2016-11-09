@@ -26,6 +26,7 @@ class SpatialIndex : public ::SpatialIndex
 		Results knnSearch(unsigned k, const Point& point) const;
 
 	private:
+		unsigned nBlocks;
 		unsigned nObjects;
 		unsigned dimension;
 		void * buffer;
