@@ -55,6 +55,6 @@ else
 fi;
 
 echo " - Generating valid results";
-bin/bench -a naive -b $DST --no-check -r results > $DST/results.csv;
+bin/bench -i naive --no-check -r results $DST > $DST/results.csv;
 
 exit 0;

@@ -29,34 +29,34 @@ void readFrom(T& data, std::string filename)
 int main(int argc, char *argv[])
 {
 
-	Logger logger (std::clog, "Specialication project test framework");
-	logger.start("Parsing command line arguments");
+	Logger logger (std::clog, "Spatial index test framework");
+	logger.start("Spatial index test framework");
 
 	// Command line options
-	TCLAP::CmdLine cmd("Specialication project test framework", ' ', "0.2.0");
+	TCLAP::CmdLine cmd("Specialication project test framework", ' ', "0.3.0");
 
 	TCLAP::MultiArg<std::string> algorithm(
-			"a", "algorithm",
-			"Algorithm(s) to run.",
-			false, "algorithm", cmd
-		);
-
-	TCLAP::ValueArg<std::string> dataFilename(
-			"b", "benchmark",
-			"Folder containing benchmark data.",
-			true, "", "fileprefix", cmd
+			"i", "index",
+			"Index(es) to run.",
+			false, "index name", cmd
 		);
 
 	ReporterArg reportType(
 			"r", "report",
 			"Generate a report in the give style.",
-			false, "style", cmd
+			false, "report style", cmd
 		);
 
 	TCLAP::SwitchArg noCheck(
 			"n", "no-check",
 			"Don't check the results. This avoids the need for a results file.",
 			cmd
+		);
+
+	TCLAP::UnlabeledValueArg<std::string> dataFilename(
+			"benchmark",
+			"Folder containing benchmark data.",
+			true, "", "benchmark folder", cmd
 		);
 
 	cmd.parse(argc, argv);

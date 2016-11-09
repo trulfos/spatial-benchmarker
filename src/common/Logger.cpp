@@ -1,9 +1,10 @@
 #include "Logger.hpp"
+#include "common/Color.hpp"
 
 Logger::Logger(std::ostream& stream, const std::string& supertask)
 	: stream(stream)
 {
-	stream << supertask
+	stream << C::bold(supertask)
 		<< "\n----------------------------------------" << std::endl;
 }
 

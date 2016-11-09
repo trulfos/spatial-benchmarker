@@ -23,4 +23,13 @@ namespace C {
 	{
 		return "\033[1;32m" + string + "\033[0m";
 	}
+
+	/**
+	 * Makes text bold (not strictly a color)
+	 */
+	inline
+	std::string bold(std::string string)
+	{
+		return "\033[1;1m" + string + "\033[0m";
+	}
 }

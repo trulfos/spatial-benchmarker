@@ -1,4 +1,4 @@
-# Framework for testing spatial indexes
+# Spatial index test framework
 
 ## Dependencies
 Dependencies (with ubuntu package name)
