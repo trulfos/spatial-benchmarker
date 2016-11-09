@@ -54,5 +54,5 @@ std::shared_ptr<SpatialIndex> SpatialIndexFactory::create(
 
 std::vector<std::string> SpatialIndexFactory::keys()
 {
-	return {"naive", "parallel", "rtree", "sequential"};
+	return {"naive", "parallel", "rtree", "sequential", "vectorized"};
 }
