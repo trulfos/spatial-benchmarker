@@ -120,7 +120,7 @@ Results SpatialIndex::rangeSearch(const AxisAlignedBox& box) const
 		for (unsigned j = 0; j < 8; j++) {
 			unsigned index = baseIndex + j;
 
-			if (((outside >> j) & 1) && index >= nObjects) {
+			if (((outside >> j) & 1) || index >= nObjects) {
 				continue;
 			}
 
