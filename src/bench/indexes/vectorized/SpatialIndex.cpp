@@ -1,12 +1,8 @@
 #include "SpatialIndex.hpp"
-#include <algorithm>
-#include <functional>
 #include <limits>
 #include <queue>
-#include <vector>
 #include <memory>
-#include "xmmintrin.h"
-#include <cstdint>
+#include "immintrin.h"
 
 namespace Vectorized
 {
