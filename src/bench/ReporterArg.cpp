@@ -29,8 +29,11 @@ bool ReporterArg::processArg(int *i, std::vector<std::string>& args)
 
 	if (name == "runtime") {
 		reporter = std::make_shared<RunTimeReporter>(20);
-	} else if (name == "speedup") {
-		reporter = std::make_shared<SpeedupReporter>(20, "naive");
+	} else if (name.size() >= 7 && name.substr(0, 7) == "speedup") {
+		std::string reference = name.size() > 8 && name[7] == '-' ?
+			name.substr(8, std::string::npos) : "naive";
+
+		reporter = std::make_shared<SpeedupReporter>(20, reference);
 	} else if (name == "results") {
 		reporter = std::make_shared<ResultsReporter>();
 	} else {

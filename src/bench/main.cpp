@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
 	logger.start("Spatial index test framework");
 
 	// Command line options
-	TCLAP::CmdLine cmd("Specialication project test framework", ' ', "0.3.0");
+	TCLAP::CmdLine cmd("Specialication project test framework", ' ', "0.3.1");
 
 	TCLAP::MultiArg<std::string> algorithm(
 			"i", "index",
