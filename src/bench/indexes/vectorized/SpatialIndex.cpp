@@ -184,8 +184,11 @@ Results SpatialIndex::knnSearch(unsigned k, const Point& point) const
 			continue;
 		}
 
-		float distances[8];
-		_mm256_store_ps(distances, sum);
+		struct {
+			alignas(__m256) float distances[8];
+		} aligned;
+
+		_mm256_store_ps(aligned.distances, sum);
 
 		// Filter and push to queue
 		for (unsigned s = 0; s < 8; ++s) {
@@ -195,8 +198,8 @@ Results SpatialIndex::knnSearch(unsigned k, const Point& point) const
 			}
 
 #			pragma omp critical (vector_queue_critical)
-			if (distances[s] < best && (8 * b + s) < nObjects) {
-				queue.emplace(distances[s], ids[8 * b + s]);
+			if (aligned.distances[s] < best && (8 * b + s) < nObjects) {
+				queue.emplace(aligned.distances[s], ids[8 * b + s]);
 				if (queue.size() > k) {
 					queue.pop();
 					best = queue.top().distance;
