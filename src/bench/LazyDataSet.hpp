@@ -26,7 +26,8 @@ class LazyDataSet
 				LazyDataSetIterator(
 						std::istream& stream,
 						unsigned dimension,
-						unsigned index
+						unsigned index,
+						bool binary
 					);
 
 				bool operator!=(const LazyDataSetIterator& other);
@@ -38,11 +39,19 @@ class LazyDataSet
 				DataObject element;
 				bool extracted = false;
 				unsigned index;
+				bool binary;
 		};
 
 
 		/**
 		 * Create a new lazy data set.
+		 *
+		 * Opens the given file with either a `.dat` extension or a `.csv`
+		 * extension if the first cannot be opened. The `.dat` file is expected
+		 * to be in binary format, while the `.csv` file is expeced to be plain
+		 * text.
+		 *
+		 * @param filename File prefix
 		 */
 		LazyDataSet(std::string filename);
 
@@ -76,8 +85,17 @@ class LazyDataSet
 		 */
 		bool empty() const;
 
+
+		/**
+		 * Check whether the binary or text edition of the file was opened.
+		 *
+		 * @return True if the binary `.dat` file was opened
+		 */
+		bool isBinary() const;
+
 	private:
 		FileHeader header;
 		std::fstream stream;
 		bool iterated = false;
+		bool binary = false;
 };

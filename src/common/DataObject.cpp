@@ -22,6 +22,19 @@ const Point& DataObject::getPoint() const
 }
 
 
+void DataObject::write(std::ostream& stream) const
+{
+	stream.write(reinterpret_cast<const char *>(&id), sizeof(id));
+	point.write(stream);
+}
+
+void DataObject::read(std::istream& stream)
+{
+	stream.read(reinterpret_cast<char *>(&id), sizeof(id));
+	point.read(stream);
+}
+
+
 std::istream& operator>>(
 		std::istream& stream,
 		DataObject& object

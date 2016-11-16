@@ -91,9 +91,13 @@ int main(int argc, char *argv[])
 
 		for (auto alg : algorithms) {
 			logger.endStart("Benchmarking " + alg);
-			logger.start("Indexing " + filename + "data.csv");
+			LazyDataSet dataSet (filename + "data");
 
-			LazyDataSet dataSet (filename + "data.csv");
+			logger.start(
+					"Indexing " + filename + "data." +
+					(dataSet.isBinary() ? "dat" : "csv")
+				);
+
 			auto index = SpatialIndexFactory::create(alg, dataSet);
 
 			for (auto testCase : zip(querySet, resultSet)) {

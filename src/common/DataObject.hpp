@@ -1,6 +1,7 @@
 #pragma once
 
 #include <istream>
+#include <ostream>
 #include <vector>
 #include "Point.hpp"
 
@@ -37,6 +38,17 @@ class DataObject
 		 * May return garbage if the point has not been initialized.
 		 */
 		const Point& getPoint() const;
+
+
+		/**
+		 * Write this object to a stream in binary.
+		 */
+		void write(std::ostream& stream) const;
+
+		/**
+		 * Read this object from a binary stream.
+		 */
+		void read(std::istream& stream);
 
 	private:
 		Id id = 0;

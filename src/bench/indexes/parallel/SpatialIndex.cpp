@@ -102,7 +102,7 @@ Results SpatialIndex::knnSearch(unsigned k, const Point& point) const
 		);
 
 	// Scan through data
-#	pragma omp parallel for
+#	pragma omp parallel for schedule(static)
 	for (unsigned i = 0; i < nObjects; i++) {
 		float distance = 0.0f;
 

@@ -5,8 +5,9 @@ using LazyDataSetIterator = LazyDataSet::LazyDataSetIterator;
 LazyDataSetIterator::LazyDataSetIterator(
 		std::istream& stream,
 		unsigned dimension,
-		unsigned index
-	) : stream(stream), element(dimension), index(index)
+		unsigned index,
+		bool binary
+	) : stream(stream), element(dimension), index(index), binary(binary)
 {
 };
 
@@ -27,7 +28,11 @@ DataObject& LazyDataSetIterator::operator*()
 {
 	if (!extracted) {
 		extracted = true;
-		stream >> element;
+		if (binary) {
+			element.read(stream);
+		} else {
+			stream >> element;
+		}
 	}
 	return element;
 }
@@ -39,8 +44,15 @@ DataObject& LazyDataSetIterator::operator*()
 LazyDataSet::LazyDataSet(std::string filename)
 {
 	stream.exceptions(std::fstream::badbit | std::fstream::failbit);
-	stream.open(filename, std::fstream::in);
-	stream >> header;
+
+	try {
+		stream.open(filename + ".dat", std::fstream::in | std::fstream::binary);
+		header.read(stream);
+		binary = true;
+	} catch (const std::fstream::failure& e) {
+		stream.open(filename + ".csv", std::fstream::in);
+		stream >> header;
+	}
 };
 
 
@@ -51,7 +63,7 @@ LazyDataSetIterator LazyDataSet::begin()
 {
 	//TODO: Be careful about making more than one iterator! This is not
 	// very intuitive
-	return LazyDataSetIterator(stream, header.getDimension(), 0);
+	return LazyDataSetIterator(stream, header.getDimension(), 0, binary);
 };
 
 
@@ -60,7 +72,7 @@ LazyDataSetIterator LazyDataSet::begin()
  */
 LazyDataSetIterator LazyDataSet::end()
 {
-	return LazyDataSetIterator(stream, header.getDimension(), size());
+	return LazyDataSetIterator(stream, header.getDimension(), size(), binary);
 };
 
 
@@ -84,4 +96,9 @@ unsigned LazyDataSet::dimension() const
 bool LazyDataSet::empty() const
 {
 	return size() == 0;
+}
+
+bool LazyDataSet::isBinary() const
+{
+	return binary;
 }

@@ -23,6 +23,17 @@ class FileHeader
 			return dimension;
 		};
 
+		/**
+		 * Write this file header to a file in binary.
+		 */
+		void write(std::ostream& stream) const;
+
+
+		/**
+		 * Read this header from a binary file.
+		 */
+		void read(std::istream& stream);
+
 	private:
 		unsigned dimension;
 		unsigned n;

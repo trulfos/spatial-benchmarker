@@ -42,6 +42,17 @@ class Point : private std::vector<Coordinate>
 
 
 		/**
+		 * Write this point to a stream in binary.
+		 */
+		void write(std::ostream& stream) const;
+
+		/**
+		 * Read this point from a stream in binary.
+		 */
+		void read(std::istream& stream);
+
+
+		/**
 		 * Calculate a new point - the difference between two other points.
 		 */
 		Point operator-(const Point& other) const;

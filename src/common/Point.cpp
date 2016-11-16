@@ -17,6 +17,22 @@ unsigned int Point::getDimension() const
 }
 
 
+void Point::write(std::ostream& stream) const
+{
+	for (const Coordinate& c : *this) {
+		stream.write(reinterpret_cast<const char *>(&c), sizeof(c));
+	}
+}
+
+
+void Point::read(std::istream& stream)
+{
+	for (Coordinate& c : *this) {
+		stream.read(reinterpret_cast<char *>(&c), sizeof(c));
+	}
+}
+
+
 Point Point::operator-(const Point& other) const
 {
 	unsigned dimension = getDimension();
