@@ -37,21 +37,8 @@ if [ "$3" == "knn" ]; then
 		echo '' >> $DST/queries.csv;
 	done;
 else
-	echo "$1	5" > $DST/queries.csv;
-	
-	for i in 0.45 0.46 0.47 0.48 0.49; do
-		echo -n "range" >> $DST/queries.csv;
-
-		for j in $(seq 1 $1); do
-			echo -n "	$i" >> $DST/queries.csv;
-		done;
-
-		for j in $(seq 1 $1); do
-			echo -n "	"$(echo "scale=5;1-$i" | bc) >> $DST/queries.csv;
-		done;
-
-		echo '' >> $DST/queries.csv;
-	done;
+	make bin/mkqueries;
+	bin/mkqueries --dimension $1 --selectivity 1e-6 > $DST/queries.csv;
 fi;
 
 echo " - Generating valid results";
