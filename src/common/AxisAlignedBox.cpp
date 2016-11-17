@@ -3,20 +3,31 @@
 AxisAlignedBox::AxisAlignedBox(const Point& a, const Point& b)
 	: points({a, b})
 {
-	unsigned dimension = a.getDimension();
 
 	// Check point dimensions match
-	if (dimension != b.getDimension()) {
+	if (a.getDimension() != b.getDimension()) {
 		throw std::logic_error(
 				"Dimensions of points for axis aligned box do not match"
 			);
 	}
 
-	points[0] = points[1] = Point(dimension);
+	unsigned dimension = a.getDimension();
 
 	for (unsigned i = 0; i < dimension; i++) {
 		points[0][i] = std::min(a[i], b[i]);
 		points[1][i] = std::max(a[i], b[i]);
+	}
+}
+
+
+AxisAlignedBox::AxisAlignedBox(const Point& center, float size)
+	: points({center.getDimension(), center.getDimension()})
+{
+	unsigned d = center.getDimension();
+
+	for (unsigned i = 0; i < d; i++) {
+		points[0][i] = center[i] - size / 2.0f;
+		points[1][i] = center[i] + size / 2.0f;
 	}
 }
 

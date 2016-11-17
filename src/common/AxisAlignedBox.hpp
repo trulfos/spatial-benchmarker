@@ -15,6 +15,14 @@ class AxisAlignedBox
 		 */
 		AxisAlignedBox(const Point& a, const Point& b);
 
+		/**
+		 * Construct an axis aligned box from a point and a width/height.
+		 *
+		 * @param center Center of box
+		 * @param size Size of this box in each direction
+		 */
+		AxisAlignedBox(const Point& center, float size);
+
 
 		/**
 		 * Get an array of the two points defining this box.

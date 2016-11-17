@@ -47,7 +47,7 @@ else
 		done;
 
 		for j in $(seq 1 $1); do
-			echo -n "	"$(echo "scale=1;1-$i" | bc) >> $DST/queries.csv;
+			echo -n "	"$(echo "scale=5;1-$i" | bc) >> $DST/queries.csv;
 		done;
 
 		echo '' >> $DST/queries.csv;
@@ -55,6 +55,6 @@ else
 fi;
 
 echo " - Generating valid results";
-bin/bench -i naive --no-check -r results $DST > $DST/results.csv;
+bin/bench -i naive --no-check -r results $DST/ > $DST/results.csv;
 
 exit 0;
