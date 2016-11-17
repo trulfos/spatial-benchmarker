@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
 	TCLAP::ValueArg<unsigned> seed(
 			"s", "seed" ,
 			"Seed for the random engine",
-			false, 11, "number", cmd
+			false, 13, "number", cmd
 		);
 
 	TCLAP::ValueArg<float> selectivity(
