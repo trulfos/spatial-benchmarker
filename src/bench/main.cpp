@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
 {
 
 	Logger logger (std::clog, "Spatial index test framework");
-	logger.start("Spatial index test framework");
+	logger.start("Parsing command line options");
 
 	// Command line options
 	TCLAP::CmdLine cmd("Specialication project test framework", ' ', "0.3.1");
