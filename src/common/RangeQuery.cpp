@@ -12,7 +12,7 @@ RangeQuery::RangeQuery(const Point& a, const Point& b)
 
 std::string RangeQuery::getName() const
 {
-	return "range";
+	return std::to_string(box.getVolume());
 }
 
 std::ostream& operator<<(std::ostream& stream, const RangeQuery& query)

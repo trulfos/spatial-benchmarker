@@ -42,6 +42,11 @@ class AxisAlignedBox
 		bool contains(const Point& p) const;
 
 
+		/**
+		 * Get the volume of this axis aligned box.
+		 */
+		float getVolume() const;
+
 	private:
 		Point points[2];
 };

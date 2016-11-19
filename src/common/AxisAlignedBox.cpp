@@ -47,7 +47,7 @@ bool AxisAlignedBox::contains(const Point& point) const
 {
 	unsigned dimension = point.getDimension();
 
-	if (this->getDimension() != dimension) {
+	if (getDimension() != dimension) {
 		throw std::invalid_argument(
 			"Cannot check containment for point and box of different dimension"
 		);
@@ -59,4 +59,16 @@ bool AxisAlignedBox::contains(const Point& point) const
 	}
 
 	return isWithin;
+}
+
+
+float AxisAlignedBox::getVolume() const
+{
+	float v = 0.0f;
+
+	for (unsigned i = 0; i < getDimension(); i++) {
+		v *= points[1][i] - points[0][i];
+	}
+
+	return v;
 }
