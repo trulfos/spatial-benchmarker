@@ -197,8 +197,8 @@ Results SpatialIndex::knnSearch(unsigned k, const Point& point) const
 				continue;
 			}
 
-#			pragma omp critical (vector_queue_critical)
-			if (aligned.distances[s] < best && (8 * b + s) < nObjects) {
+#			pragma omp critical
+			if (aligned.distances[s] <= best && (8 * b + s) < nObjects) {
 				queue.emplace(aligned.distances[s], ids[8 * b + s]);
 				if (queue.size() > k) {
 					queue.pop();
