@@ -30,8 +30,18 @@ class RunTimeReporter : public Reporter
 		void generate(std::ostream& stream) const;
 
 	protected:
+		/**
+		 * Used to determine how the cache should be cleared.
+		 */
 		const unsigned CACHE_SIZE = 4096; // kilobytes
 		const unsigned CACHE_LINE_SIZE = 64; // bytes
+
+		/**
+		 * The run time will be measured within these constraints (in order of
+		 * priority).
+		 */
+		const unsigned MAX_RUNS = 100;
+		const unsigned long MIN_TOTAL_TIME = 10 * 1e6; // µs
 
 		std::map<std::string, std::vector<unsigned long>> timeseries;
 		std::vector<std::string> queries;

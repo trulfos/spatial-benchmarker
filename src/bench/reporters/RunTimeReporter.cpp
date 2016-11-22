@@ -27,12 +27,12 @@ Results RunTimeReporter::run(
 		const SpatialIndex& index
 	)
 {
-	const unsigned runs = 10;
 	unsigned long min = std::numeric_limits<unsigned long>::max();
-
+	unsigned runs = MAX_RUNS;
+	unsigned long total = 0;
 	Results results;
 
-	for (unsigned i = 0; i < runs; ++i) {
+	while (runs-- && total < MIN_TOTAL_TIME) {
 		clearCache();
 
 		// Time task
@@ -42,18 +42,19 @@ Results RunTimeReporter::run(
 
 		std::sort(newResults.begin(), newResults.end());
 
-		if (i > 0 && results != newResults) {
+		if (!results.empty() && results != newResults) {
 			throw std::runtime_error("Unconsistent results from index search");
 		}
 
 		results = newResults;
 
-		min = std::min(
-				min,
-				(unsigned long) std::chrono::duration_cast<std::chrono::microseconds>(
+		unsigned long runtime =
+			std::chrono::duration_cast<std::chrono::microseconds>(
 						endTime - startTime
-					).count()
-			);
+					).count();
+
+		min = std::min(min, runtime);
+		total += runtime;
 	}
 
 	// Store result
