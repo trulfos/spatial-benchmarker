@@ -1,14 +1,14 @@
 #!/bin/bash
 
 # Automates the creation of n-dimensional query sets
-# Usage: generate.sh <#dimensions> <#coordinates> <query type> <name>
+# Usage: generate.sh <#dimensions> <#coordinates> <query type> <dest dir>
 
 if (( $# != 4 )); then
 	echo "Illegal number of arguments.";
 	exit 1;
 fi;
 
-DST="benchmarks/$4";
+DST="$4";
 
 if [ -e "$DST" ]; then
 	echo "Benchmark $DST already exists. Aborting.";
@@ -20,7 +20,7 @@ make bin/mkdata;
 make bin/bench;
 
 echo " - Generating data ($(bc <<< "$2/$1") points)";
-mkdir $DST;
+mkdir -p $DST;
 bin/mkdata -d $1 -n $(bc <<< "$2/$1") -b > $DST/data.dat;
 
 echo " - Creating query set";
