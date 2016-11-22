@@ -43,7 +43,7 @@ Results RunTimeReporter::run(
 		std::sort(newResults.begin(), newResults.end());
 
 		if (!results.empty() && results != newResults) {
-			throw std::runtime_error("Unconsistent results from index search");
+			throw std::runtime_error("Inconsistent results from index search");
 		}
 
 		results = newResults;
