@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
 	TCLAP::ValueArg<unsigned> nQueries(
 			"n", "queries",
 			"Number of queries to generate",
-			false, 100, "number", cmd
+			false, 20, "number", cmd
 		);
 
 	TCLAP::ValueArg<unsigned> dimension(
