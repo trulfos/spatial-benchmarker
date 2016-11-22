@@ -10,6 +10,7 @@
 #include "SpatialIndexFactory.hpp"
 #include "ReporterArg.hpp"
 #include "common/Logger.hpp"
+#include "common/ProgressLogger.hpp"
 #include <algorithm>
 #include <fstream>
 #include <iostream>
@@ -100,8 +101,10 @@ int main(int argc, char *argv[])
 
 			auto index = SpatialIndexFactory::create(alg, dataSet);
 
+			logger.endStart("Generating data for queries");
+
+			ProgressLogger progress(std::clog, querySet.size());
 			for (auto testCase : zip(querySet, resultSet)) {
-				logger.endStart("Generating data for query");
 
 				// Do the search
 				Results results = reporter->run(
@@ -121,6 +124,8 @@ int main(int argc, char *argv[])
 							<< std::endl;
 					}
 				}
+
+				progress.increment();
 			}
 
 			logger.end();
