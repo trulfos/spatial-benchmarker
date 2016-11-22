@@ -1,14 +1,14 @@
 #!/bin/bash
 
 # Automates the creation of n-dimensional query sets
-# Usage: generate.sh <#dimensions> <#coordinates> <name>
+# Usage: generate.sh <#dimensions> <#coordinates> <query type> <name>
 
 if (( $# != 4 )); then
 	echo "Illegal number of arguments.";
 	exit 1;
 fi;
 
-DST="benchmarks/$3";
+DST="benchmarks/$4";
 
 if [ -e "$DST" ]; then
 	echo "Benchmark $DST already exists. Aborting.";
