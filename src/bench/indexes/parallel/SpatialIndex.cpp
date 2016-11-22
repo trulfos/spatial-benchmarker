@@ -52,7 +52,7 @@ Results SpatialIndex::rangeSearch(const AxisAlignedBox& box) const
 	const Point& pointB = box.getPoints().second;
 
 	// Scan through data
-#	pragma omp parallel for
+#	pragma omp parallel for schedule(static)
 	for (unsigned i = 0; i < nObjects; i++) {
 		bool inside = true;
 
