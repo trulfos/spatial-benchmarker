@@ -1,8 +1,8 @@
 #include "SpeedupReporter.hpp"
 #include <algorithm>
 
-SpeedupReporter::SpeedupReporter(unsigned runs, std::string reference)
-	: RunTimeReporter(runs), reference(reference)
+SpeedupReporter::SpeedupReporter(std::string reference)
+	: reference(reference)
 {
 };
 

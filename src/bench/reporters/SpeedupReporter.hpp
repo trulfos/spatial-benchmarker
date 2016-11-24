@@ -13,10 +13,9 @@ class SpeedupReporter : public RunTimeReporter
 		 * The runtime is measured as the minimum run time over the given number
 		 * of runs.
 		 *
-		 * @param runs Number of runs to measure average over
 		 * @param reference Reference algorithm name
 		 */
-		SpeedupReporter(unsigned runs, std::string reference);
+		SpeedupReporter(std::string reference);
 
 		void generate(std::ostream& stream) const;
 	

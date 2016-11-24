@@ -2,8 +2,7 @@
 #include <algorithm>
 #include <limits>
 
-RunTimeReporter::RunTimeReporter(unsigned runs)
-	: runs(runs)
+RunTimeReporter::RunTimeReporter()
 {
 	if (
 			clock::period::num * period::period::den
@@ -11,12 +10,6 @@ RunTimeReporter::RunTimeReporter(unsigned runs)
 	) {
 		throw std::runtime_error(
 				"The clock resolution is too low for the selected period"
-			);
-	}
-
-	if (runs == 0) {
-		throw std::logic_error(
-				"Measuring the minimum run time over 0 runs makes no sense"
 			);
 	}
 }

@@ -12,7 +12,7 @@ ReporterArg::ReporterArg(
 			TCLAP::CmdLineInterface& parser
 		)
 : TCLAP::ValueArg<std::string>(flag, name, desc, req, "", typeDesc, parser),
-	reporter(std::make_shared<RunTimeReporter>(20))
+	reporter(std::make_shared<RunTimeReporter>())
 {
 }
 
@@ -28,12 +28,12 @@ bool ReporterArg::processArg(int *i, std::vector<std::string>& args)
 	std::string name = TCLAP::ValueArg<std::string>::getValue();
 
 	if (name == "runtime") {
-		reporter = std::make_shared<RunTimeReporter>(20);
+		reporter = std::make_shared<RunTimeReporter>();
 	} else if (name.size() >= 7 && name.substr(0, 7) == "speedup") {
 		std::string reference = name.size() > 8 && name[7] == '-' ?
 			name.substr(8, std::string::npos) : "naive";
 
-		reporter = std::make_shared<SpeedupReporter>(20, reference);
+		reporter = std::make_shared<SpeedupReporter>(reference);
 	} else if (name == "results") {
 		reporter = std::make_shared<ResultsReporter>();
 	} else {

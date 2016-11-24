@@ -19,7 +19,7 @@ class RunTimeReporter : public Reporter
 		 *
 		 * @param runs Number of runs to measure average over
 		 */
-		RunTimeReporter(unsigned runs);
+		RunTimeReporter();
 
 		Results run(
 				const std::string& name,
@@ -45,7 +45,6 @@ class RunTimeReporter : public Reporter
 
 		std::map<std::string, std::vector<unsigned long>> timeseries;
 		std::vector<std::string> queries;
-		unsigned runs;
 
 		/**
 		 * "Clears" the cache by writing data to a large array.
