@@ -40,8 +40,8 @@ class RunTimeReporter : public Reporter
 		 * The run time will be measured within these constraints (in order of
 		 * priority).
 		 */
-		const unsigned MAX_RUNS = 100;
-		const unsigned long MIN_TOTAL_TIME = 10 * 1e6; // µs
+		const unsigned MAX_RUNS = 25;
+		const unsigned long MIN_TOTAL_TIME = 5 * 1e6; // µs
 
 		std::map<std::string, std::vector<unsigned long>> timeseries;
 		std::vector<std::string> queries;
