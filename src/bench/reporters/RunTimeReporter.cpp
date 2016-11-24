@@ -107,12 +107,19 @@ void RunTimeReporter::generate(std::ostream& stream) const
 
 void RunTimeReporter::clearCache()
 {
-	unsigned size = CACHE_SIZE * 1024;
-	char * buffer = new char[CACHE_SIZE * 1024];
+	const unsigned size = CACHE_SIZE * 1024;
+	volatile char * buffer = new char[size];
 
-	// write bullshit
+	// Write bullshit
 	for (unsigned i = 0; i < size; i += CACHE_LINE_SIZE) {
 		buffer[i] = (char) i;
+	}
+
+	// Read bullshit and write it again
+	for (unsigned j = 0; j < CACHE_LINE_SIZE - 1; ++j) {
+		for (unsigned i = 0; i < size; i += CACHE_LINE_SIZE) {
+			buffer[i + j + 1] = buffer[i + j];
+		}
 	}
 
 	delete[] buffer;
