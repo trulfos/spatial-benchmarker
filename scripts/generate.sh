@@ -21,7 +21,7 @@ make bin/bench;
 
 echo " - Generating data ($(bc <<< "$2/$1") points)";
 mkdir -p $DST;
-bin/mkdata -d $1 -n $(bc <<< "$2/$1") -b > $DST/data.dat;
+bin/mkdata -s 63 -d $1 -n $(bc <<< "$2/$1") -b > $DST/data.dat;
 
 echo " - Creating query set";
 
