@@ -53,7 +53,7 @@ class LazyDataSet
 		 *
 		 * @param filename File prefix
 		 */
-		LazyDataSet(std::string filename);
+		LazyDataSet(const std::string& filename);
 
 
 		/**

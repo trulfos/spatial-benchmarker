@@ -41,7 +41,7 @@ DataObject& LazyDataSetIterator::operator*()
 /**
  * Create a new lazy data set.
  */
-LazyDataSet::LazyDataSet(std::string filename)
+LazyDataSet::LazyDataSet(const std::string& filename)
 {
 	stream.exceptions(std::fstream::badbit | std::fstream::failbit);
 
