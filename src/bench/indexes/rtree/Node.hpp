@@ -57,31 +57,6 @@ public:
 
 
 	/**
-	 * Find the child requiring the least MBR enlargement to include the given
-	 * MBR.
-	 *
-	 * @param mbr MBR to include
-	 * @return Entry requiring the least enlargement to include mbr
-	 */
-	E& leastEnlargement(const M& mbr)
-	{
-		E * best = entries;
-		float minimum = std::numeric_limits<float>::infinity();
-
-		for (E& entry : *this) {
-			float enlargement = entry.mbr.enlargement(mbr);
-
-			if (enlargement < minimum) {
-				minimum = enlargement,
-				best = &entry;
-			}
-		}
-
-		return *best;
-	}
-
-
-	/**
 	 * Return first entry in this node.
 	 */
 	E * begin()

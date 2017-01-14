@@ -28,4 +28,18 @@ class SpatialIndexFactory
 		 * Get all index keys.
 		 */
 		static std::vector<std::string> keys();
+
+	private:
+
+		/**
+		 * Creates a new R-tree index.
+		 *
+		 * @tparam S Insertion strategy
+		 * @param dimension Dimension of the new R-tree
+		 */
+		template<class S>
+		static std::shared_ptr<SpatialIndex> createRtree(
+				unsigned dimension,
+				LazyDataSet& dataSet
+		);
 };
