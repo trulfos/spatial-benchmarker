@@ -11,12 +11,12 @@ class QuerySet : private std::vector<Query *>
 		class QuerySetIterator : public std::vector<Query *>::const_iterator
 		{
 			public:
-				QuerySetIterator(Query * const * start)
-					: std::vector<Query *>::const_iterator(start)
+				QuerySetIterator(std::vector<Query *>::const_iterator iterator)
+					: std::vector<Query *>::const_iterator(iterator)
 				{
-				}
+				};
 
-				const Query& operator*()
+				const Query& operator*() const
 				{
 					return *std::vector<Query *>::const_iterator::operator*();
 				}
@@ -47,12 +47,12 @@ class QuerySet : private std::vector<Query *>
 		 */
 		QuerySetIterator begin() const
 		{
-			return QuerySetIterator(data());
+			return QuerySetIterator(std::vector<Query *>::cbegin());
 		}
 
 		QuerySetIterator end() const
 		{
-			return QuerySetIterator(data() + size());
+			return QuerySetIterator(std::vector<Query *>::end());
 		}
 
 		/**

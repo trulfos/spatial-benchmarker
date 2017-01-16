@@ -11,9 +11,14 @@ LazyDataSetIterator::LazyDataSetIterator(
 {
 };
 
-bool LazyDataSetIterator::operator!=(const LazyDataSetIterator& other)
+bool LazyDataSetIterator::operator!=(const LazyDataSetIterator& other) const
 {
 	return index != other.index;
+}
+
+bool LazyDataSetIterator::operator==(const LazyDataSetIterator& other) const
+{
+	return index == other.index;
 }
 
 

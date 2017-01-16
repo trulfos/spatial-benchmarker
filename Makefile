@@ -1,5 +1,5 @@
 ifdef DEBUG
-	CFLAGS=-Wall -g -std=c++11 -fopenmp -fsanitize=undefined -Isrc/ -march=native#-D_GLIBCXX_DEBUG
+	CFLAGS=-Wall -g -std=c++11 -fopenmp -fsanitize=undefined -Isrc/ -march=native -D_GLIBCXX_DEBUG
 else
 	CFLAGS=-Wall -g -std=c++11 -O3 -flto -fuse-linker-plugin -fopenmp -DNDEBUG -Isrc/ -march=native -fopt-info-optimized=optimizations.log
 endif

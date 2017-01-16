@@ -30,7 +30,8 @@ class LazyDataSet
 						bool binary
 					);
 
-				bool operator!=(const LazyDataSetIterator& other);
+				bool operator!=(const LazyDataSetIterator& other) const;
+				bool operator==(const LazyDataSetIterator& other) const;
 				LazyDataSetIterator operator++();
 				DataObject& operator*();
 
