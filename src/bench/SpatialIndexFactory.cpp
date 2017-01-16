@@ -5,6 +5,7 @@
 #include "bench/indexes/rtree/SpatialIndex.hpp"
 #include "bench/indexes/rtree/QuadraticInsertStrategy.hpp"
 #include "bench/indexes/rtree/RStarInsertStrategy.hpp"
+#include "bench/indexes/rtree/GreeneInsertStrategy.hpp"
 #include "bench/indexes/sequential/SpatialIndex.hpp"
 #include "bench/indexes/vectorized/SpatialIndex.hpp"
 
@@ -36,6 +37,10 @@ std::shared_ptr<SpatialIndex> SpatialIndexFactory::create(
 
 		if (type == "guttman") {
 			return createRtree<Rtree::QuadraticInsertStrategy>(d, dataSet);
+		}
+		
+		if (type == "greene") {
+			return createRtree<Rtree::GreeneInsertStrategy>(d, dataSet);
 		}
 
 		throw std::invalid_argument(type + " is not a valid rtree type");

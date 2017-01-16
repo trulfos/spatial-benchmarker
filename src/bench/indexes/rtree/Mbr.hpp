@@ -165,20 +165,37 @@ class Mbr
 		 * @param other Other MBR
 		 * @return Distance between this and other
 		 */
-		float distance2(const Mbr& other)
+		float distance2(const Mbr& other) const
 		{
 			float d = 0.0f;
 
 			for (unsigned i = 0; i < D; i++) {
-				float diff = std::max(
-						std::max(0.0f, (float) bottom[i] - other.top[i]),
-						(float) other.bottom[i] - top[i]
-					);
+				float diff = distanceAlong(i, other);
 
 				d += diff * diff;
 			}
 
 			return d;
+		};
+
+
+		/**
+		 * Calculate the distance between two MBRs along a single dimension.
+		 *
+		 * @param d Dimension
+		 * @param other Other MBR
+		 *
+		 * @return Distance between other and this along d
+		 */
+		float distanceAlong(unsigned d, const Mbr& other) const
+		{
+			return std::max(
+					std::max(
+						0.0f,
+						(float) (bottom[d] - other.top[d])
+					),
+					(float) (other.bottom[d] - top[d])
+				);
 		};
 
 
