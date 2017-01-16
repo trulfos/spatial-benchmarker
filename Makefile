@@ -1,7 +1,9 @@
+COMMON_CFLAGS=-Wall -g -std=c++11 -fopenmp -Isrc/ -march=native
+
 ifdef DEBUG
-	CFLAGS=-Wall -g -std=c++11 -fopenmp -fsanitize=undefined -Isrc/ -march=native -D_GLIBCXX_DEBUG
+	CFLAGS=$(COMMON_CFLAGS) -D_GLIBCXX_DEBUG
 else
-	CFLAGS=-Wall -g -std=c++11 -O3 -flto -fuse-linker-plugin -fopenmp -DNDEBUG -Isrc/ -march=native -fopt-info-optimized=optimizations.log
+	CFLAGS=$(COMMON_CFLAGS) -O3 -flto -fuse-linker-plugin -fopenmp -DNDEBUG# -fopt-info-optimized=optimizations.log
 endif
 
 
@@ -35,9 +37,12 @@ obj/%.o: src/%.cpp | obj .deps
 	g++ -c $< $(CPPFLAGS) $(CFLAGS) -o $@
 
 test/%: src/%.test.cpp | test .deps
+	@if [ -z "$$DEBUG" ]; then\
+		echo -e "\033[41mWARNING: Enable debug while testing!\033[0m";\
+	fi;
 	@mkdir -p $(@D)
 	g++ $(CFLAGS) -MM -MP -MT $@ $< > .deps/$(subst /,__,$*).test.d
-	g++ $< -g -std=c++11 -lcriterion -o $@
+	g++ $(CPPFLAGS) $(COMMON_CFLAGS) -lcriterion -o $@ $<
 
 # Remove bulid files
 clean:
