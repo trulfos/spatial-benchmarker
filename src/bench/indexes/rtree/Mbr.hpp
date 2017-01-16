@@ -1,4 +1,5 @@
 #pragma once
+#include <cassert>
 #include "common/AxisAlignedBox.hpp"
 #include "common/Coordinate.hpp"
 #include "common/Point.hpp"
@@ -118,6 +119,28 @@ class Mbr
 			return true;
 		};
 
+
+		/**
+		 * Calculate the MBR of the intersection between this and another MBR.
+		 *
+		 * @param other Other MBR
+		 * @return MBR of intersection
+		 */
+		Mbr intersection(const Mbr& other) const
+		{
+			Mbr result;
+
+			assert(intersects(other));
+
+			for (unsigned i = 0; i < D; i++) {
+				result.top[i] = std::min(other.top[i], top[i]);
+				result.bottom[i] = std::max(other.bottom[i], bottom[i]);
+			}
+
+			return result;
+		};
+
+
 		/**
 		 * Check whether this MBR contains another.
 		 *
@@ -156,6 +179,55 @@ class Mbr
 			}
 
 			return d;
+		};
+
+
+		/**
+		 * Calculate the perimeter of this MBR.
+		 *
+		 * @return Perimeter
+		 */
+		float perimeter() const
+		{
+			float perimeter = 0.0f;
+
+			for (unsigned d = 0; d < D; ++d) {
+				perimeter += top[d] - bottom[d];
+			}
+
+			return 2*perimeter;
+		};
+
+
+		/**
+		 * Calculates the center of this MBR.
+		 *
+		 * @return Point representing at the location of the center
+		 */
+		Point center() const
+		{
+			Point result (D);
+			for (unsigned d = 0; d < D; ++d) {
+				result[d] = (top[d] + bottom[d]) / 2.0f;
+			}
+
+			return result;
+		}
+
+		/**
+		 * Get bottom coordinates.
+		 */
+		const Coordinate * getBottom() const
+		{
+			return bottom;
+		};
+
+		/**
+		 * Get top coordinates.
+		 */
+		const Coordinate * getTop() const
+		{
+			return top;
 		};
 
 	private:

@@ -64,6 +64,16 @@ class Point : private std::vector<Coordinate>
 
 
 		/**
+		 * Calculates the product of this point with itself.
+		 */
+		float squared() const
+		{
+			return (*this) * (*this);
+		}
+
+
+
+		/**
 		 * Get a specific coordinate of this point.
 		 */
 		using std::vector<Coordinate>::operator[];

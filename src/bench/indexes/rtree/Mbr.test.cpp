@@ -3,7 +3,7 @@
 #include "common/AxisAlignedBox.cpp"
 #include "common/Point.cpp"
 
-using namespace Rtree;
+using Rtree::Mbr;
 
 const float EPSILON = 0.001f;
 
@@ -93,5 +93,99 @@ Test(mbr, box_box_distance)
 		);
 }
 
+Test(mbr, intersects)
+{
+	Mbr<2> mbrA ({Point({1.0f, 2.0f}), Point({3.0f, 4.0f})});
+	Mbr<2> mbrB ({Point({2.0f, 1.0f}), Point({4.0f, 3.0f})});
+	Mbr<2> mbrC ({Point({10.0f, 10.0f}), Point({11.0f, 11.0f})});
+	Mbr<2> mbrD ({Point({3.0f, 4.0f}), Point({5.0f, 5.0f})});
 
-//TODO: test 3d
+
+	cr_assert(
+			mbrA.intersects(mbrB),
+			"Intersecting MBRs reported not to intersect"
+		);
+
+	cr_assert(
+			mbrA.intersects(mbrB) == mbrB.intersects(mbrA) &&
+			mbrC.intersects(mbrA) == mbrA.intersects(mbrC),
+			"Intersection test should work both ways"
+		);
+
+
+	cr_assert_not(
+			mbrA.intersects(mbrC),
+			"Not intersecting MBRs reported to intersect"
+		);
+
+	cr_assert(
+			mbrA.intersects(mbrD),
+			"Cornercase intersect not detected"
+		);
+
+	cr_assert(
+			mbrA.intersects(mbrA),
+			"MBR should intersect with itself"
+		);
+}
+
+Test(mbr, intersection)
+{
+	Mbr<2> mbrA ({Point({1.0f, 2.0f}), Point({3.0f, 4.0f})});
+	Mbr<2> mbrB ({Point({2.0f, 1.0f}), Point({4.0f, 3.0f})});
+
+	cr_assert_float_eq(
+			mbrA.intersection(mbrB).volume(),
+			1.0f,
+			EPSILON,
+			"Volume of intersection incorrect"
+		);
+
+	cr_assert_float_eq(
+			mbrA.intersection(mbrA).volume(),
+			mbrA.volume(),
+			EPSILON,
+			"Intersection with itself should give itself"
+		);
+}
+
+Test(mbr, perimeter)
+{
+	cr_assert_float_eq(
+			Mbr<2>({Point({1.0f, 2.0f}), Point({3.0f, 4.0f})}).perimeter(),
+			8.0f,
+			EPSILON,
+			"Perimeter of 2x2 MBR should be 8"
+		);
+
+	cr_assert_float_eq(
+			Mbr<2>({Point({0.0f, 0.0f}), Point({1.0f, 0.0f})}).perimeter(),
+			2.0f,
+			EPSILON,
+			"Perimeter of 1x0 MBR should be 2"
+		);
+
+	cr_assert_float_eq(
+			Mbr<2>({Point({0.0f, 0.0f}), Point({0.0f, 0.0f})}).perimeter(),
+			0.0f,
+			EPSILON,
+			"Perimeter of 0x0 MBR should be 0"
+		);
+}
+
+Test(mbr, center)
+{
+	cr_assert_float_eq(
+			Mbr<2>({Point({1.0f, 2.0f}), Point({3.0f, 4.0f})}).center()[0],
+			2.0f,
+			EPSILON,
+			"MBR should have center at x=2"
+		);
+
+	cr_assert_float_eq(
+			Mbr<2>({Point({1.0f, 2.0f}), Point({3.0f, 4.0f})}).center()[1],
+			3.0f,
+			EPSILON,
+			"MBR should have center at y=3"
+		);
+}

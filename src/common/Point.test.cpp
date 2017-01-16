@@ -42,3 +42,16 @@ Test(point, multiplication)
 			"Multiplying (2, 4) by (0, 0) should yield 0"
 		);
 }
+
+
+Test(point, squared)
+{
+	Point a {2.0f, 5.0f};
+
+	cr_expect_float_eq(
+			a.squared(),
+			29.0f,
+			0.01f,
+			"Squaring the point (2, 5) should give 29"
+		);
+}
