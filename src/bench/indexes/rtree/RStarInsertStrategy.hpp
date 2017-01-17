@@ -2,11 +2,11 @@
 #include <cassert>
 #include <vector>
 #include <algorithm>
+#include <numeric>
 #include <cmath>
 #include "SpatialIndex.hpp"
+#include "common/Algorithm.hpp"
 
-//TODO
-#include <iostream>
 
 namespace Rtree
 {
@@ -161,20 +161,15 @@ class RStarInsertStrategy
 		template<class E>
 		static E& leastVolumeEnlargement(E& parent, const E& newEntry)
 		{
-			//TODO: Drag the algorithm out into a template?
-			E * best = parent.node->entries;
-			float minimum = std::numeric_limits<float>::infinity();
+			typename E::N *& node = parent.node;
 
-			for (E& entry : *(parent.node)) {
-				float enlargement = entry.mbr.enlargement(newEntry.mbr);
-
-				if (enlargement < minimum) {
-					minimum = enlargement,
-					best = &entry;
-				}
-			}
-
-			return *best;
+			return *argmin(
+					node->begin(),
+					node->end(),
+					[&](const E& entry) {
+						return entry.mbr.enlargement(newEntry.mbr);
+					}
+				);
 		}
 
 		/**
@@ -229,15 +224,17 @@ class RStarInsertStrategy
 		template<class E>
 		static float overlap(E& parent, typename E::M mbr)
 		{
-			float overlap = 0.0f;
+			typename E::N *& node = parent.node;
 
-			for (E& entry : *(parent.node)) {
-				if (mbr.intersects(entry.mbr)) {
-					overlap += mbr.intersection(entry.mbr).volume();
-				}
-			}
-
-			return overlap;
+			return std::accumulate(
+					node->begin(),
+					node->end(),
+					0.0f,
+					[&](const float& sum, const E& entry) {
+						return mbr.intersects(entry.mbr) ?
+							sum + mbr.intersection(entry.mbr).volume() : sum;
+					}
+				);
 		};
 
 

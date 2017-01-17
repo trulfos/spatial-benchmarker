@@ -2,6 +2,7 @@
 #include <cassert>
 #include <vector>
 #include "SpatialIndex.hpp"
+#include "common/Algorithm.hpp"
 
 namespace Rtree
 {
@@ -25,7 +26,7 @@ class QuadraticInsertStrategy
 
 			// Find leaf node
 			for (unsigned i = 0; i < index.getHeight() - 1; i++) {
-				E& e = leastEnlargement(*path.back(), entry.mbr);
+				E& e = leastVolumeEnlargement(*path.back(), entry);
 				e.mbr += entry.mbr;
 				path.push_back(&e);
 			}
@@ -54,29 +55,24 @@ class QuadraticInsertStrategy
 
 
 		/**
-		 * Find the child requiring the least MBR enlargement to include the given
-		 * MBR.
+		 * Find the child requiring the least MBR enlargement to include the
+		 * given MBR.
 		 *
 		 * @param mbr MBR to include
 		 * @return Entry requiring the least enlargement to include mbr
 		 */
-		template<class E, class M>
-		static E& leastEnlargement(E& parent, M& mbr)
+		template<class E>
+		static E& leastVolumeEnlargement(E& parent, const E& newEntry)
 		{
-			//TODO: Drag the algorithm out into a template?
-			E * best = parent.node->entries;
-			float minimum = std::numeric_limits<float>::infinity();
+			typename E::N *& node = parent.node;
 
-			for (E& entry : *(parent.node)) {
-				float enlargement = entry.mbr.enlargement(mbr);
-
-				if (enlargement < minimum) {
-					minimum = enlargement,
-					best = &entry;
-				}
-			}
-
-			return *best;
+			return *argmin(
+					node->begin(),
+					node->end(),
+					[&](const E& entry) {
+						return entry.mbr.enlargement(newEntry.mbr);
+					}
+				);
 		}
 
 
