@@ -64,11 +64,9 @@ class QuadraticInsertStrategy
 		template<class E>
 		static E& leastVolumeEnlargement(E& parent, const E& newEntry)
 		{
-			typename E::N *& node = parent.node;
-
 			return *argmin(
-					node->begin(),
-					node->end(),
+					parent.begin(),
+					parent.end(),
 					[&](const E& entry) {
 						return entry.mbr.enlargement(newEntry.mbr);
 					}
@@ -87,15 +85,11 @@ class QuadraticInsertStrategy
 		static void redistribute(E& a, E& b)
 		{
 			// Contruct buffer with all entries
-			std::vector<E> entries (
-					a.node->begin(),
-					a.node->end()
-				);
+			std::vector<E> entries (a.begin(), a.end());
 
 			entries.insert(
 					entries.end(),
-					b.node->begin(),
-					b.node->end()
+					b.begin(), b.end()
 				);
 
 

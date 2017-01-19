@@ -134,6 +134,24 @@ class Entry
 
 			return result;
 		}
+
+
+		/**
+		 * Return first entry in this entry's node.
+		 */
+		Entry * begin()
+		{
+			return node->begin();
+		};
+
+		/**
+		 * Return the entry past the last entry in this entry's node.
+		 */
+		Entry * end()
+		{
+			return node->end();
+		};
+
 };
 
 }

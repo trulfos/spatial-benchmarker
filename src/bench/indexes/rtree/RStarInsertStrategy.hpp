@@ -97,8 +97,8 @@ class RStarInsertStrategy
 
 			// Collect all entries
 			std::vector<E> entries (
-					parent.node->begin(),
-					parent.node->end()
+					parent.begin(),
+					parent.end()
 				);
 
 			entries.push_back(newEntry);
@@ -161,11 +161,9 @@ class RStarInsertStrategy
 		template<class E>
 		static E& leastVolumeEnlargement(E& parent, const E& newEntry)
 		{
-			typename E::N *& node = parent.node;
-
 			return *argmin(
-					node->begin(),
-					node->end(),
+					parent.begin(),
+					parent.end(),
 					[&](const E& entry) {
 						return entry.mbr.enlargement(newEntry.mbr);
 					}
@@ -224,11 +222,9 @@ class RStarInsertStrategy
 		template<class E>
 		static float overlap(E& parent, typename E::M mbr)
 		{
-			typename E::N *& node = parent.node;
-
 			return std::accumulate(
-					node->begin(),
-					node->end(),
+					parent.begin(),
+					parent.end(),
 					0.0f,
 					[&](const float& sum, const E& entry) {
 						return mbr.intersects(entry.mbr) ?
@@ -248,15 +244,11 @@ class RStarInsertStrategy
 		static void redistribute(E& a, E& b)
 		{
 			// Contruct buffer with all entries
-			std::vector<E> entries (
-					a.node->begin(),
-					a.node->end()
-				);
+			std::vector<E> entries (a.begin(), a.end());
 
 			entries.insert(
 					entries.end(),
-					b.node->begin(),
-					b.node->end()
+					b.begin(), b.end()
 				);
 
 			const unsigned m = E::capacity / 2;
@@ -333,9 +325,12 @@ class RStarInsertStrategy
 			assert(bestDimension < E::dimension);
 			assert(bestSplit >= m && bestSplit < entries.size() - m);
 
-			// Sort along best dimension
-			std::sort(
+			// Distribute entries
+			auto middle = entries.begin() + bestSplit;
+
+			std::nth_element(
 					entries.begin(),
+					middle,
 					entries.end(),
 					[&](const E& a, const E& b) {
 
@@ -350,9 +345,6 @@ class RStarInsertStrategy
 							< b.mbr.getTop()[bestDimension];
 					}
 				);
-
-			// Distribute entries
-			auto middle = entries.begin() + bestSplit;
 
 			a.assign(
 					entries.begin(),
