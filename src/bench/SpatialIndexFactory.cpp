@@ -5,6 +5,7 @@
 #include "bench/indexes/rtree/SpatialIndex.hpp"
 #include "bench/indexes/rtree/QuadraticInsertStrategy.hpp"
 #include "bench/indexes/rtree/RStarInsertStrategy.hpp"
+#include "bench/indexes/rtree/RRStarInsertStrategy.hpp"
 #include "bench/indexes/rtree/GreeneInsertStrategy.hpp"
 #include "bench/indexes/sequential/SpatialIndex.hpp"
 #include "bench/indexes/vectorized/SpatialIndex.hpp"
@@ -33,6 +34,10 @@ std::shared_ptr<SpatialIndex> SpatialIndexFactory::create(
 
 		if (type == "star") {
 			return createRtree<Rtree::RStarInsertStrategy>(d, dataSet);
+		}
+
+		if (type == "rstar") {
+			return createRtree<Rtree::RRStarInsertStrategy>(d, dataSet);
 		}
 
 		if (type == "guttman") {

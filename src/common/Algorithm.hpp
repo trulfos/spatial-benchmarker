@@ -38,3 +38,48 @@ ForwardIt  argmin(ForwardIt start, ForwardIt end, TransformFunc transform)
 
 	return min_element;
 }
+
+
+/**
+ * Simple wrapper allowing the use of integers (and other similar datatypes) as
+ * iterators.
+ */
+template<typename T>
+class RangeIterator : public std::iterator<std::forward_iterator_tag, T>
+{
+	public:
+		RangeIterator(const T& value) : value(value)
+		{
+		};
+
+		RangeIterator operator++()
+		{
+			value++;
+			return *this;
+		};
+
+		const T& operator*()
+		{
+			return value;
+		};
+
+		bool operator==(const RangeIterator& other) const
+		{
+			return value == other.value;
+		};
+
+		bool operator!=(const RangeIterator& other) const
+		{
+			return !(*this == other);
+		};
+
+
+	private:
+		T value;
+};
+
+template<typename T>
+RangeIterator<T> makeRangeIt(T value)
+{
+	return RangeIterator<T>(value);
+};
