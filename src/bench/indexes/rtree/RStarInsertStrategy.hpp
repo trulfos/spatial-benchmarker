@@ -251,6 +251,7 @@ class RStarInsertStrategy
 					b.begin(), b.end()
 				);
 
+			//TODO: This value should be changeable
 			const unsigned m = E::capacity / 2;
 
 			// This is assumed further down
@@ -310,7 +311,7 @@ class RStarInsertStrategy
 					float overlap = mbrA.intersects(mbrB) ?
 							mbrA.intersection(mbrB).volume() : 0.0f;
 
-					if (overlap < minOverlap) {
+					if (overlap < minOverlap) { //TODO: Fallback to perimeter or volume?
 						minOverlap = overlap;
 						localBestSplit = s;
 					}
