@@ -1,10 +1,8 @@
 #pragma once
 #include "bench/LazyDataSet.hpp"
 #include "bench/SpatialIndex.hpp"
-#include "Entry.hpp"
 #include "KnnQueueEntry.hpp"
 #include "Mbr.hpp"
-#include "Node.hpp"
 #include <algorithm>
 #include <forward_list>
 #include <queue>
@@ -16,42 +14,28 @@ namespace Rtree
 
 /**
  * R-tree algorithms without optimizations.
- *
  * Does not consider disk pages, as this is memory resident anyway.
  *
- * @tparam D Dimensionality
- * @tparam C Maximal number of entries in each node
- * @tparam S Node insertion strategy
+ * @tparam N Node type
  */
-template <unsigned D, unsigned C, class S>
-class SpatialIndex : public ::SpatialIndex
+template <class N>
+class Rtree : public ::SpatialIndex
 {
 	public:
-		using M = Mbr<D>;
-		using N = Node<D, C>;
-		using E = Entry<D, C>;
+		using E = typename N::Entry;
+		using M = typename E::M;
 		using Id = DataObject::Id;
-
-		const unsigned dimension = D;
 
 		/**
 		 * Construct a new index from the given data set.
 		 */
-		SpatialIndex(LazyDataSet& dataSet)
+		Rtree()
 		{
-			if (dataSet.empty()) {
-				return;
-			}
-
 			root = allocateNode();
 			height = 1;
-
-			for (auto& object : dataSet) {
-				S::insert(*this, object);
-			}
 		};
 
-		SpatialIndex()
+		~Rtree()
 		{
 			for (N * node : nodes) {
 				delete node;
@@ -60,11 +44,34 @@ class SpatialIndex : public ::SpatialIndex
 
 
 		/**
+		 * Load the given data set and construct the tree from it.
+		 */
+		void load(LazyDataSet& dataSet)
+		{
+			if (dataSet.empty()) {
+				return;
+			}
+
+			for (auto& object : dataSet) {
+				insert(object);
+			}
+		};
+
+
+		/**
+		 * Insert a data object into this index.
+		 *
+		 * @param object Data object to insert
+		 */
+		virtual void insert(const E& entry) = 0;
+
+
+		/**
 		 * Get the tree height.
 		 *
 		 * @return Height of tree
 		 */
-		unsigned getHeight() const
+		const unsigned& getHeight() const
 		{
 			return height;
 		};

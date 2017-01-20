@@ -2,30 +2,45 @@
 #include <cassert>
 #include <vector>
 #include "SpatialIndex.hpp"
+#include "Node.hpp"
+#include "Entry.hpp"
 #include "common/Algorithm.hpp"
 
 namespace Rtree
 {
 
-class QuadraticInsertStrategy
+/**
+ * R-tree with quadratic split as suggested by Guttman.
+ *
+ * @tparam D Dimenson
+ * @tparam N Node type
+ */
+template<unsigned D, unsigned C>
+class QuadraticRtree : public Rtree<Node<D, C, Entry>>
 {
 	public:
+
+		using N = Node<D, C, Entry>;
+		using E = typename N::Entry;
+
+
+		QuadraticRtree(LazyDataSet& dataSet)
+		{
+			this->load(dataSet);
+		};
 
 		/**
 		 * Insert an entry in the tree.
 		 *
 		 * @param object DataObject to insert
 		 */
-		template<class I>
-		static void insert(I& index, const typename I::E& entry)
+		void insert(const E& entry) override
 		{
-			using E = typename I::E;
-
-			E rootEntry (index.getRoot(), typename E::M());
+			E rootEntry (this->getRoot(), typename E::M());
 			std::vector<E *> path {&rootEntry};
 
 			// Find leaf node
-			for (unsigned i = 0; i < index.getHeight() - 1; i++) {
+			for (unsigned i = 0; i < this->getHeight() - 1; i++) {
 				E& e = leastVolumeEnlargement(*path.back(), entry);
 				e.mbr += entry.mbr;
 				path.push_back(&e);
@@ -36,22 +51,22 @@ class QuadraticInsertStrategy
 			auto top = path.rbegin();
 
 			while (top != path.rend() && (*(top))->node->isFull()) {
-				e = E(index.allocateNode(), {e});
+				e = E(this->allocateNode(), {e});
 				redistribute(**top, e);
 				top++;
 			}
 
 			// Split root?
 			if (top == path.rend()) {
-				E newRoot (index.allocateNode(), {**path.begin(), e});
-				index.addLevel(newRoot.node);
+				E newRoot (this->allocateNode(), {**path.begin(), e});
+				this->addLevel(newRoot.node);
 			} else {
 				(*top)->add(e);
 			}
 		};
 
 
-	private:
+	protected:
 
 
 		/**
@@ -62,7 +77,7 @@ class QuadraticInsertStrategy
 		 * @return Entry requiring the least enlargement to include mbr
 		 */
 		template<class E>
-		static E& leastVolumeEnlargement(E& parent, const E& newEntry)
+		E& leastVolumeEnlargement(E& parent, const E& newEntry)
 		{
 			return *argmin(
 					parent.begin(),
@@ -82,7 +97,7 @@ class QuadraticInsertStrategy
 		 * @param b The second entry (with children)
 		 */
 		template<class E>
-		static void redistribute(E& a, E& b)
+		void redistribute(E& a, E& b)
 		{
 			// Contruct buffer with all entries
 			std::vector<E> entries (a.begin(), a.end());
@@ -116,7 +131,7 @@ class QuadraticInsertStrategy
 			a = {*seeds[0]};
 			b = {*seeds[1]};
 
-			const unsigned m = E::capacity / 2;
+			const unsigned m = N::capacity / 4;
 
 			for (auto e = entries.begin(); e != entries.end(); ++e) {
 				if (seeds[0] == e || seeds[1] == e) {

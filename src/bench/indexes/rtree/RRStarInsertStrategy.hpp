@@ -7,6 +7,8 @@
 #include <set>
 #include "SpatialIndex.hpp"
 #include "common/Algorithm.hpp"
+#include "Entry.hpp"
+#include "RevisedNode.hpp"
 
 
 namespace Rtree
@@ -37,29 +39,41 @@ void sortBy(unsigned dimension, ForwardIt begin, ForwardIt end)
 		);
 }
 
-
-
-class RRStarInsertStrategy
+/**
+ * Revised R*-tree.
+ *
+ * @tparam D Dimension
+ * @tparam C Node capacity
+ */
+template<unsigned D, unsigned C>
+class RRStarTree : public Rtree<RevisedNode<D, C, Entry>>
 {
 	public:
 
 		static constexpr float EPSILON = 0.00001f;
+
+		using N = RevisedNode<D, C, Entry>;
+		using E = Entry<D, N>;
+		using M = typename E::M;
+
+		RRStarTree(LazyDataSet& dataSet)
+		{
+			this->load(dataSet);
+		};
+
 
 		/**
 		 * Insert an entry in the tree.
 		 *
 		 * @param object DataObject to insert
 		 */
-		template<class I>
-		static void insert(I& index, const typename I::E& entry)
+		virtual void insert(const E& entry) override
 		{
-			using E = typename I::E;
-
-			E rootEntry (index.getRoot(), typename E::M());
+			E rootEntry (this->getRoot(), M());
 			std::vector<E *> path {&rootEntry};
 
 			// Find leaf node
-			for (unsigned i = 0; i < index.getHeight() - 1; i++) {
+			for (unsigned i = 0; i < this->getHeight() - 1; i++) {
 				E& e = chooseSubtree(*path.back(), entry);
 				e.mbr += entry.mbr;
 				path.push_back(&e);
@@ -70,15 +84,15 @@ class RRStarInsertStrategy
 			auto top = path.rbegin();
 
 			while (top != path.rend() && (*(top))->node->isFull()) {
-				e = E(index.allocateNode(), {e});
+				e = E(this->allocateNode(), {e});
 				redistribute(**top, e, top == path.rbegin());
 				top++;
 			}
 
 			// Split root?
 			if (top == path.rend()) {
-				E newRoot (index.allocateNode(), {**path.begin(), e});
-				index.addLevel(newRoot.node);
+				E newRoot (this->allocateNode(), {**path.begin(), e});
+				this->addLevel(newRoot.node);
 			} else {
 				(*top)->add(e);
 			}
@@ -95,10 +109,9 @@ class RRStarInsertStrategy
 		 *
 		 * @return Extracted entries ordered bycenter distance to parent
 		 */
-		template<class E>
-		static std::vector<E> extractEntries(E& parent, const E& newEntry)
+		std::vector<E> extractEntries(E& parent, const E& newEntry)
 		{
-			unsigned p = E::capacity - E::capacity/2;
+			unsigned p = E::Node::capacity - E::Node::capacity/2;
 
 			// Collect all entries
 			std::vector<E> entries (
@@ -119,7 +132,7 @@ class RRStarInsertStrategy
 					}
 				);
 
-			assert(p < E::capacity);
+			assert(p < E::Node::capacity);
 			assert(entries.size() > 0);
 
 			auto middle = entries.end() - p;
@@ -144,8 +157,7 @@ class RRStarInsertStrategy
 		 * @param entry Entry to find location for
 		 * @param node Node in which the subtree should be
 		 */
-		template<class E>
-		static E& chooseSubtree(E& parent, const E& newEntry)
+		E& chooseSubtree(E& parent, const E& newEntry)
 		{
 			// Construct set of covering entries
 			std::vector<E *> covering;
@@ -246,8 +258,6 @@ class RRStarInsertStrategy
 			path.emplace(0);
 			visited.emplace(0);
 
-			using M = typename E::M;
-
 
 			while (path.size()) {
 				unsigned j = path.top().j++;
@@ -319,13 +329,12 @@ class RRStarInsertStrategy
 		 *
 		 * @return Overlap of the MBR with the children
 		 */
-		template<class E>
-		static float perimeterOverlap(E& parent, typename E::M mbr)
+		float perimeterOverlap(E& parent, M mbr)
 		{
 			return overlap(
 					parent,
 					mbr,
-					[](const typename E::M& intersection) {
+					[](const M& intersection) {
 						return intersection.perimeter();
 					}
 				);
@@ -341,8 +350,8 @@ class RRStarInsertStrategy
 		 *
 		 * @return Overlap of the MBR with the children
 		 */
-		template<class E, class F>
-		static float overlap(E& parent, typename E::M mbr, F type)
+		template<class F>
+		float overlap(E& parent, M mbr, F type)
 		{
 			return std::accumulate(
 					parent.begin(),
@@ -357,16 +366,13 @@ class RRStarInsertStrategy
 
 
 		template<class ForwardIt>
-		static float evaluateSplit(
+		float evaluateSplit(
 				ForwardIt begin,
 				ForwardIt middle,
 				ForwardIt end,
 				float maxPerimeter,
 			   	bool useVolume = true
 		) {
-			using E = typename ForwardIt::value_type;
-			using M = typename E::M;
-
 			assert(end - begin > 0);
 
 			// Sum up MBRs (again)
@@ -408,8 +414,7 @@ class RRStarInsertStrategy
 		 * @param a The first entry (with children)
 		 * @param b The second entry (with children)
 		 */
-		template<class E>
-		static void redistribute(E& a, E& b, bool isLeaf = false) //TODO: isLeaf
+		void redistribute(E& a, E& b, bool isLeaf = false) //TODO: isLeaf
 		{
 			// Contruct buffer with all entries
 			std::vector<E> entries (a.begin(), a.end());
@@ -419,8 +424,7 @@ class RRStarInsertStrategy
 					b.begin(), b.end()
 				);
 
-			const unsigned m = E::capacity / 4;
-			using M = typename E::M;
+			const unsigned m = E::Node::capacity / 4;
 
 			// This is assumed
 			assert(entries.size() > 2 * m);
@@ -436,7 +440,7 @@ class RRStarInsertStrategy
 
 			// To be updated
 			unsigned bestDimension = E::dimension;
-			unsigned bestSplit = E::capacity;
+			unsigned bestSplit = E::Node::capacity;
 
 			if (isLeaf) {
 				// Select an axis
@@ -485,7 +489,7 @@ class RRStarInsertStrategy
 				// Select split point
 				bestSplit = *argmin(
 						makeRangeIt(m), makeRangeIt((unsigned) entries.size() - m),
-						[&entries, &hasVolume, &maxPerimeter](unsigned s) {
+						[&](unsigned s) {
 							//TODO: weighting
 							return evaluateSplit(
 									entries.begin(),
@@ -534,7 +538,7 @@ class RRStarInsertStrategy
 			}
 
 			assert(bestDimension < E::dimension);
-			assert(bestSplit < E::capacity);
+			assert(bestSplit < E::Node::capacity);
 
 			// Distribute entries
 			auto middle = entries.begin() + bestSplit;

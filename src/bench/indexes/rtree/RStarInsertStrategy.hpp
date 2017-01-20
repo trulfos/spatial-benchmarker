@@ -6,14 +6,31 @@
 #include <cmath>
 #include "SpatialIndex.hpp"
 #include "common/Algorithm.hpp"
+#include "Node.hpp"
+#include "Entry.hpp"
 
 
 namespace Rtree
 {
 
-class RStarInsertStrategy
+/**
+ * R*-tree.
+ *
+ * @tparam D Dimension
+ * @tparam C Node capacity
+ */
+template<unsigned D, unsigned C>
+class RStarTree : public Rtree<Node<D, C, Entry>>
 {
 	public:
+		using N = Node<D, C, Entry>;
+		using E = typename N::Entry;
+		using M = typename E::M;
+
+		RStarTree(LazyDataSet& dataSet)
+		{
+			this->load(dataSet);
+		};
 
 		/**
 		 * Insert an entry in the tree.
@@ -21,10 +38,9 @@ class RStarInsertStrategy
 		 * @param index Index to insert into
 		 * @param object DataObject to insert
 		 */
-		template<class I>
-		static void insert(I& index, const typename I::E& entry)
+		void insert(const E& entry) override
 		{
-			insert(index, entry, 0);
+			insert(entry, 0);
 		};
 
 
@@ -34,19 +50,18 @@ class RStarInsertStrategy
 		 *
 		 * @param index Index to insert into
 		 * @param object DataObject to insert
-		 * @param split Last split level
+		 * @param split Last split level (used in recursive calls)
 		 */
-		template<class I>
-		static void insert(I& index, const typename I::E& entry, unsigned level, bool split = false)
+		void insert(const E& entry, unsigned level, bool split = false)
 		{
-			using E = typename I::E;
+			const unsigned& height = this->getHeight();
 
-			E rootEntry (index.getRoot(), typename E::M());
+			E rootEntry (this->getRoot(), M());
 			std::vector<E *> path {&rootEntry};
 
 			// Find leaf node
-			for (unsigned i = 0; i < index.getHeight() - 1 - level; i++) {
-				E& e = chooseSubtree(*path.back(), entry, index.getHeight() - i);
+			for (unsigned i = 0; i < height - 1 - level; i++) {
+				E& e = chooseSubtree(*path.back(), entry, height - i);
 				e.mbr += entry.mbr;
 				path.push_back(&e);
 			}
@@ -60,13 +75,13 @@ class RStarInsertStrategy
 				// Reinsert entries
 				if (!split) {
 					for (E& i : extractEntries(**top, e)) {
-						insert(index, i, top - path.rbegin(), true);
+						insert(i, top - path.rbegin(), true);
 					}
 					return;
 				}
 
 				// Split node
-				e = E(index.allocateNode(), {e});
+				e = E(this->allocateNode(), {e});
 				redistribute(**top, e);
 
 				++top;
@@ -74,8 +89,8 @@ class RStarInsertStrategy
 
 			// Split root?
 			if (top == path.rend()) {
-				E newRoot (index.allocateNode(), {**path.begin(), e});
-				index.addLevel(newRoot.node);
+				E newRoot (this->allocateNode(), {**path.begin(), e});
+				this->addLevel(newRoot.node);
 			} else {
 				(*top)->add(e);
 			}
@@ -90,10 +105,9 @@ class RStarInsertStrategy
 		 *
 		 * @return Extracted entries ordered bycenter distance to parent
 		 */
-		template<class E>
-		static std::vector<E> extractEntries(E& parent, const E& newEntry)
+		std::vector<E> extractEntries(E& parent, const E& newEntry)
 		{
-			unsigned p = E::capacity - E::capacity/2;
+			unsigned p = E::Node::capacity - E::Node::capacity / 2;
 
 			// Collect all entries
 			std::vector<E> entries (
@@ -114,7 +128,7 @@ class RStarInsertStrategy
 					}
 				);
 
-			assert(p < E::capacity);
+			assert(p < E::Node::capacity);
 			assert(entries.size() > 0);
 
 			auto middle = entries.end() - p;
@@ -140,8 +154,7 @@ class RStarInsertStrategy
 		 * @param node Node in which the subtree should be
 		 * @param elevation Node elevation (from bottom of tree)
 		 */
-		template<class E>
-		static E& chooseSubtree(E& parent, const E& newEntry, unsigned elevation)
+		E& chooseSubtree(E& parent, const E& newEntry, unsigned elevation)
 		{
 			if (elevation == 2) {
 				return leastOverlapEnlargement(parent, newEntry);
@@ -158,8 +171,7 @@ class RStarInsertStrategy
 		 * @param mbr MBR to include
 		 * @return Entry requiring the least enlargement to include mbr
 		 */
-		template<class E>
-		static E& leastVolumeEnlargement(E& parent, const E& newEntry)
+		E& leastVolumeEnlargement(E& parent, const E& newEntry)
 		{
 			return *argmin(
 					parent.begin(),
@@ -177,8 +189,7 @@ class RStarInsertStrategy
 		 * @param mbr MBR to include
 		 * @return Entry with the least overlap
 		 */
-		template<class E>
-		static E& leastOverlapEnlargement(E& parent, const E& newEntry)
+		E& leastOverlapEnlargement(E& parent, const E& newEntry)
 		{
 			//TODO: Drag the algorithm out into a template?
 			E * best = parent.node->entries;
@@ -219,8 +230,7 @@ class RStarInsertStrategy
 		 *
 		 * @return Overlap of the MBR with the children
 		 */
-		template<class E>
-		static float overlap(E& parent, typename E::M mbr)
+		float overlap(E& parent, M mbr)
 		{
 			return std::accumulate(
 					parent.begin(),
@@ -240,8 +250,7 @@ class RStarInsertStrategy
 		 * @param a The first entry (with children)
 		 * @param b The second entry (with children)
 		 */
-		template<class E>
-		static void redistribute(E& a, E& b)
+		void redistribute(E& a, E& b)
 		{
 			// Contruct buffer with all entries
 			std::vector<E> entries (a.begin(), a.end());
@@ -252,7 +261,7 @@ class RStarInsertStrategy
 				);
 
 			//TODO: This value should be changeable
-			const unsigned m = E::capacity / 2;
+			const unsigned m = E::Node::capacity / 2;
 
 			// This is assumed further down
 			assert(entries.size() > 1);

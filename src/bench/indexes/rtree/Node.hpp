@@ -1,20 +1,33 @@
 #pragma once
-#include "Entry.hpp"
-#include "Mbr.hpp"
 #include <limits>
+#include <stdexcept>
+#include <array>
 
 namespace Rtree
 {
 
-template <unsigned D, unsigned C>
-class Node
+/**
+ * Basic R-tree node.
+ * This is basically a container for entries.
+ *
+ * @tparam D Dimension
+ * @tparam C Node capacity
+ * @tparam N Node type
+ * @tparam E Entry type
+ */
+template <unsigned D, unsigned C, class N, template<unsigned, class> class E>
+class BaseNode
 {
 public:
-	using E = Entry<D, C>;
-	using M = Mbr<D>;
+	static constexpr unsigned capacity = C;
+	static constexpr unsigned dimension = D;
 
-	E entries[C];
+	using Entry = E<D, N>;
+
+
+	//TODO: Encapsulate these
 	short unsigned nEntries = 0;
+	Entry entries[C];
 
 	/**
 	 * Check if this node is full.
@@ -32,7 +45,7 @@ public:
 	 *
 	 * @return True if successful (not full)
 	 */
-	void add(const E& entry)
+	void add(const Entry& entry)
 	{
 		if (nEntries >= C) {
 			throw std::out_of_range(
@@ -49,7 +62,7 @@ public:
 	 *
 	 * @param entry Entry it should contain
 	 */
-	void reset(const E& entry)
+	void reset(const Entry& entry)
 	{
 		entries[0] = entry;
 		nEntries = 1;
@@ -59,7 +72,7 @@ public:
 	/**
 	 * Return first entry in this node.
 	 */
-	E * begin()
+	Entry * begin()
 	{
 		return entries;
 	};
@@ -67,10 +80,15 @@ public:
 	/**
 	 * Return the entry past the last entry in this node.
 	 */
-	E * end()
+	Entry * end()
 	{
 		return entries + nEntries;
 	};
+};
+
+template<unsigned D, unsigned C, template<unsigned, class> class Entry>
+class Node : public BaseNode<D, C, Node<D, C, Entry>, Entry>
+{
 };
 
 }

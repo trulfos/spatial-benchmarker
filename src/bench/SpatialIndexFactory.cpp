@@ -33,19 +33,19 @@ std::shared_ptr<SpatialIndex> SpatialIndexFactory::create(
 		}
 
 		if (type == "star") {
-			return createRtree<Rtree::RStarInsertStrategy>(d, dataSet);
+			return createRtree<Rtree::RStarTree>(d, dataSet);
 		}
 
 		if (type == "rstar") {
-			return createRtree<Rtree::RRStarInsertStrategy>(d, dataSet);
+			return createRtree<Rtree::RRStarTree>(d, dataSet);
 		}
 
 		if (type == "guttman") {
-			return createRtree<Rtree::QuadraticInsertStrategy>(d, dataSet);
+			return createRtree<Rtree::QuadraticRtree>(d, dataSet);
 		}
 		
 		if (type == "greene") {
-			return createRtree<Rtree::GreeneInsertStrategy>(d, dataSet);
+			return createRtree<Rtree::GreeneRtree>(d, dataSet);
 		}
 
 		throw std::invalid_argument(type + " is not a valid rtree type");
@@ -59,33 +59,32 @@ std::vector<std::string> SpatialIndexFactory::keys()
 	return {"naive", "parallel", "rtree", "sequential", "vectorized"};
 }
 
-template<class S>
+template<template<unsigned, unsigned> class I>
 std::shared_ptr<SpatialIndex> SpatialIndexFactory::createRtree(
 		unsigned dimension,
 		LazyDataSet& dataSet
 ) {
-	//const unsigned M = 128;
-	const unsigned M = 16;
+	const unsigned C = 128;
 
 	switch (dimension) {
 		case 2:
-			return std::make_shared<Rtree::SpatialIndex<2, M, S>>(dataSet);
+			return std::make_shared<I<2, C>>(dataSet);
 		case 3:
-			return std::make_shared<Rtree::SpatialIndex<3, M, S>>(dataSet);
+			return std::make_shared<I<3, C>>(dataSet);
 		case 4:
-			return std::make_shared<Rtree::SpatialIndex<4, M, S>>(dataSet);
+			return std::make_shared<I<4, C>>(dataSet);
 		case 5:
-			return std::make_shared<Rtree::SpatialIndex<5, M, S>>(dataSet);
+			return std::make_shared<I<5, C>>(dataSet);
 		case 6:
-			return std::make_shared<Rtree::SpatialIndex<6, M, S>>(dataSet);
+			return std::make_shared<I<6, C>>(dataSet);
 		case 7:
-			return std::make_shared<Rtree::SpatialIndex<7, M, S>>(dataSet);
+			return std::make_shared<I<7, C>>(dataSet);
 		case 8:
-			return std::make_shared<Rtree::SpatialIndex<8, M, S>>(dataSet);
+			return std::make_shared<I<8, C>>(dataSet);
 		case 9:
-			return std::make_shared<Rtree::SpatialIndex<9, M, S>>(dataSet);
+			return std::make_shared<I<9, C>>(dataSet);
 		case 10:
-			return std::make_shared<Rtree::SpatialIndex<10, M, S>>(dataSet);
+			return std::make_shared<I<10, C>>(dataSet);
 
 		default:
 			throw std::domain_error(

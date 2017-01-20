@@ -5,19 +5,24 @@
 namespace Rtree
 {
 
-template<unsigned D, unsigned C>
-class Node;
-
-template<unsigned D, unsigned C>
+/**
+ * An entry in a node of the R-tree.
+ *
+ * Each entry works like a handle - it contains the MBR of a node and a pointer
+ * to the node itself. The MBR is separated from the node to avoid loading the
+ * an entire node when only the MBRs should be scanned.
+ *
+ * @tparam N Node type
+ */
+template<unsigned D, class N>
 class Entry
 {
 	public:
 		using Id = DataObject::Id;
 		using M = Mbr<D>;
-		using N = Node<D, C>;
+		using Node = N;
 
-		static const unsigned capacity = C;
-		static const unsigned dimension = D;
+		static constexpr unsigned dimension = D;
 
 		union {
 			Id id;
@@ -56,7 +61,7 @@ class Entry
 
 			mbr = entries.begin()->mbr;
 			for (auto i = entries.begin(); i != entries.end(); i++) {
-				node->add(*i);
+				add(*i);
 			}
 		}
 

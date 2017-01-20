@@ -37,7 +37,7 @@ class SpatialIndexFactory
 		 * @tparam S Insertion strategy
 		 * @param dimension Dimension of the new R-tree
 		 */
-		template<class S>
+		template<template<unsigned, unsigned> class I>
 		static std::shared_ptr<SpatialIndex> createRtree(
 				unsigned dimension,
 				LazyDataSet& dataSet
