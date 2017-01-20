@@ -5,7 +5,7 @@
 #include <numeric>
 #include <cmath>
 #include <set>
-#include "SpatialIndex.hpp"
+#include "Rtree.hpp"
 #include "common/Algorithm.hpp"
 #include "Entry.hpp"
 #include "RevisedNode.hpp"

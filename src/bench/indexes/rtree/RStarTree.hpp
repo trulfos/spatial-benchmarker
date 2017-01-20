@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <numeric>
 #include <cmath>
-#include "SpatialIndex.hpp"
+#include "Rtree.hpp"
 #include "common/Algorithm.hpp"
 #include "Node.hpp"
 #include "Entry.hpp"

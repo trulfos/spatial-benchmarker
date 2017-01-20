@@ -2,11 +2,10 @@
 
 #include "bench/indexes/naive/SpatialIndex.hpp"
 #include "bench/indexes/parallel/SpatialIndex.hpp"
-#include "bench/indexes/rtree/SpatialIndex.hpp"
-#include "bench/indexes/rtree/QuadraticInsertStrategy.hpp"
-#include "bench/indexes/rtree/RStarInsertStrategy.hpp"
-#include "bench/indexes/rtree/RRStarInsertStrategy.hpp"
-#include "bench/indexes/rtree/GreeneInsertStrategy.hpp"
+#include "bench/indexes/rtree/QuadraticTree.hpp"
+#include "bench/indexes/rtree/RStarTree.hpp"
+#include "bench/indexes/rtree/RRStarTree.hpp"
+#include "bench/indexes/rtree/GreeneTree.hpp"
 #include "bench/indexes/sequential/SpatialIndex.hpp"
 #include "bench/indexes/vectorized/SpatialIndex.hpp"
 

@@ -2,7 +2,7 @@
 #include <cassert>
 #include <vector>
 #include <algorithm>
-#include "QuadraticInsertStrategy.hpp"
+#include "QuadraticTree.hpp"
 #include "Node.hpp"
 #include "Entry.hpp"
 

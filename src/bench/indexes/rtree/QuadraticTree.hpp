@@ -1,7 +1,7 @@
 #pragma once
 #include <cassert>
 #include <vector>
-#include "SpatialIndex.hpp"
+#include "Rtree.hpp"
 #include "Node.hpp"
 #include "Entry.hpp"
 #include "common/Algorithm.hpp"
