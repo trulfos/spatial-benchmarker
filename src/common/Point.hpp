@@ -71,6 +71,10 @@ class Point : private std::vector<Coordinate>
 			return (*this) * (*this);
 		}
 
+		/**
+		 * Get the underlying array.
+		 */
+		using std::vector<Coordinate>::data;
 
 
 		/**
@@ -82,6 +86,11 @@ class Point : private std::vector<Coordinate>
 		 * Compare works as for vector.
 		 */
 		bool operator==(const Point& other) const;
+
+
+		// Allow iteration
+		using std::vector<Coordinate>::begin;
+		using std::vector<Coordinate>::end;
 
 	private:
 		/**

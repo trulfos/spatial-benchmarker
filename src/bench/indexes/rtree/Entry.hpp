@@ -14,13 +14,17 @@ namespace Rtree
  *
  * @tparam N Node type
  */
-template<unsigned D, class N>
-class Entry
+template<unsigned D, class N, template<unsigned, class> class Entry>
+class BaseEntry
 {
 	public:
 		using Id = DataObject::Id;
 		using M = Mbr<D>;
 		using Node = N;
+		using E = Entry<D, N>;
+
+		using iterator = E *;
+		using const_iterator = const E *;
 
 		static constexpr unsigned dimension = D;
 
@@ -34,12 +38,12 @@ class Entry
 		/**
 		 * Default constructor.
 		 */
-		Entry() = default;
+		BaseEntry() = default;
 
 		/**
 		 * Create a new entry from a node.
 		 */
-		Entry(N * node, M mbr) : node(node), mbr(mbr)
+		BaseEntry(N * node, M mbr) : node(node), mbr(mbr)
 		{
 		};
 
@@ -50,25 +54,16 @@ class Entry
 		 * @param node Pointer to initial node
 		 * @param entries Initial entries
 		 */
-		Entry(N * node, std::initializer_list<Entry> entries)
+		BaseEntry(N * node, std::initializer_list<E> entries)
 			: node(node)
 		{
-			if (entries.begin() == entries.end()) {
-				throw new std::logic_error(
-						"Entry constructor needs entries or MBRs. None given!"
-					);
-			}
-
-			mbr = entries.begin()->mbr;
-			for (auto i = entries.begin(); i != entries.end(); i++) {
-				add(*i);
-			}
+			assign(entries.begin(), entries.end());
 		}
 
 		/**
 		 * Create a new entry from the given object.
 		 */
-		Entry(const DataObject& object)
+		BaseEntry(const DataObject& object)
 		{
 			id = object.getId();
 			mbr = object.getPoint();
@@ -81,7 +76,7 @@ class Entry
 		 *
 		 * @param entry Entry to add
 		 */
-		void add(const Entry& entry)
+		void add(const E& entry)
 		{
 			node->add(entry);
 			mbr += entry.mbr;
@@ -91,6 +86,9 @@ class Entry
 		/**
 		 * Remove all entries and add from the given iterators. This also fixes
 		 * the MBR.
+		 *
+		 * @param start First element
+		 * @param end Element beyond the last
 		 */
 		template<class ForwardIterator>
 		void assign(ForwardIterator start, ForwardIterator end)
@@ -105,7 +103,7 @@ class Entry
 			node->nEntries = 0;
 
 			for (;start != end; ++start) {
-				add(*start);
+				static_cast<E *>(this)->add(*start);
 			}
 		};
 
@@ -114,7 +112,7 @@ class Entry
 		 * Remove all entries and add the given initializer list. This also
 		 * fixes the MBR.
 		 */
-		Entry& operator=(std::initializer_list<Entry> entries)
+		E& operator=(std::initializer_list<E> entries)
 		{
 			assign(entries.begin(), entries.end());
 			return *this;
@@ -144,7 +142,7 @@ class Entry
 		/**
 		 * Return first entry in this entry's node.
 		 */
-		Entry * begin()
+		iterator begin()
 		{
 			return node->begin();
 		};
@@ -152,11 +150,28 @@ class Entry
 		/**
 		 * Return the entry past the last entry in this entry's node.
 		 */
-		Entry * end()
+		iterator end()
 		{
 			return node->end();
 		};
 
+
+		const_iterator cbegin() const
+		{
+			return node->begin();
+		};
+
+		const_iterator cend() const
+		{
+			return node->end();
+		};
+
+};
+
+template<unsigned D, class N>
+class Entry : public BaseEntry<D, N, Entry>
+{
+	using BaseEntry<D, N, Entry>::BaseEntry;
 };
 
 }

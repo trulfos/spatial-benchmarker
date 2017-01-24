@@ -6,6 +6,7 @@
 #include "bench/indexes/rtree/RStarTree.hpp"
 #include "bench/indexes/rtree/RRStarTree.hpp"
 #include "bench/indexes/rtree/GreeneTree.hpp"
+#include "bench/indexes/rtree/HilbertRtree.hpp"
 #include "bench/indexes/sequential/SpatialIndex.hpp"
 #include "bench/indexes/vectorized/SpatialIndex.hpp"
 
@@ -45,6 +46,10 @@ std::shared_ptr<SpatialIndex> SpatialIndexFactory::create(
 		
 		if (type == "greene") {
 			return createRtree<Rtree::GreeneRtree>(d, dataSet);
+		}
+
+		if (type == "hilbert") {
+			return createRtree<Rtree::HilbertRtree>(d, dataSet);
 		}
 
 		throw std::invalid_argument(type + " is not a valid rtree type");

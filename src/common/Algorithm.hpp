@@ -117,3 +117,61 @@ RangeIterator<T> makeRangeIt(T value)
 {
 	return RangeIterator<T>(value);
 };
+
+
+/**
+ * Dereferencing iterator wrapper.
+ *
+ * This is useful when an iterator points to another iterator (or pointer). The
+ * dereferencing operator dereferences twice to get the actual value pointed to.
+ */
+template<typename Iterator>
+class DerefIterator : public std::iterator<std::forward_iterator_tag, typename Iterator::value_type>
+{
+	public:
+		DerefIterator(const Iterator& iterator) : iterator(iterator)
+		{
+		};
+
+		DerefIterator operator++()
+		{
+			++iterator;
+			return *this;
+		};
+
+		decltype(*(typename Iterator::value_type()))& operator*()
+		{
+			return **iterator;
+		};
+
+		typename Iterator::value_type operator->()
+		{
+			return *iterator;
+		};
+
+		bool operator==(const DerefIterator& other) const
+		{
+			return iterator == other.iterator;
+		};
+
+		bool operator!=(const DerefIterator& other) const
+		{
+			return iterator != other.iterator;
+		};
+
+		typename Iterator::difference_type operator-(
+				const DerefIterator& other
+			) const
+		{
+			return iterator - other.iterator;
+		};
+
+	private:
+		Iterator iterator;
+};
+
+template<typename Iterator>
+DerefIterator<Iterator> makeDerefIt(const Iterator& iterator)
+{
+	return DerefIterator<Iterator>(iterator);
+};
