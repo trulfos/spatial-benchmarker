@@ -231,6 +231,7 @@ class Mbr
 			return result;
 		}
 
+
 		/**
 		 * Get bottom coordinates.
 		 */
@@ -239,6 +240,7 @@ class Mbr
 			return bottom;
 		};
 
+
 		/**
 		 * Get top coordinates.
 		 */
@@ -246,6 +248,36 @@ class Mbr
 		{
 			return top;
 		};
+
+
+		/**
+		 * Calculate the enlargement of the overlap between this and another MBR
+		 * if a new MBR is added to this.
+		 *
+		 * @param original Original MBR of the first subject
+		 * @param other Other MBR to compute overlap with
+		 * @param n MBR to add
+		 * @param measure Function to evaluate overlap
+		 */
+		template<class F>
+		float overlapEnlargement(const Mbr& other, const Mbr& n, F measure)
+		{
+			Mbr enlarged = *this + n;
+
+			// They may not overlap at all
+			if (!enlarged.intersects(other)) {
+				return 0.0f;
+			}
+
+
+			float overlap = measure(enlarged.intersection(other));
+
+			if (intersects(other)) {
+				overlap -= measure(intersection(other));
+			}
+
+			return overlap;
+		}
 
 	private:
 		Coordinate top[D];

@@ -1,5 +1,7 @@
 #pragma once
+#include <cassert>
 #include <functional>
+#include <type_traits>
 
 /**
  * Set of algorithm templates.
@@ -38,6 +40,38 @@ ForwardIt  argmin(ForwardIt start, ForwardIt end, TransformFunc transform)
 
 	return min_element;
 }
+
+
+/**
+ * Finds the minimum value after a tranform.
+ */
+template<class ForwardIt, class TransformFunc>
+typename std::result_of<TransformFunc(typename ForwardIt::value_type)>::type
+min_value(ForwardIt start, ForwardIt end, TransformFunc transform)
+{
+	assert(start != end);
+
+	// Initial values from the fist element
+	auto min = transform(*start);
+	ForwardIt min_element = start;
+
+	++start;
+
+	// Update if we find something smaller
+	while (start != end) {
+		auto transformed = transform(*start);
+
+		if (transformed < min) {
+			min = transformed;
+			min_element = start;
+		}
+
+		++start;
+	}
+
+	return min;
+}
+
 
 
 /**

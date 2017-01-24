@@ -1,7 +1,6 @@
 #pragma once
 #include <limits>
 #include <stdexcept>
-#include <array>
 
 namespace Rtree
 {
@@ -55,18 +54,6 @@ public:
 
 		entries[nEntries++] = entry;
 	};
-
-
-	/**
-	 * Reset this node so it only contains the given entry.
-	 *
-	 * @param entry Entry it should contain
-	 */
-	void reset(const Entry& entry)
-	{
-		entries[0] = entry;
-		nEntries = 1;
-	}
 
 
 	/**
