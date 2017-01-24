@@ -21,11 +21,11 @@ ifdef VIM # Make quickfix in vim work
 	TEST_SUFFIX=--ascii 2>&1 | sed 's/^\[-\+\] //'
 endif
 
-.PHONY: clean run test_all
+.PHONY: clean run check
 
 run: bin/bench;
 
-test_all: $(TESTS)
+check: $(TESTS)
 	@for t in $(TESTS); do\
 		./$$t $(TEST_SUFFIX);\
 	done;
