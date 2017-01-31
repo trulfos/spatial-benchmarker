@@ -115,7 +115,7 @@ class BaseEntry
 		E& operator=(std::initializer_list<E> entries)
 		{
 			assign(entries.begin(), entries.end());
-			return *this;
+			return static_cast<E&>(*this);
 		};
 
 
@@ -171,7 +171,9 @@ class BaseEntry
 template<unsigned D, class N>
 class Entry : public BaseEntry<D, N, Entry>
 {
-	using BaseEntry<D, N, Entry>::BaseEntry;
+	public:
+		using BaseEntry<D, N, Entry>::BaseEntry;
+		using BaseEntry<D, N, Entry>::operator=;
 };
 
 }

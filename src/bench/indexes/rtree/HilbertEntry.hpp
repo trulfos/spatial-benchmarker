@@ -23,6 +23,9 @@ class HilbertEntry : public BaseEntry<D, N, HilbertEntry>
 		using HC = HilbertCurve<std::uint64_t, D>;
 		using Entry = BaseEntry<D, N, HilbertEntry>;
 
+		// Inherit assignment operator
+		using BaseEntry<D, N, HilbertEntry>::operator=;
+
 		/**
 		 * Default constructor.
 		 */
