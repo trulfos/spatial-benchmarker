@@ -1,7 +1,7 @@
 #pragma once
 #include "common/Query.hpp"
 #include "common/Results.hpp"
-#include "common/AxisAlignedBox.hpp"
+#include "common/Box.hpp"
 
 /**
  * This abstract class is a common interface to all spatial indexes.
@@ -17,6 +17,6 @@ class SpatialIndex
 		Results search(const Query& query) const;
 
 	protected:
-		virtual Results rangeSearch(const AxisAlignedBox& box) const = 0;
+		virtual Results rangeSearch(const Box& box) const = 0;
 		virtual Results knnSearch(unsigned k, const Point& point) const = 0;
 };

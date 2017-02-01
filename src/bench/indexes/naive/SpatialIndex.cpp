@@ -25,7 +25,7 @@ SpatialIndex::SpatialIndex()
 };
 
 
-Results SpatialIndex::rangeSearch(const AxisAlignedBox& box) const
+Results SpatialIndex::rangeSearch(const Box& box) const
 {
 	std::vector<DataObject> results;
 

@@ -45,7 +45,7 @@ SpatialIndex::SpatialIndex()
 };
 
 
-Results SpatialIndex::rangeSearch(const AxisAlignedBox& box) const
+Results SpatialIndex::rangeSearch(const Box& box) const
 {
 	Results results;
 	const Point& pointA = box.getPoints().first;

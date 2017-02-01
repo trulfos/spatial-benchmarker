@@ -1,12 +1,12 @@
 #include "RangeQuery.hpp"
 
-RangeQuery::RangeQuery(const AxisAlignedBox& box)
+RangeQuery::RangeQuery(const Box& box)
 	: Query(Query::Type::RANGE), box(box)
 {
 }
 
 RangeQuery::RangeQuery(const Point& a, const Point& b)
-	: RangeQuery(AxisAlignedBox(a, b))
+	: RangeQuery(Box(a, b))
 {
 }
 

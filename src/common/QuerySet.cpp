@@ -57,7 +57,7 @@ std::istream& operator>>(std::istream& stream, QuerySet& querySet) {
 		} else if (type == "range") {
 			Point p1 (dimension), p2 (dimension);
 			stream >> p1 >> p2;
-			querySet.add(RangeQuery(AxisAlignedBox(p1, p2)));
+			querySet.add(RangeQuery(Box(p1, p2)));
 		} else {
 			stream.setstate(std::ios_base::failbit);
 			return stream;

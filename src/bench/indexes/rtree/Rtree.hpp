@@ -117,7 +117,7 @@ class Rtree : public ::SpatialIndex
 		/**
 		 * Range search with Guttman's algorithm.
 		 */
-		Results rangeSearch(const AxisAlignedBox& box) const
+		Results rangeSearch(const Box& box) const
 		{
 			Results resultSet;
 			std::stack<std::pair<E *, unsigned>> path;

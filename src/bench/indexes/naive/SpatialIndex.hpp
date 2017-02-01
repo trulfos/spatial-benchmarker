@@ -18,7 +18,7 @@ class SpatialIndex : public ::SpatialIndex
 		SpatialIndex(LazyDataSet& dataSet);
 
 	protected:
-		Results rangeSearch(const AxisAlignedBox& box) const;
+		Results rangeSearch(const Box& box) const;
 		
 		Results knnSearch(unsigned k, const Point& point) const;
 

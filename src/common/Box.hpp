@@ -6,14 +6,14 @@
 /**
  * Axis aligned rectangle, defined by two points in space.
  */
-class AxisAlignedBox
+class Box
 {
 	public:
 
 		/**
 		 * Construct an axis aligned box using the two points given.
 		 */
-		AxisAlignedBox(const Point& a, const Point& b);
+		Box(const Point& a, const Point& b);
 
 		/**
 		 * Construct an axis aligned box from a point and a width/height.
@@ -21,7 +21,7 @@ class AxisAlignedBox
 		 * @param center Center of box
 		 * @param size Size of this box in each direction
 		 */
-		AxisAlignedBox(const Point& center, float size);
+		Box(const Point& center, float size);
 
 
 		/**

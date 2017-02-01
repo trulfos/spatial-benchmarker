@@ -1,14 +1,14 @@
 #pragma once
 
-#include "AxisAlignedBox.hpp"
+#include "Box.hpp"
 #include "Query.hpp"
 
 class RangeQuery : public Query
 {
 	public:
-		const AxisAlignedBox box;
+		const Box box;
 
-		RangeQuery(const AxisAlignedBox& box);
+		RangeQuery(const Box& box);
 		RangeQuery(const Point& a, const Point& b);
 
 		std::string getName() const;

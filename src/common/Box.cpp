@@ -1,6 +1,6 @@
-#include "AxisAlignedBox.hpp"
+#include "Box.hpp"
 
-AxisAlignedBox::AxisAlignedBox(const Point& a, const Point& b)
+Box::Box(const Point& a, const Point& b)
 	: points({a, b})
 {
 
@@ -20,7 +20,7 @@ AxisAlignedBox::AxisAlignedBox(const Point& a, const Point& b)
 }
 
 
-AxisAlignedBox::AxisAlignedBox(const Point& center, float size)
+Box::Box(const Point& center, float size)
 	: points({center.getDimension(), center.getDimension()})
 {
 	unsigned d = center.getDimension();
@@ -31,19 +31,19 @@ AxisAlignedBox::AxisAlignedBox(const Point& center, float size)
 	}
 }
 
-const std::pair<const Point&, const Point&> AxisAlignedBox::getPoints() const
+const std::pair<const Point&, const Point&> Box::getPoints() const
 {
 	return std::pair<const Point&, const Point&>(points[0], points[1]);
 }
 
 
-unsigned AxisAlignedBox::getDimension() const
+unsigned Box::getDimension() const
 {
 	return points[0].getDimension();
 }
 
 
-bool AxisAlignedBox::contains(const Point& point) const
+bool Box::contains(const Point& point) const
 {
 	unsigned dimension = point.getDimension();
 
@@ -62,7 +62,7 @@ bool AxisAlignedBox::contains(const Point& point) const
 }
 
 
-float AxisAlignedBox::getVolume() const
+float Box::getVolume() const
 {
 	float v = 0.0f;
 

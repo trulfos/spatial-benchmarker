@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
 		Point center (d, uniform, engine);
 		querySet.add(
 				RangeQuery(
-					AxisAlignedBox(center, size)
+					Box(center, size)
 				)
 			);
 	}

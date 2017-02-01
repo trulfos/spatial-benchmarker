@@ -1,6 +1,6 @@
 #include <criterion/criterion.h>
 #include "Point.cpp"
-#include "AxisAlignedBox.cpp"
+#include "Box.cpp"
 
 
 Test(axisAlignedBox, contains)
@@ -8,7 +8,7 @@ Test(axisAlignedBox, contains)
 	Point a = {2.0f, 4.0f};
 	Point b = {100.0f, 200.0f};
 
-	AxisAlignedBox box (a, b);
+	Box box (a, b);
 
 	cr_expect(
 			box.contains(Point({5.0f, 5.0f})),

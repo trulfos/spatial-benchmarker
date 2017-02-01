@@ -82,7 +82,7 @@ SpatialIndex::SpatialIndex()
 };
 
 
-Results SpatialIndex::rangeSearch(const AxisAlignedBox& box) const
+Results SpatialIndex::rangeSearch(const Box& box) const
 {
 	const auto points = box.getPoints();
 	Results results;

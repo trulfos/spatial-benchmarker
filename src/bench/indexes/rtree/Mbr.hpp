@@ -1,6 +1,6 @@
 #pragma once
 #include <cassert>
-#include "common/AxisAlignedBox.hpp"
+#include "common/Box.hpp"
 #include "common/Coordinate.hpp"
 #include "common/Point.hpp"
 
@@ -38,7 +38,7 @@ class Mbr
 		/**
 		 * Create MBR from axis aligned box.
 		 */
-		Mbr(const AxisAlignedBox& box)
+		Mbr(const Box& box)
 		{
 			if (box.getDimension() != D) {
 				throw std::logic_error(

@@ -1,6 +1,6 @@
 #include <criterion/criterion.h>
 #include "Mbr.hpp"
-#include "common/AxisAlignedBox.cpp"
+#include "common/Box.cpp"
 #include "common/Point.cpp"
 
 using Rtree::Mbr;
@@ -36,7 +36,7 @@ Test(mbr, point_point_distance)
 
 Test(mbr, point_box_distance)
 {
-	Mbr<2> mbrA (AxisAlignedBox(
+	Mbr<2> mbrA (Box(
 				Point({1.0f, -1.0f}), Point({2.0f, 1.0f})
 			));
 	Mbr<2> mbrB (Point({0.0f, 0.0f}));
@@ -59,15 +59,15 @@ Test(mbr, point_box_distance)
 
 Test(mbr, box_box_distance)
 {
-	Mbr<2> mbrA (AxisAlignedBox(
+	Mbr<2> mbrA (Box(
 				Point({-1.0f, 0.0f}), Point({0.0f, 1.0f})
 			));
 
-	Mbr<2> mbrB (AxisAlignedBox(
+	Mbr<2> mbrB (Box(
 				Point({1.0f, -3.0f}), Point({2.0f, -2.0f})
 			));
 
-	Mbr<2> mbrC (AxisAlignedBox(
+	Mbr<2> mbrC (Box(
 				Point({-0.5f, 0.5f}), Point({5.0f, 0.8f})
 			));
 
