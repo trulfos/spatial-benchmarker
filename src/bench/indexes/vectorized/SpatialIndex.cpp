@@ -7,6 +7,9 @@
 namespace Vectorized
 {
 
+// Number of items per block
+constexpr unsigned blockSize = sizeof(__m256) / sizeof(Coordinate);
+
 
 /**
  * Allocates aligned memory.
@@ -33,26 +36,27 @@ T * aligned_alloc(std::size_t alignment, std::size_t size, void *& buffer)
 
 SpatialIndex::SpatialIndex(LazyDataSet& dataSet)
 {
+	// Initialize sizes
+	dimension = dataSet.getDimension();
+	nObjects = dataSet.getSize();
+
 	// Shortcuts to avoid handling edge cases
-	if (dataSet.empty()) {
+	if (!nObjects) {
 		throw std::logic_error("Vectorized needs at least one block");
 	}
 
 	static_assert(
-			std::is_same<float, Coordinate>::value,
-			"Vectorized is currently adapted for floats"
+			std::is_same<double, Coordinate>::value,
+			"Vectorized is currently adapted for doubles"
 		);
 
-	// Initialize sizes
-	nObjects = dataSet.size();
-	dimension = dataSet.dimension();
 
 	// Allocate buffers
-	nBlocks = (nObjects - 1) / 8 + 1;
+	nBlocks = (nObjects - 1) / blockSize + 1;
 
 	positions = aligned_alloc<Coordinate>(
 			sizeof(__m256),
-			dimension * nBlocks * sizeof(__m256),
+			2 * dimension * nBlocks * sizeof(__m256),
 			buffer
 		);
 
@@ -60,15 +64,18 @@ SpatialIndex::SpatialIndex(LazyDataSet& dataSet)
 
 	// Copy data into buffers
 	unsigned i = 0;
-	for (DataObject& object : dataSet) {
+	for (DataObject object : dataSet) {
 
 		ids[i] = object.getId();
 
-		const Point& point = object.getPoint();
-		unsigned base = 8 * dimension * (i / 8) + i % 8;
+		const auto& points = object.getBox().getPoints();
+		unsigned base = 2 * blockSize * dimension * (i / blockSize)
+				+ i % blockSize;
 
 		for (unsigned j = 0; j < dimension; j++) {
-			positions[base + 8 * j] = point[j];
+			const unsigned k = base + 2 * blockSize * j;
+			positions[k] = points.first[j];
+			positions[k + blockSize] = points.second[j];
 		}
 
 		i++;
@@ -84,6 +91,7 @@ SpatialIndex::SpatialIndex()
 
 Results SpatialIndex::rangeSearch(const Box& box) const
 {
+	constexpr unsigned short mask = (1u << blockSize) - 1u;
 	const auto points = box.getPoints();
 	Results results;
 
@@ -97,27 +105,30 @@ Results SpatialIndex::rangeSearch(const Box& box) const
 		for (unsigned j = 0; j < dimension; ++j) {
 
 			// Skip if we know the result
-			if (!(~outside & 0xff)) {
+			if (!(~outside & mask)) {
 				break;
 			}
 
-			__m256 bottom = _mm256_broadcast_ss(&points.first[j]);
-			__m256 top = _mm256_broadcast_ss(&points.second[j]);
+			// Load bottom and top for query box
+			__m256d bottom = _mm256_broadcast_sd(&points.first[j]);
+			__m256d top = _mm256_broadcast_sd(&points.second[j]);
 
-			__m256 x = _mm256_load_ps(positions + 8 * (b * dimension + j));
+			// Load bottom and top for subject
+			__m256d sbottom = _mm256_load_pd(positions + 2 * blockSize * (b * dimension + j));
+			__m256d stop = _mm256_load_pd(positions + 2 * blockSize * (b * dimension + j) + blockSize);
 
-			outside |= _mm256_movemask_ps(_mm256_cmp_ps(x, top, _CMP_GT_OS)) |
-					_mm256_movemask_ps(_mm256_cmp_ps(x, bottom, _CMP_LT_OS));
+			outside |= _mm256_movemask_pd(_mm256_cmp_pd(top, sbottom, _CMP_LT_OS)) |
+					_mm256_movemask_pd(_mm256_cmp_pd(stop, bottom, _CMP_LT_OS));
 		}
 
 		// Skip the rest if none were within
-		if (!(~outside & 0xff)) {
+		if (!(~outside & mask)) {
 			continue;
 		}
 
 		// Push results
-		unsigned baseIndex = b * 8;
-		for (unsigned j = 0; j < 8; j++) {
+		unsigned baseIndex = b * blockSize;
+		for (unsigned j = 0; j < blockSize; j++) {
 			unsigned index = baseIndex + j;
 
 			if (((outside >> j) & 1) || index >= nObjects) {
@@ -135,89 +146,7 @@ Results SpatialIndex::rangeSearch(const Box& box) const
 
 Results SpatialIndex::knnSearch(unsigned k, const Point& point) const
 {
-	float best = std::numeric_limits<float>::infinity();
-
-	// Construct priority queue
-	struct QueueEntry {
-		float distance;
-		DataObject::Id id = 0;
-
-		QueueEntry(float distance, DataObject::Id id)
-			: distance(distance), id(id)
-		{};
-	};
-
-	std::priority_queue<
-			QueueEntry,
-			std::vector<QueueEntry>,
-			std::function<bool(const QueueEntry&, const QueueEntry&)>
-		> queue (
-			[](const QueueEntry& a, const QueueEntry& b) -> bool {
-				return a.distance < b.distance ||
-					(a.distance == b.distance && a.id < b.id);
-			}
-		);
-
-#	pragma omp parallel for schedule(static)
-	for (unsigned b = 0; b < nBlocks; ++b) {
-
-		// Sum up contributions from each dimension
-		__m256 sum = _mm256_setzero_ps();
-		for (unsigned d = 0; d < dimension; ++d) {
-			__m256 x = _mm256_load_ps(positions + 8 * (b * dimension + d));
-			__m256 y = _mm256_broadcast_ss(&point[d]);
-			__m256 diff = _mm256_sub_ps(x, y);
-			sum = _mm256_fmadd_ps(diff, diff, sum);
-		}
-
-		// Compare with best so far
-		unsigned isBetter = _mm256_movemask_ps(
-				_mm256_cmp_ps(
-					sum,
-					_mm256_broadcast_ss(&best),
-					_CMP_LE_OS
-				)
-			);
-
-		// Skip the rest if not better
-		if (!isBetter) {
-			continue;
-		}
-
-		struct {
-			alignas(__m256) float distances[8];
-		} aligned;
-
-		_mm256_store_ps(aligned.distances, sum);
-
-		// Filter and push to queue
-		for (unsigned s = 0; s < 8; ++s) {
-
-			if (!((isBetter >> s) & 1)) {
-				continue;
-			}
-
-#			pragma omp critical
-			if (aligned.distances[s] <= best && (8 * b + s) < nObjects) {
-				queue.emplace(aligned.distances[s], ids[8 * b + s]);
-				if (queue.size() > k) {
-					queue.pop();
-					best = queue.top().distance;
-				}
-			}
-
-		}
-	}
-
-	// Construct results
-	Results results;
-
-	while (!queue.empty()) {
-		results.push_back(queue.top().id);
-		queue.pop();
-	}
-
-	return results;
+	throw std::logic_error("KNN search not implemented");
 };
 
 }

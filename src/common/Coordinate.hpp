@@ -5,4 +5,4 @@
  *
  * Defined to allow for easy redefinition.
  */
-typedef float Coordinate;
+using Coordinate = double;

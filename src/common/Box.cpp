@@ -20,6 +20,12 @@ Box::Box(const Point& a, const Point& b)
 }
 
 
+Box::Box(unsigned dimension)
+	:points({dimension, dimension})
+{
+};
+
+
 Box::Box(const Point& center, float size)
 	: points({center.getDimension(), center.getDimension()})
 {
@@ -62,6 +68,29 @@ bool Box::contains(const Point& point) const
 }
 
 
+bool Box::intersects(const Box& other) const
+{
+	unsigned dimension = other.getDimension();
+
+	if (getDimension() != dimension) {
+		throw std::invalid_argument(
+			"Cannot check intersection for boxes of different dimension"
+		);
+	}
+
+	for (unsigned i = 0; i < dimension; i++) {
+		if (
+				points[1][i] < other.points[0][i] ||
+				other.points[1][i] < points[0][i]
+		) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+
 float Box::getVolume() const
 {
 	float v = 0.0f;
@@ -72,3 +101,19 @@ float Box::getVolume() const
 
 	return v;
 }
+
+std::istream& operator>>(
+		std::istream& stream,
+		Box& box
+) {
+	//TODO
+	throw std::logic_error("Not implemented :-(");
+};
+
+std::ostream& operator<<(
+		std::ostream& stream,
+		const Box& box
+) {
+	//TODO
+	throw std::logic_error("Not implemented :-(");
+};

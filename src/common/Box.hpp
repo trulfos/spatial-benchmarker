@@ -15,6 +15,13 @@ class Box
 		 */
 		Box(const Point& a, const Point& b);
 
+		Box() = default;
+
+		/**
+		 * Construct empty box with the given dimension.
+		 */
+		Box(unsigned dimension);
+
 		/**
 		 * Construct an axis aligned box from a point and a width/height.
 		 *
@@ -43,6 +50,12 @@ class Box
 
 
 		/**
+		 * Check if this axis aligned box intersects another box.
+		 */
+		bool intersects(const Box& o) const;
+
+
+		/**
 		 * Get the volume of this axis aligned box.
 		 */
 		float getVolume() const;
@@ -50,3 +63,6 @@ class Box
 	private:
 		Point points[2];
 };
+
+std::istream& operator>>(std::istream& stream, Box& box);
+std::ostream& operator<<(std::ostream& stream, const Box& box);

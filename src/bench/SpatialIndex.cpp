@@ -14,7 +14,7 @@ Results SpatialIndex::search(const Query& query) const
 		case Query::Type::RANGE:
 		{
 			const RangeQuery * rq = static_cast<const RangeQuery *>(&query);
-			return this->rangeSearch(rq->box);
+			return this->rangeSearch(rq->getBox());
 		}
 
 		case Query::Type::KNN:

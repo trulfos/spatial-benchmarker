@@ -13,6 +13,8 @@ class Point : private std::vector<Coordinate>
 {
 	public:
 
+		Point() = default;
+
 		/**
 		 * Create a point of the given dimension.
 		 */

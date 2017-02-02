@@ -24,7 +24,7 @@ std::shared_ptr<SpatialIndex> SpatialIndexFactory::create(
 	} else if (algorithm == "vectorized") {
 		return std::make_shared<Vectorized::SpatialIndex>(dataSet);
 	} else if (algorithm.substr(0, 5) == "rtree") {
-		unsigned d = dataSet.dimension();
+		unsigned d = dataSet.getDimension();
 
 		std::string type = "guttman";
 

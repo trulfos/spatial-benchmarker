@@ -3,7 +3,7 @@
 #include <istream>
 #include <ostream>
 #include <vector>
-#include "Point.hpp"
+#include "Box.hpp"
 
 /**
  * This represents an data object.
@@ -23,7 +23,8 @@ class DataObject
 		 * Create a new spatial object.
 		 */
 		DataObject(unsigned int dimension);
-		DataObject(Id id, Point point);
+		DataObject(Id id, const Box& point);
+		DataObject() = default;
 
 		/**
 		 * Get the id of this object.
@@ -37,7 +38,7 @@ class DataObject
 		 *
 		 * May return garbage if the point has not been initialized.
 		 */
-		const Point& getPoint() const;
+		const Box& getBox() const;
 
 
 		/**
@@ -52,7 +53,7 @@ class DataObject
 
 	private:
 		Id id = 0;
-		Point point;
+		Box box;
 
 		/**
 		 * Custom read from istreams.

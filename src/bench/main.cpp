@@ -11,6 +11,7 @@
 #include "ReporterArg.hpp"
 #include "common/Logger.hpp"
 #include "common/ProgressLogger.hpp"
+#include "Benchmark.hpp"
 #include <algorithm>
 #include <fstream>
 #include <iostream>
@@ -34,7 +35,7 @@ int main(int argc, char *argv[])
 	logger.start("Parsing command line options");
 
 	// Command line options
-	TCLAP::CmdLine cmd("Specialication project test framework", ' ', "0.3.1");
+	TCLAP::CmdLine cmd("Specialication project test framework", ' ', "0.4.0");
 
 	TCLAP::MultiArg<std::string> algorithm(
 			"i", "index",
@@ -63,24 +64,15 @@ int main(int argc, char *argv[])
 	cmd.parse(argc, argv);
 
 	try {
-		QuerySet querySet;
 		ResultSet resultSet;
 		std::string filename = dataFilename.getValue();
 
-		logger.endStart("Reading queries from " + filename + "queries.csv");
-
-		readFrom(querySet, filename + "queries.csv");
+		logger.endStart("Opening benchmark " + filename);
+		Benchmark benchmark (filename);
 
 		if (!noCheck.getValue()) {
 			logger.endStart("Reading results from " + filename + "results.csv");
-
 			readFrom(resultSet, filename + "results.csv");
-
-			if (querySet.size() != resultSet.size()) {
-				throw std::logic_error("Query and result sets differ in size!");
-			}
-		} else {
-			resultSet.resize(querySet.size());
 		}
 
 		// Run code!
@@ -92,18 +84,27 @@ int main(int argc, char *argv[])
 
 		for (auto alg : algorithms) {
 			logger.endStart("Benchmarking " + alg);
-			LazyDataSet dataSet (filename + "data");
 
-			logger.start(
-					"Indexing " + filename + "data." +
-					(dataSet.isBinary() ? "dat" : "csv")
-				);
+			LazyDataSet dataSet = benchmark.getData();
+			LazyQuerySet querySet = benchmark.getQueries();
+
+			//TODO: Move to benchmark ---
+			if (noCheck.getValue()) {
+				resultSet.resize(querySet.getSize());
+			}
+
+			if (resultSet.size() != querySet.getSize()) {
+				throw std::logic_error("Result and query set not equal in size");
+			}
+			// --------------------------
+
+			logger.start("Indexing " + filename + "data");
 
 			auto index = SpatialIndexFactory::create(alg, dataSet);
 
 			logger.endStart("Generating data for queries");
 
-			ProgressLogger progress(std::clog, querySet.size());
+			ProgressLogger progress(std::clog, querySet.getSize());
 			for (auto testCase : zip(querySet, resultSet)) {
 
 				// Do the search

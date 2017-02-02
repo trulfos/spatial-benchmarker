@@ -2,36 +2,23 @@
 #include <ios>
 #include <stdexcept>
 
-DataObject::DataObject(unsigned int dimension) : point(dimension)
+DataObject::DataObject(unsigned int dimension) : box(dimension)
 {
 }
 
 
-DataObject::DataObject(Id id, Point point) : id(id), point(point)
+DataObject::DataObject(Id id, const Box& box) : id(id), box(box)
 {
 }
 
 DataObject::Id DataObject::getId() const
 {
-	return this->id;
+	return id;
 }
 
-const Point& DataObject::getPoint() const
+const Box& DataObject::getBox() const
 {
-	return this->point;
-}
-
-
-void DataObject::write(std::ostream& stream) const
-{
-	stream.write(reinterpret_cast<const char *>(&id), sizeof(id));
-	point.write(stream);
-}
-
-void DataObject::read(std::istream& stream)
-{
-	stream.read(reinterpret_cast<char *>(&id), sizeof(id));
-	point.read(stream);
+	return box;
 }
 
 
@@ -46,7 +33,7 @@ std::istream& operator>>(
 		return stream;
 	}
 
-	stream >> object.point;
+	stream >> object.box;
 
 	return stream;
 }
@@ -56,5 +43,5 @@ std::ostream& operator<<(
 		std::ostream& stream,
 		const DataObject& object
 ) {
-	return stream << object.id << ' ' << object.point;
+	return stream << object.id << ' ' << object.box;
 }

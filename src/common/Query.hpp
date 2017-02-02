@@ -13,6 +13,7 @@ class Query
 	public:
 		enum Type{RANGE, KNN};
 
+		Query() = default;
 		virtual ~Query() = default;
 
 		Type getType() const;

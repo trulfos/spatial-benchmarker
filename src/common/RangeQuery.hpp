@@ -6,12 +6,15 @@
 class RangeQuery : public Query
 {
 	public:
-		const Box box;
-
+		RangeQuery() = default;
 		RangeQuery(const Box& box);
 		RangeQuery(const Point& a, const Point& b);
 
 		std::string getName() const;
+		const Box& getBox() const;
+
+	private:
+		Box box;
 
 };
 

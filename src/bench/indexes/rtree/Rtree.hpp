@@ -48,7 +48,7 @@ class Rtree : public ::SpatialIndex
 		 */
 		void load(LazyDataSet& dataSet)
 		{
-			if (dataSet.empty()) {
+			if (!dataSet.getSize()) {
 				return;
 			}
 

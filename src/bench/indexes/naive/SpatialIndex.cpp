@@ -35,7 +35,7 @@ Results SpatialIndex::rangeSearch(const Box& box) const
 			dataSet.end(),
 			std::back_inserter(results),
 			[&](const DataObject& object) -> bool {
-				return box.contains(object.getPoint());
+				return box.intersects(object.getBox());
 			}
 		);
 
@@ -55,40 +55,7 @@ Results SpatialIndex::rangeSearch(const Box& box) const
 
 Results SpatialIndex::knnSearch(unsigned k, const Point& point) const
 {
-	unsigned resultSize = std::min(k, (unsigned) dataSet.size());
-
-	std::vector<DataObject> dataResults (
-			dataSet.begin(),
-			dataSet.begin() + resultSize
-		);
-
-	// Sort it by distance, then by id
-	std::partial_sort_copy(
-			dataSet.begin(),
-			dataSet.end(),
-			dataResults.begin(),
-			dataResults.end(),
-			[&point](const DataObject& a, const DataObject& b) -> bool {
-				float da = d(point, a.getPoint());
-				float db = d(point, b.getPoint());
-				return da < db || (da == db && a.getId() < b.getId());
-			}
-		);
-
-
-	// Generate results
-	Results results (resultSize);
-
-	std::transform(
-			dataResults.begin(),
-			dataResults.begin() + resultSize,
-			results.begin(),
-			[](const DataObject& object) -> DataObject::Id {
-				return object.getId();
-			}
-		);
-
-	return results;
+	throw std::logic_error("KNN search not implemented");
 };
 
 }

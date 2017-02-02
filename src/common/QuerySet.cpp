@@ -31,7 +31,7 @@ unsigned QuerySet::getDimension() const
 	}
 
 	return static_cast<const RangeQuery&>(query)
-		.box
+		.getBox()
 		.getPoints()
 		.first
 		.getDimension();

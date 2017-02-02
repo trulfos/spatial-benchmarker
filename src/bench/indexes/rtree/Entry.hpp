@@ -66,7 +66,7 @@ class BaseEntry
 		BaseEntry(const DataObject& object)
 		{
 			id = object.getId();
-			mbr = object.getPoint();
+			mbr = object.getBox();
 		};
 
 		
