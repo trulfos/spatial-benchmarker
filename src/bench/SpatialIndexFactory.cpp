@@ -2,13 +2,13 @@
 
 #include "bench/indexes/naive/SpatialIndex.hpp"
 #include "bench/indexes/parallel/SpatialIndex.hpp"
+#include "bench/indexes/sequential/SpatialIndex.hpp"
+#include "bench/indexes/vectorized/SpatialIndex.hpp"
 #include "bench/indexes/rtree/QuadraticTree.hpp"
 #include "bench/indexes/rtree/RStarTree.hpp"
 #include "bench/indexes/rtree/RRStarTree.hpp"
 #include "bench/indexes/rtree/GreeneTree.hpp"
 #include "bench/indexes/rtree/HilbertRtree.hpp"
-#include "bench/indexes/sequential/SpatialIndex.hpp"
-#include "bench/indexes/vectorized/SpatialIndex.hpp"
 
 
 std::shared_ptr<SpatialIndex> SpatialIndexFactory::create(
