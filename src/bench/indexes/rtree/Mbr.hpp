@@ -55,7 +55,7 @@ class Mbr
 		};
 
 		/**
-		 * Adding to MBRs gives the MBR containing both.
+		 * Adding two MBRs gives the MBR containing both.
 		 *
 		 * @param other Another MBR
 		 * @return The MBR containing both this and other

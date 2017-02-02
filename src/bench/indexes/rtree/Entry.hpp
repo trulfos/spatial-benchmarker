@@ -94,7 +94,7 @@ class BaseEntry
 		void assign(ForwardIterator start, ForwardIterator end)
 		{
 			if (start == end) {
-				throw new std::logic_error(
+				throw std::logic_error(
 						"Entry reset needs at least one child. None given!"
 					);
 			}

@@ -2,6 +2,7 @@
 #include <array>
 #include <cstdint>
 #include "HilbertCurve.hpp"
+#include "common/Point.cpp"
 
 using Rtree::HilbertCurve;
 
@@ -13,7 +14,7 @@ struct TestCase
 {
 	static constexpr unsigned bits = S;
 	static constexpr unsigned dimension = D;
-	std::array<Coordinate, D> point;
+	Point point;
 	std::uint64_t answer;
 };
 
@@ -23,10 +24,10 @@ struct TestCase
 template<class A>
 void checkAll(A cases)
 {
-	HilbertCurve<std::uint64_t> hc;
+	using HC = HilbertCurve<std::uint64_t, A::value_type::dimension>;
 
 	for (auto& c : cases) {
-		std::uint64_t r = hc.map<c.dimension>(c.point) >> (8 * sizeof(r) - c.bits);
+		std::uint64_t r = HC::map(c.point) >> (8 * sizeof(r) - c.bits);
 
 		cr_expect(
 				r == c.answer,
@@ -64,7 +65,7 @@ Test(HilbertCurve, 2d)
 
 
 	// Some selected cases from a 16x16 grid
-	std::array<TestCase<2, 8>, 16> testCases16 = {{
+	std::array<TestCase<2, 8>, 4> testCases16 = {{
 			{{0.0000f, 0.0000f}, 0},
 			{{1.0f/15.0f, 11.0f/15.0f}, 76},
 			{{7.0f/15.0f, 10.0f/15.0f}, 113},
@@ -106,8 +107,8 @@ Test(HilbertCurve, 5d)
 
 Test(HilbertCurve, 10d)
 {
-	std::array<TestCase<10, 10*4>, 2> testCases = {{
-			{ // From paper
+	std::array<TestCase<10, 10*4>, 1> testCases = {{
+			{
 				{
 					10.0f/15.0f,
 					14.0f/15.0f,
