@@ -25,18 +25,12 @@ class QueryInputIterator : public BoxInputIterator
 		QueryInputIterator() = default;
 
 
-		// Override...
+		// "Override"...
 		const Query& operator*() const;
 		const Query * operator->() const;
 		QueryInputIterator operator++();
 		QueryInputIterator operator++(int);
 		difference_type operator-(QueryInputIterator other);
-
-
-		/**
-		 * This can be used as-is?
-		 */
-		//difference_type operator-(BoxInputIterator& other);
 
 	private:
 		unsigned id = 1;

@@ -119,7 +119,7 @@ int main(int argc, char *argv[])
 
 		// Output report
 		logger.endStart("Generating report");
-		std::cout << reporter << std::endl;
+		std::cout << reporter;
 
 		return 0;
 

@@ -14,6 +14,7 @@ RunTimeReporter::RunTimeReporter()
 	}
 }
 
+
 Results RunTimeReporter::run(
 		const std::string& name,
 		const Query& query,
@@ -33,6 +34,7 @@ Results RunTimeReporter::run(
 		Results newResults = index.search(query);
 		auto endTime = clock::now();
 
+		// Check results
 		std::sort(newResults.begin(), newResults.end());
 
 		if (!results.empty() && results != newResults) {
@@ -41,6 +43,7 @@ Results RunTimeReporter::run(
 
 		results = newResults;
 
+		// Calculate runtime
 		unsigned long runtime =
 			std::chrono::duration_cast<std::chrono::microseconds>(
 						endTime - startTime
@@ -51,50 +54,9 @@ Results RunTimeReporter::run(
 	}
 
 	// Store result
-	timeseries[name].push_back(min);
-
-	if (queries.size() < timeseries[name].size()) {
-		queries.push_back(query.getName());
-	}
+	addEntry(query, "runtime", std::to_string(min));
 
 	return results;
-}
-
-void RunTimeReporter::generate(std::ostream& stream) const
-{
-	std::vector<unsigned> sizes;
-	std::transform(
-			timeseries.begin(),
-			timeseries.end(),
-			std::back_inserter(sizes),
-			[](const decltype(timeseries)::value_type& pair) {
-				return (unsigned) pair.second.size();
-			}
-		);
-
-	auto max = std::max_element(sizes.begin(), sizes.end());
-
-	if (max == sizes.end()) {
-		stream << "No data to report";
-		return;
-	}
-
-	// Print header
-	stream << "query\t";
-	for (auto pair : timeseries) {
-		stream << pair.first << '\t';
-	}
-
-	// Print data lines
-	for (unsigned i = 0; i < *max; ++i) {
-		stream << '\n' << queries[i];
-		for (auto pair : timeseries) {
-			stream << '\t';
-			if (i < pair.second.size()) {
-				stream << pair.second[i];
-			}
-		}
-	}
 }
 
 

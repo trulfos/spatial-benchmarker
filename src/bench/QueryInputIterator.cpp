@@ -47,5 +47,5 @@ QueryInputIterator::difference_type QueryInputIterator::operator-(
 
 void QueryInputIterator::extract()
 {
-	query = RangeQuery(BoxInputIterator::operator*());
+	query = RangeQuery(id++, BoxInputIterator::operator*());
 }

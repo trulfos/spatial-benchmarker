@@ -1,18 +1,18 @@
 #include "RangeQuery.hpp"
 
-RangeQuery::RangeQuery(const Box& box)
-	: Query(Query::Type::RANGE), box(box)
+RangeQuery::RangeQuery(unsigned id, const Box& box)
+	: Query(Query::Type::RANGE), box(box), id(id)
 {
 }
 
-RangeQuery::RangeQuery(const Point& a, const Point& b)
-	: RangeQuery(Box(a, b))
+RangeQuery::RangeQuery(unsigned id, const Point& a, const Point& b)
+	: RangeQuery(id, Box(a, b))
 {
 }
 
 std::string RangeQuery::getName() const
 {
-	return std::to_string(1.0f);
+	return std::to_string(id);
 }
 
 const Box& RangeQuery::getBox() const
