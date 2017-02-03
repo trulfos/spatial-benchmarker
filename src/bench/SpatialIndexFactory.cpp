@@ -75,20 +75,14 @@ std::shared_ptr<SpatialIndex> SpatialIndexFactory::createRtree(
 			return std::make_shared<I<2, C>>(dataSet);
 		case 3:
 			return std::make_shared<I<3, C>>(dataSet);
-		case 4:
-			return std::make_shared<I<4, C>>(dataSet);
 		case 5:
 			return std::make_shared<I<5, C>>(dataSet);
-		case 6:
-			return std::make_shared<I<6, C>>(dataSet);
-		case 7:
-			return std::make_shared<I<7, C>>(dataSet);
-		case 8:
-			return std::make_shared<I<8, C>>(dataSet);
 		case 9:
 			return std::make_shared<I<9, C>>(dataSet);
-		case 10:
-			return std::make_shared<I<10, C>>(dataSet);
+		case 16:
+			return std::make_shared<I<16, C>>(dataSet);
+		case 22:
+			return std::make_shared<I<22, C>>(dataSet);
 
 		default:
 			throw std::domain_error(
