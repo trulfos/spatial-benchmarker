@@ -17,10 +17,11 @@ Build the benchmarker with
 make bin/bench
 ```
 
-Run benchmarker on all benchmarks
+For a overview of command line arguments, run
 ```bash
-make run
+bin/bench --help
 ```
+
 
 Build `mkdata` and `mkqueries` using
 ```bash
@@ -32,7 +33,7 @@ commands.
 
 Run all unit tests
 ```bash
-make test_all
+make check
 ```
 
 You can also make and run a specific unit test
@@ -41,14 +42,39 @@ make test/bench/rtree/Mbr
 ./test/bench/rtree/Mbr
 ```
 
-## Generating test data
-Test data can be generated. Run `bin/mkdata` to generate a test data set, then
-use `bin/mkqueries` to generate a test query set.
+## Benchmarks
 
-Running `bin/bench` with the above queries and data will fail due to missing
-results. Turn off the checking of results with the `--no-check` option and
-generate a results report using `--report results`, preferrably using the naive
-index:
+Data and query sets by Beckmann and Seeger can be downloaded from
+[Becmann and Seeger's site](http://www.mathematik.uni-marburg.de/~seeger/rrstar/).
+
+### Benchmark folder structure
+A benchmark consists of a folder with the following files:
+
+#### dimension
+This file contains the dimensionality of the data as text. E.g.
+```
+9
+```
+for a 9-dimensional benchmark.
+
+
+#### data
+Data set as a sequence of boxes. Each box is given by the lower and upper
+coordinate in each dimension (as binary doubles).
+
+#### queries
+Same format as data file. These are assumed to be range queries.
+
+#### results
+The correct results of the queries above queries. Each line starts with the
+number of results, followed by the included boxes from the K
+
+### Generating results
+The benchmarker expects there to be valid results in the same folder as the data
+and queries. Correct results are best generated using the naive index.
+
+To turn off the checking of results, use the `--no-check` option and
+generate a results report using `--report results`:
 ```bash
-bin/bench --algorithm naive -b benchmark/prefix/path --report results --no-check
+bin/bench yourbenchmark/ -i naive -r results -n > yourbenchmark/results
 ```
