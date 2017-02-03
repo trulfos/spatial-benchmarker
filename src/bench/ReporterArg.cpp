@@ -1,6 +1,5 @@
 #include "ReporterArg.hpp"
 #include "reporters/RunTimeReporter.hpp"
-#include "reporters/SpeedupReporter.hpp"
 #include "reporters/ResultsReporter.hpp"
 
 ReporterArg::ReporterArg(
@@ -29,11 +28,6 @@ bool ReporterArg::processArg(int *i, std::vector<std::string>& args)
 
 	if (name == "runtime") {
 		reporter = std::make_shared<RunTimeReporter>();
-	} else if (name.size() >= 7 && name.substr(0, 7) == "speedup") {
-		std::string reference = name.size() > 8 && name[7] == '-' ?
-			name.substr(8, std::string::npos) : "naive";
-
-		reporter = std::make_shared<SpeedupReporter>(reference);
 	} else if (name == "results") {
 		reporter = std::make_shared<ResultsReporter>();
 	} else {
