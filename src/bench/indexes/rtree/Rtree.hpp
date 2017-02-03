@@ -35,7 +35,7 @@ class Rtree : public ::SpatialIndex
 			height = 1;
 		};
 
-		~Rtree()
+		virtual ~Rtree()
 		{
 			for (N * node : nodes) {
 				delete node;
