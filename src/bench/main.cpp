@@ -1,8 +1,6 @@
-#include "common/DataObject.hpp"
 #include "LazyDataSet.hpp"
-#include "common/KnnQuery.hpp"
+#include "LazyQuerySet.hpp"
 #include "common/Results.hpp"
-#include "common/QuerySet.hpp"
 #include "common/ResultSet.hpp"
 #include "common/Color.hpp"
 #include "Zipped.hpp"
@@ -12,7 +10,6 @@
 #include "common/Logger.hpp"
 #include "common/ProgressLogger.hpp"
 #include "Benchmark.hpp"
-#include "AlgorithmArg.hpp"
 #include <algorithm>
 #include <fstream>
 #include <iostream>
@@ -39,12 +36,6 @@ int main(int argc, char *argv[])
 
 	TCLAP::CmdLine cmd("Specialication project test framework", ' ', "0.4.0");
 
-	AlgorithmArg algorithms(
-			"i", "index",
-			"Index(es) to run.",
-			false, "index name", cmd
-		);
-
 	ReporterArg reportType(
 			"r", "report",
 			"Generate a report in the give style.",
@@ -55,6 +46,12 @@ int main(int argc, char *argv[])
 			"n", "no-check",
 			"Don't check the results. This avoids the need for a results file.",
 			cmd
+		);
+
+	TCLAP::UnlabeledValueArg<std::string> algorithm(
+			"index",
+			"Index to benchmark.",
+			true, "", "index name", cmd
 		);
 
 	TCLAP::UnlabeledValueArg<std::string> dataFilename(
@@ -73,49 +70,48 @@ int main(int argc, char *argv[])
 		Benchmark benchmark (filename);
 
 		auto reporter = reportType.getValue();
+		auto alg = algorithm.getValue();
 
-		for (auto alg : algorithms) {
-			logger.endStart("Benchmarking " + alg);
+		logger.endStart("Benchmarking " + alg);
 
-			// Load benchmark data
-			LazyDataSet dataSet = benchmark.getData();
-			LazyQuerySet querySet = benchmark.getQueries();
-			ResultSet resultSet = benchmark.getResults(noCheck.getValue());
+		// Load benchmark data
+		LazyDataSet dataSet = benchmark.getData();
+		LazyQuerySet querySet = benchmark.getQueries();
+		ResultSet resultSet = benchmark.getResults(noCheck.getValue());
 
-			// Index data
-			logger.start("Indexing " + filename + "data");
-			auto index = SpatialIndexFactory::create(alg, dataSet);
+		// Index data
+		logger.start("Indexing " + filename + "data");
+		auto index = SpatialIndexFactory::create(alg, dataSet);
 
-			// Run reporter to generate data
-			logger.endStart("Generating data for queries");
-			ProgressLogger progress(std::clog, querySet.getSize());
+		// Run reporter to generate data
+		logger.endStart("Generating data for queries");
+		ProgressLogger progress(std::clog, querySet.getSize());
 
-			for (auto testCase : zip(querySet, resultSet)) {
+		for (auto testCase : zip(querySet, resultSet)) {
 
-				// Do the search
-				Results results = reporter->run(
-						alg,
-						testCase.first,
-						*index.get()
-					);
+			// Do the search
+			Results results = reporter->run(
+					alg,
+					testCase.first,
+					*index.get()
+				);
 
-				// Check results
-				if (!noCheck.getValue()) {
-					std::sort(results.begin(), results.end());
+			// Check results
+			if (!noCheck.getValue()) {
+				std::sort(results.begin(), results.end());
 
-					if (results != testCase.second) {
-						std::cerr << C::red("Error") << "\n"
-							<< "Invalid results returned:\n\t" << results
-							<< "\n\nExpected:\n\t" << testCase.second
-							<< std::endl;
-					}
+				if (results != testCase.second) {
+					std::cerr << C::red("Error") << "\n"
+						<< "Invalid results returned:\n\t" << results
+						<< "\n\nExpected:\n\t" << testCase.second
+						<< std::endl;
 				}
-
-				progress.increment();
 			}
 
-			logger.end();
+			progress.increment();
 		}
+
+		logger.end();
 
 		// Output report
 		logger.endStart("Generating report");
