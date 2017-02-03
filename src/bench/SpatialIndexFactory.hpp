@@ -25,9 +25,9 @@ class SpatialIndexFactory
 			);
 
 		/**
-		 * Get all index keys.
+		 * Index keys
 		 */
-		static std::vector<std::string> keys();
+		static const std::vector<std::string> keys;
 
 	private:
 

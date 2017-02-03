@@ -1,11 +1,9 @@
 #pragma once
 #include <string>
-#include "DataObjectInputIterator.hpp"
-//#include "QueryInputIterator.hpp"
-#include "common/QuerySet.hpp"
+#include <fstream>
+#include "common/ResultSet.hpp"
 #include "LazyDataSet.hpp"
 #include "LazyQuerySet.hpp"
-#include <fstream>
 
 /**
  * This class is responsible for providing the correct data as read from a
@@ -40,7 +38,10 @@ class Benchmark
 
 		/**
 		 * Read and return the result set.
+		 *
+		 * @param empty Return empty sets if true instead of reading from file
 		 */
+		ResultSet getResults(bool empty = false);
 
 	private:
 

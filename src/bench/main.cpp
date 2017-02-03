@@ -12,6 +12,7 @@
 #include "common/Logger.hpp"
 #include "common/ProgressLogger.hpp"
 #include "Benchmark.hpp"
+#include "AlgorithmArg.hpp"
 #include <algorithm>
 #include <fstream>
 #include <iostream>
@@ -32,12 +33,13 @@ int main(int argc, char *argv[])
 {
 
 	Logger logger (std::clog, "Spatial index test framework");
+
+
 	logger.start("Parsing command line options");
 
-	// Command line options
 	TCLAP::CmdLine cmd("Specialication project test framework", ' ', "0.4.0");
 
-	TCLAP::MultiArg<std::string> algorithm(
+	AlgorithmArg algorithms(
 			"i", "index",
 			"Index(es) to run.",
 			false, "index name", cmd
@@ -63,48 +65,31 @@ int main(int argc, char *argv[])
 
 	cmd.parse(argc, argv);
 
+
 	try {
-		ResultSet resultSet;
 		std::string filename = dataFilename.getValue();
 
 		logger.endStart("Opening benchmark " + filename);
 		Benchmark benchmark (filename);
 
-		if (!noCheck.getValue()) {
-			logger.endStart("Reading results from " + filename + "results.csv");
-			readFrom(resultSet, filename + "results.csv");
-		}
-
-		// Run code!
 		auto reporter = reportType.getValue();
-		std::vector<std::string> algorithms (algorithm.getValue());
-		if (algorithms.empty()) {
-			algorithms = SpatialIndexFactory::keys();
-		}
 
 		for (auto alg : algorithms) {
 			logger.endStart("Benchmarking " + alg);
 
+			// Load benchmark data
 			LazyDataSet dataSet = benchmark.getData();
 			LazyQuerySet querySet = benchmark.getQueries();
+			ResultSet resultSet = benchmark.getResults(noCheck.getValue());
 
-			//TODO: Move to benchmark ---
-			if (noCheck.getValue()) {
-				resultSet.resize(querySet.getSize());
-			}
-
-			if (resultSet.size() != querySet.getSize()) {
-				throw std::logic_error("Result and query set not equal in size");
-			}
-			// --------------------------
-
+			// Index data
 			logger.start("Indexing " + filename + "data");
-
 			auto index = SpatialIndexFactory::create(alg, dataSet);
 
+			// Run reporter to generate data
 			logger.endStart("Generating data for queries");
-
 			ProgressLogger progress(std::clog, querySet.getSize());
+
 			for (auto testCase : zip(querySet, resultSet)) {
 
 				// Do the search
@@ -132,6 +117,7 @@ int main(int argc, char *argv[])
 			logger.end();
 		}
 
+		// Output report
 		logger.endStart("Generating report");
 		std::cout << reporter << std::endl;
 

@@ -26,3 +26,28 @@ LazyQuerySet Benchmark::getQueries()
 	std::string path = folder + "queries";
 	return LazyQuerySet(path, dimension);
 }
+
+ResultSet Benchmark::getResults(bool empty)
+{
+	unsigned nQueries = getQueries().getSize();
+
+	if (empty) {
+		return ResultSet(nQueries);
+	}
+
+	std::string path = folder + "results";
+	std::ifstream stream (path);
+
+	if (!stream) {
+		throw std::runtime_error("Could not read file " + path);
+	}
+
+	ResultSet results;
+	stream >> results;
+
+	if (nQueries != results.size()) {
+		throw std::logic_error("Result and query sets differ in size");
+	}
+
+	return results;
+}

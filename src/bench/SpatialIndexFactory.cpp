@@ -58,10 +58,10 @@ std::shared_ptr<SpatialIndex> SpatialIndexFactory::create(
 	throw std::invalid_argument(algorithm + " is not a valid algorithm name");
 }
 
-std::vector<std::string> SpatialIndexFactory::keys()
-{
-	return {"naive", "parallel", "rtree", "sequential", "vectorized"};
-}
+const std::vector<std::string> SpatialIndexFactory::keys = {
+		"naive", "parallel", "sequential", "vectorized", "rtree", "rtree-star",
+		"rtree-rstar", "rtree-hilbert"
+	};
 
 template<template<unsigned, unsigned> class I>
 std::shared_ptr<SpatialIndex> SpatialIndexFactory::createRtree(
