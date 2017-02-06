@@ -21,7 +21,7 @@ void MetricReporter::generate(std::ostream& stream) const
 	for (const auto& r : results) {
 		stream << r.query << '\t'
 			<< r.metric << '\t'
-			<< r.value << '\t' << '\n';
+			<< r.value << '\n';
 	}
 
 	stream << std::flush;
