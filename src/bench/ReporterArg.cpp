@@ -1,6 +1,7 @@
 #include "ReporterArg.hpp"
 #include "reporters/RunTimeReporter.hpp"
 #include "reporters/ResultsReporter.hpp"
+#include "reporters/StatsReporter.hpp"
 
 ReporterArg::ReporterArg(
 			const std::string& flag,
@@ -30,6 +31,8 @@ bool ReporterArg::processArg(int *i, std::vector<std::string>& args)
 		reporter = std::make_shared<RunTimeReporter>();
 	} else if (name == "results") {
 		reporter = std::make_shared<ResultsReporter>();
+	} else if (name == "stats") {
+		reporter = std::make_shared<StatsReporter>();
 	} else {
 		throw TCLAP::ArgParseException("No reporter named " + name, toString());
 	}

@@ -150,6 +150,58 @@ class Rtree : public ::SpatialIndex
 
 
 		/**
+		 * Range search with Guttman's algorithm - with instrumentation.
+		 */
+		Results rangeSearch(const Box& box, StatsCollector& stats) const
+		{
+			Results resultSet;
+			std::stack<std::pair<E *, unsigned>> path;
+
+			path.emplace(root->entries, root->nEntries);
+
+			stats["iterations"] = 0;
+			stats["leaf_accesses"] = (height == 1 ? 1 : 0);
+			stats["node_accesses"] = 1;
+			stats["height"] = height;
+
+			while (!path.empty()) {
+				stats["iterations"]++;
+
+				auto& top = path.top();
+
+				if (top.second == 0) {
+					path.pop();
+					continue;
+				}
+
+
+				top.second -= 1;
+				E& entry = *(top.first++);
+
+				if (entry.mbr.intersects(box)) {
+					if (path.size() == height) {
+						resultSet.push_back(entry.id);
+					} else {
+						N * node = entry.node;
+						path.emplace(node->entries, node->nEntries);
+
+						if (path.size() == height - 1) {
+							stats["leaf_accesses"]++;
+						}
+
+						stats["node_accesses"]++;
+					}
+				}
+
+			}
+
+			stats["results"] = resultSet.size();
+
+			return resultSet;
+		};
+
+
+		/**
 		 * Knn search using the optimal algorithm in the number of nodes
 		 * accessed.
 		 */
@@ -191,7 +243,6 @@ class Rtree : public ::SpatialIndex
 
 			return results;
 		};
-
 
 	private:
 
