@@ -1,0 +1,194 @@
+#!/usr/bin/python3
+import sqlite3
+import argparse
+import subprocess
+import csv
+import os
+
+
+def create_database(connection):
+    """
+    Creates the necessary tables
+    """
+    connection.execute(
+            """
+            create table `run` (
+                `id` integer primary key autoincrement,
+                `configuration` integer not null,
+                `timestamp` datetime default current_timestamp not null,
+                `commit` text not null,
+                `index` text not null,
+                `benchmark` text not null
+            )
+            """
+        )
+
+    connection.execute(
+            """
+            create table `option` (
+                `configuration` integer not null,
+                `name` text not null,
+                `value` text not null,
+
+                primary key (`configuration`, `name`)
+            )
+            """
+        )
+
+    connection.execute(
+            """
+            create table `result` (
+                `run_id` integer not null,
+                `query` integer not null,
+                `metric` text not null,
+                `value` text not null,
+
+                primary key (`run_id`, `query`, `metric`),
+                foreign key (`run_id`) references `run` (`id`)
+                    on delete cascade
+                    on update cascade
+            )
+            """
+        )
+
+
+def get_configuration_id(connection, options):
+
+    for o in options:
+        assert o[0].isalnum() and o[1].isalnum()
+
+    where = '' if len(options) == 0 else 'where (%s)' % (
+                ' or '.join(
+                    "name = '%s' and value = '%s'" % tuple(o) for o in options
+                )
+            )
+
+    cursor = connection.execute(
+            'select `configuration`, count(*) as c from `option`\
+            %s group by `configuration` having c = %s' % (where, len(options))
+        )
+
+    configuration = cursor.fetchone()
+
+    # Create configuration if not exists
+    if not configuration:
+        cursor = connection.execute(
+                'select max(configuration) from run'
+            )
+
+        configuration_id = cursor.fetchone()[0]
+
+        if not configuration_id:
+            configuration_id = 0
+
+        configuration_id += 1
+
+        connection.executemany(
+                'insert into `option` values (?, ?, ?)',
+                ((configuration_id, o[0], o[1]) for o in options)
+            )
+
+        connection.commit()
+        return configuration_id
+
+    return configuration[0]
+
+
+def parse_arguments():
+    parser = argparse.ArgumentParser(
+            description='Run benchmarker and insert results in SQLite file'
+        )
+
+    parser.add_argument(
+            'index',
+            help='Name of index to benchmark'
+        )
+
+    parser.add_argument(
+            'benchmark',
+            help='Name of benchmark to use'
+        )
+
+    parser.add_argument(
+            '--define', '-D', metavar='key=value', nargs='*', default=[],
+            help='Define environment variables for building'
+        )
+
+    parser.add_argument(
+            '--database', '-d', metavar='filename', default='results',
+            help='Path to sqlite database file'
+        )
+
+    parser.add_argument(
+            '--report', '-r', metavar='reporter', default='runtime',
+            help='Reporter to use for collecting results'
+        )
+
+    return parser.parse_args()
+
+
+def run_make(options):
+    # subprocess.check_call(['make', 'clean'])
+    subprocess.check_call(
+            ['make'] + [d for d in options] + ['bin/bench']
+        )
+
+
+def get_commit():
+    return subprocess.check_output(
+            ['git', 'rev-parse', 'HEAD']
+        )
+
+
+def main():
+    # Read settings
+    args = parse_arguments()
+    database = args.database
+    benchmark = args.benchmark
+    index = args.index
+    definitions = [d.split('=') for d in args.define]
+
+    # Check if database exists and create it if not
+    database_exists = os.path.exists(database)
+    connection = sqlite3.connect(database)
+
+    if not database_exists:
+        create_database(connection)
+
+    # Get a configuration id and commit
+    configuration_id = get_configuration_id(connection, definitions)
+    commit = get_commit()
+
+    # Run make
+    run_make(args.define)
+
+    # Now run the benchmark
+    results = subprocess.check_output(
+            ['bin/bench', index, benchmark, '-r', args.report]
+        ).decode('utf-8')
+
+    results_reader = csv.DictReader(
+            results.split('\n'), delimiter='\t'
+        )
+
+    # Insert run
+    cursor = connection.execute(
+            'insert into `run` (`configuration`, `commit`, `index`, `benchmark`)\
+            values (?, ?, ?, ?)',
+            (configuration_id, commit, index, benchmark)
+        )
+    run_id = cursor.lastrowid
+
+    # Insert results into sqlite database
+    connection.executemany(
+            'insert into `result` values (?, ?, ?, ?)',
+            (
+                (run_id, r['query'], r['metric'], r['value'])
+                for r in results_reader
+            )
+        )
+
+    connection.commit()
+
+
+main()

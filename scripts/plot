@@ -1,0 +1,155 @@
+#!/usr/bin/python3
+import sqlite3
+import argparse
+import csv
+import sys
+
+
+def fetch(connection, args):
+
+    # Create where clause filters
+    filters = ' and '.join(
+            ['`metric` = :metric'] +
+            (['`benchmark` = :benchmark'] if args.benchmark else []) +
+            (['`name` = :group'] if args.group else [])
+        )
+
+    # Create subquery
+    subquery = (
+            """
+            select max(`timestamp`)
+            from `result`
+                inner join `run` on `run`.`id` = `result`.`run_id`
+            """ +
+            ("""inner join `option`
+                    on `option`.`configuration` = `run`.`configuration`"""
+                if args.group else '') +
+            "where `run`.`index` = `r`.`index` and %s"
+        ) % filters
+
+
+    # Default select, join and group by
+    select_field = '`r`.`index`'
+    joins = 'inner join `run` `r` on `r`.`id` = `result`.`run_id`'
+    group_by = '`index`'
+
+    # Modify if we should group by option
+    if args.group:
+        group_by += ', `o`.`value`'
+        joins += 'inner join `option` `o`' \
+            'on `o`.`configuration` = `r`.`configuration`'
+        subquery += ' and `option`.`value` = `o`.`value`'
+        select_field = '`o`.`value`, ' + select_field
+
+    # Construct main query
+    cursor = connection.execute(
+            """
+            select `r`.`commit`, %s, %s(`result`.`value`)
+            from `result` %s
+            where %s and `timestamp` = (%s)
+            group by %s
+            """ % (
+                    select_field,
+                    args.aggregate,
+                    joins,
+                    filters,
+                    subquery,
+                    group_by
+                ),
+            args.__dict__
+        )
+
+    # Fetch results
+    results = cursor.fetchall()
+
+    # Check commit hashes
+    commits = set(r[0] for r in results)
+    if len(commits) > 1:
+        print(
+                "\033[31mWARNING:\033[0m Results from different commits!",
+                file=sys.stderr
+            )
+
+    # Strip commit field
+    return [r[1:] for r in results]
+
+
+def parse_arguments():
+    parser = argparse.ArgumentParser(
+            description='Extract results from SQLite file'
+        )
+
+    parser.add_argument(
+            'metric',
+            help='Name of metric to plot'
+        )
+
+    parser.add_argument(
+            '--benchmark', '-b',
+            help='Select specific benchmark.'
+        )
+
+    parser.add_argument(
+            '--group', '-g', metavar='<name>',
+            help='Group by given option (typically x-axis)'
+        )
+
+    parser.add_argument(
+            '--aggregate', '-a', default='avg',
+            help='Aggregate function for aggregating results within group'
+        )
+
+    parser.add_argument(
+            '--database', '-d', metavar='filename',
+            help='Path to sqlite database file'
+        )
+
+    return parser.parse_args()
+
+
+def group(tuples):
+    groups = {}
+    fields = set()
+
+    for t in tuples:
+        name = t[0]
+
+        fields.add(name)
+
+        if name not in groups:
+            groups[name] = {'key': name}
+
+        groups[name][t[1]] = t[2]
+
+    return [['key'] + sorted(list(fields)), list(groups.values())]
+
+
+def main():
+    args = parse_arguments()
+    connection = sqlite3.connect(args.database or 'results')
+
+    # Fetch rows
+    results = fetch(connection, args)
+
+    # Restructure and find keys
+    if not len(results):
+        return
+
+    if len(results[0]) > 2:
+        [keys, results] = group(results)
+    else:
+        results = [{'key': r[0], 'value': r[1]} for r in results]
+        keys = ['key', 'value']
+
+    # Write results in tab separated csv format
+    writer = csv.DictWriter(
+            sys.stdout,
+            fieldnames=results[0].keys(),
+            delimiter='\t'
+        )
+
+    writer.writeheader()
+    writer.writerows(results)
+
+
+main()
