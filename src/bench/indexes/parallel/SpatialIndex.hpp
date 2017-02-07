@@ -15,8 +15,9 @@ class SpatialIndex : public ::SpatialIndex
 {
 
 	public:
-		SpatialIndex();
+		SpatialIndex() = default;
 		SpatialIndex(LazyDataSet& dataSet);
+		~SpatialIndex();
 
 		// Cannot be copied
 		SpatialIndex(const SpatialIndex&) = delete;

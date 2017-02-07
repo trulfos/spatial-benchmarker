@@ -82,7 +82,7 @@ SpatialIndex::SpatialIndex(LazyDataSet& dataSet)
 	}
 };
 
-SpatialIndex::SpatialIndex()
+SpatialIndex::~SpatialIndex()
 {
 	::operator delete(buffer);
 	delete[] ids;

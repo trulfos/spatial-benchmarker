@@ -39,7 +39,7 @@ SpatialIndex::SpatialIndex(LazyDataSet& dataSet)
 	}
 };
 
-SpatialIndex::SpatialIndex()
+SpatialIndex::~SpatialIndex()
 {
 	delete[] positions;
 	delete[] ids;
