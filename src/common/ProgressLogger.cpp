@@ -31,5 +31,11 @@ void ProgressLogger::draw()
 	stream << "\r\033[1;2m["
 			<< std::string(count, '=')
 			<< std::string((LENGTH - 2) - count, ' ')
-		<< "]\033[0m" << std::flush;
+		<< "]\033[0m";
+
+	if (progress == max) {
+		stream << std::endl;
+	} else {
+		stream << std::flush;
+	}
 }

@@ -15,13 +15,9 @@ float d(const Point& a, const Point& b) {
 }
 
 
-SpatialIndex::SpatialIndex(LazyDataSet& dataSet)
-	: dataSet(dataSet.begin(), dataSet.end())
+void SpatialIndex::load(LazyDataSet& data)
 {
-};
-
-SpatialIndex::SpatialIndex()
-{
+	dataSet.assign(data.begin(), data.end());
 };
 
 

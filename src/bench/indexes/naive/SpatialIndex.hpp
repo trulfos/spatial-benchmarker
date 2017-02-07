@@ -14,8 +14,7 @@ class SpatialIndex : public ::SpatialIndex
 {
 
 	public:
-		SpatialIndex();
-		SpatialIndex(LazyDataSet& dataSet);
+		void load(LazyDataSet& dataSet);
 
 	protected:
 		Results rangeSearch(const Box& box) const;

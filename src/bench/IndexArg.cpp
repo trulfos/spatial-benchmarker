@@ -1,4 +1,4 @@
-#include "SpatialIndexFactory.hpp"
+#include "IndexArg.hpp"
 
 #include "bench/indexes/naive/SpatialIndex.hpp"
 #include "bench/indexes/parallel/SpatialIndex.hpp"
@@ -11,20 +11,19 @@
 #include "bench/indexes/rtree/HilbertRtree.hpp"
 
 
-std::shared_ptr<SpatialIndex> SpatialIndexFactory::create(
-		const std::string& algorithm,
-		LazyDataSet& dataSet
-) {
+std::shared_ptr<SpatialIndex> IndexArg::getValue(unsigned dimension) {
+
+	std::string algorithm = TCLAP::UnlabeledValueArg<std::string>::getValue();
+
 	if (algorithm == "naive") {
-		return std::make_shared<Naive::SpatialIndex>(dataSet);
+		return std::make_shared<Naive::SpatialIndex>();
 	} else if (algorithm == "parallel") {
-		return std::make_shared<Parallel::SpatialIndex>(dataSet);
+		return std::make_shared<Parallel::SpatialIndex>();
 	} else if (algorithm == "sequential") {
-		return std::make_shared<Sequential::SpatialIndex>(dataSet);
+		return std::make_shared<Sequential::SpatialIndex>();
 	} else if (algorithm == "vectorized") {
-		return std::make_shared<Vectorized::SpatialIndex>(dataSet);
+		return std::make_shared<Vectorized::SpatialIndex>();
 	} else if (algorithm.substr(0, 5) == "rtree") {
-		unsigned d = dataSet.getDimension();
 
 		std::string type = "guttman";
 
@@ -33,23 +32,23 @@ std::shared_ptr<SpatialIndex> SpatialIndexFactory::create(
 		}
 
 		if (type == "star") {
-			return createRtree<Rtree::RStarTree>(d, dataSet);
+			return createRtree<Rtree::RStarTree>(dimension);
 		}
 
 		if (type == "rstar") {
-			return createRtree<Rtree::RRStarTree>(d, dataSet);
+			return createRtree<Rtree::RRStarTree>(dimension);
 		}
 
 		if (type == "guttman") {
-			return createRtree<Rtree::QuadraticRtree>(d, dataSet);
+			return createRtree<Rtree::QuadraticRtree>(dimension);
 		}
 		
 		if (type == "greene") {
-			return createRtree<Rtree::GreeneRtree>(d, dataSet);
+			return createRtree<Rtree::GreeneRtree>(dimension);
 		}
 
 		if (type == "hilbert") {
-			return createRtree<Rtree::HilbertRtree>(d, dataSet);
+			return createRtree<Rtree::HilbertRtree>(dimension);
 		}
 
 		throw std::invalid_argument(type + " is not a valid rtree type");
@@ -58,31 +57,30 @@ std::shared_ptr<SpatialIndex> SpatialIndexFactory::create(
 	throw std::invalid_argument(algorithm + " is not a valid algorithm name");
 }
 
-const std::vector<std::string> SpatialIndexFactory::keys = {
-		"naive", "parallel", "sequential", "vectorized", "rtree", "rtree-star",
-		"rtree-rstar", "rtree-hilbert"
-	};
+
+std::string IndexArg::getName()
+{
+	return TCLAP::UnlabeledValueArg<std::string>::getValue();
+};
+
 
 template<template<unsigned, unsigned> class I>
-std::shared_ptr<SpatialIndex> SpatialIndexFactory::createRtree(
-		unsigned dimension,
-		LazyDataSet& dataSet
-) {
+std::shared_ptr<SpatialIndex> IndexArg::createRtree(unsigned dimension) {
 	const unsigned C = 128;
 
 	switch (dimension) {
 		case 2:
-			return std::make_shared<I<2, C>>(dataSet);
+			return std::make_shared<I<2, C>>();
 		case 3:
-			return std::make_shared<I<3, C>>(dataSet);
+			return std::make_shared<I<3, C>>();
 		case 5:
-			return std::make_shared<I<5, C>>(dataSet);
+			return std::make_shared<I<5, C>>();
 		case 9:
-			return std::make_shared<I<9, C>>(dataSet);
+			return std::make_shared<I<9, C>>();
 		case 16:
-			return std::make_shared<I<16, C>>(dataSet);
+			return std::make_shared<I<16, C>>();
 		case 22:
-			return std::make_shared<I<22, C>>(dataSet);
+			return std::make_shared<I<22, C>>();
 
 		default:
 			throw std::domain_error(

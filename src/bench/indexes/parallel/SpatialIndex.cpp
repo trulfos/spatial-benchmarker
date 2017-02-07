@@ -9,7 +9,7 @@ namespace Parallel
 {
 
 
-SpatialIndex::SpatialIndex(LazyDataSet& dataSet)
+void SpatialIndex::load(LazyDataSet& dataSet)
 {
 	// Initialize sizes
 	nObjects = dataSet.getSize();

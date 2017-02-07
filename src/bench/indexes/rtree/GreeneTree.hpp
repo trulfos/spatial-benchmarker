@@ -18,11 +18,6 @@ namespace Rtree
 template<unsigned D, unsigned C>
 class GreeneRtree : public QuadraticRtree<D, C> //TODO: Not logical inheritance
 {
-	public:
-		GreeneRtree(LazyDataSet& dataSet) : QuadraticRtree<D, C>(dataSet)
-		{
-		};
-
 	protected:
 		/**
 		 * Redistribute the children of the two entries between the entries.

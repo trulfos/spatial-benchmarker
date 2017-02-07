@@ -3,6 +3,7 @@
 #include "common/Results.hpp"
 #include "common/Box.hpp"
 #include "StatsCollector.hpp"
+#include "LazyDataSet.hpp"
 
 /**
  * This abstract class is a common interface to all spatial indexes.
@@ -12,6 +13,15 @@ class SpatialIndex
 	public:
 
 		virtual ~SpatialIndex();
+
+
+		/**
+		 * Index a data set.
+		 *
+		 * @param dataSet Data set to index
+		 */
+		virtual void load(LazyDataSet& dataSet) = 0;
+
 
 		/**
 		 * Perform a search using the given query.

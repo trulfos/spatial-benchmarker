@@ -16,11 +16,12 @@ class SpatialIndex : public ::SpatialIndex
 
 	public:
 		SpatialIndex() = default;
-		SpatialIndex(LazyDataSet& dataSet);
 		~SpatialIndex();
 
 		// Cannot be copied
 		SpatialIndex(const SpatialIndex&) = delete;
+
+		void load(LazyDataSet& dataSet);
 
 	protected:
 		Results rangeSearch(const Box& box) const;

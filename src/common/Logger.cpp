@@ -32,6 +32,10 @@ void Logger::start(const std::string& task)
 
 void Logger::end()
 {
+	if (level == 0) {
+		throw std::logic_error("Trying to end a task that never started");
+	}
+
 	level--;
 }
 

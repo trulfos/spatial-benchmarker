@@ -33,11 +33,6 @@ class RRStarTree : public Rtree<RevisedNode<D, C, Entry>>
 		static constexpr float EPSILON = 0.00001f;
 		static constexpr unsigned m = E::Node::capacity / 4;
 
-		RRStarTree(LazyDataSet& dataSet)
-		{
-			this->load(dataSet);
-		};
-
 
 		/**
 		 * Insert an entry in the tree.

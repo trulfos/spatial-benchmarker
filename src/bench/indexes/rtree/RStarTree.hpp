@@ -27,10 +27,6 @@ class RStarTree : public Rtree<Node<D, C, Entry>>
 		using E = typename N::Entry;
 		using M = typename E::M;
 
-		RStarTree(LazyDataSet& dataSet)
-		{
-			this->load(dataSet);
-		};
 
 		/**
 		 * Insert an entry in the tree.

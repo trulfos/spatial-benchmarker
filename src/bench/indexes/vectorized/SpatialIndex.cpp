@@ -34,7 +34,7 @@ T * aligned_alloc(std::size_t alignment, std::size_t size, void *& buffer)
 }
 
 
-SpatialIndex::SpatialIndex(LazyDataSet& dataSet)
+void SpatialIndex::load(LazyDataSet& dataSet)
 {
 	// Initialize sizes
 	dimension = dataSet.getDimension();

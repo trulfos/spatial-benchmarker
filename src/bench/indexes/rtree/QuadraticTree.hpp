@@ -24,11 +24,6 @@ class QuadraticRtree : public Rtree<Node<D, C, Entry>>
 		using E = typename N::Entry;
 
 
-		QuadraticRtree(LazyDataSet& dataSet)
-		{
-			this->load(dataSet);
-		};
-
 		/**
 		 * Insert an entry in the tree.
 		 *

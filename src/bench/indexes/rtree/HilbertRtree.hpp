@@ -26,11 +26,6 @@ class HilbertRtree : public Rtree<Node<D, C, HilbertEntry>>
 		using EIt = typename E::iterator;
 
 
-		HilbertRtree(LazyDataSet& dataSet)
-		{
-			this->load(dataSet);
-		};
-
 		/**
 		 * Insert an entry in the tree.
 		 *

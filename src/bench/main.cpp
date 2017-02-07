@@ -5,7 +5,7 @@
 #include "common/Color.hpp"
 #include "Zipped.hpp"
 #include "SpatialIndex.hpp"
-#include "SpatialIndexFactory.hpp"
+#include "IndexArg.hpp"
 #include "ReporterArg.hpp"
 #include "common/Logger.hpp"
 #include "common/ProgressLogger.hpp"
@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
 			cmd
 		);
 
-	TCLAP::UnlabeledValueArg<std::string> algorithm(
+	IndexArg algorithm(
 			"index",
 			"Index to benchmark.",
 			true, "", "index name", cmd
@@ -66,32 +66,36 @@ int main(int argc, char *argv[])
 	try {
 		std::string filename = dataFilename.getValue();
 
-		logger.endStart("Opening benchmark " + filename);
+		logger.endStart("Preparing to run " + algorithm.getName());
+
+		logger.start("Opening benchmark " + filename);
+
 		Benchmark benchmark (filename);
-
-		auto reporter = reportType.getValue();
-		auto alg = algorithm.getValue();
-
-		logger.endStart("Benchmarking " + alg);
 
 		// Load benchmark data
 		LazyDataSet dataSet = benchmark.getData();
 		LazyQuerySet querySet = benchmark.getQueries();
 		ResultSet resultSet = benchmark.getResults(noCheck.getValue());
 
-		// Index data
-		logger.start("Indexing " + filename + "data");
-		auto index = SpatialIndexFactory::create(alg, dataSet);
+		// Create reporter and index
+		auto reporter = reportType.getValue();
+		auto index = algorithm.getValue(dataSet.getDimension());
 
-		// Run reporter to generate data
-		logger.endStart("Generating data for queries");
+		// Index data
+		logger.endStart("Indexing " + filename + "data");
+		index->load(dataSet);
+
+		logger.end();
+
+		// Benchmark
+		logger.endStart("Benchmarking");
 		ProgressLogger progress(std::clog, querySet.getSize());
 
 		for (auto testCase : zip(querySet, resultSet)) {
 
 			// Do the search
 			Results results = reporter->run(
-					alg,
+					algorithm.getName(),
 					testCase.first,
 					*index.get()
 				);
@@ -110,8 +114,6 @@ int main(int argc, char *argv[])
 
 			progress.increment();
 		}
-
-		logger.end();
 
 		// Output report
 		logger.endStart("Generating report");
