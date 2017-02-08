@@ -1,0 +1,9 @@
+#pragma once
+
+/**
+ * This file defines options that may be passed to the indexes.
+ */
+constexpr unsigned D = ${D};
+constexpr unsigned M = ${M};
+//constexpr unsigned m = ${m};
+//constexpr unsigned p = ${p};

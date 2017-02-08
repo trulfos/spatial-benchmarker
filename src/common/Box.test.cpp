@@ -1,7 +1,6 @@
 #include <criterion/criterion.h>
-#include "Point.cpp"
-#include "Box.cpp"
-
+#include "Point.hpp"
+#include "Box.hpp"
 
 Test(Box, contains)
 {

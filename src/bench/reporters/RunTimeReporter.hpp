@@ -39,7 +39,7 @@ class RunTimeReporter : public MetricReporter
 		 * The run time will be measured within these constraints (in order of
 		 * priority).
 		 */
-		const unsigned MAX_RUNS = 25;
+		const unsigned MAX_RUNS = 1;
 		const unsigned long MIN_TOTAL_TIME = 5 * 1e6; // µs
 
 		/**

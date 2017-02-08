@@ -5,11 +5,11 @@
 #include "common/Color.hpp"
 #include "Zipped.hpp"
 #include "SpatialIndex.hpp"
-#include "IndexArg.hpp"
 #include "ReporterArg.hpp"
 #include "common/Logger.hpp"
 #include "common/ProgressLogger.hpp"
 #include "Benchmark.hpp"
+#include "DynamicObject.hpp"
 #include <algorithm>
 #include <fstream>
 #include <iostream>
@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
 			cmd
 		);
 
-	IndexArg algorithm(
+	TCLAP::UnlabeledValueArg<std::string> algorithm(
 			"index",
 			"Index to benchmark.",
 			true, "", "index name", cmd
@@ -79,7 +79,8 @@ int main(int argc, char *argv[])
 
 		// Create reporter and index
 		auto reporter = reportType.getValue();
-		auto index = algorithm.getValue(dataSet.getDimension());
+		//auto index = algorithm.getValue(dataSet.getDimension());
+		DynamicObject<SpatialIndex> index ("./" + algorithm.getValue() + ".so");
 
 		// Index data
 		logger.endStart("Indexing " + filename + "data");

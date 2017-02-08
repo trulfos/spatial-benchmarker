@@ -1,6 +1,2 @@
-bin/
-obj/
-test/
-.deps/
 benchmarks/
-optimizations.log
+build/

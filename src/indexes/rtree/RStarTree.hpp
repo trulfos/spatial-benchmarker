@@ -41,6 +41,9 @@ class RStarTree : public Rtree<Node<D, C, Entry>>
 
 
 	private:
+		//TODO: This value should be changeable
+		unsigned m = E::Node::capacity / 2;
+
 		/**
 		 * Insert an entry in the tree.
 		 *
@@ -255,9 +258,6 @@ class RStarTree : public Rtree<Node<D, C, Entry>>
 					entries.end(),
 					b.begin(), b.end()
 				);
-
-			//TODO: This value should be changeable
-			const unsigned m = E::Node::capacity / 2;
 
 			// This is assumed further down
 			assert(entries.size() > 1);

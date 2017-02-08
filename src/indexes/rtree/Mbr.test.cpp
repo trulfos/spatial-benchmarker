@@ -1,7 +1,7 @@
 #include <criterion/criterion.h>
 #include "Mbr.hpp"
-#include "common/Box.cpp"
-#include "common/Point.cpp"
+#include "common/Box.hpp"
+#include "common/Point.hpp"
 
 using Rtree::Mbr;
 

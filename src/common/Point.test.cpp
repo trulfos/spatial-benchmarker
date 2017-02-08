@@ -1,5 +1,5 @@
 #include <criterion/criterion.h>
-#include "Point.cpp"
+#include "Point.hpp"
 
 
 Test(point, difference)
