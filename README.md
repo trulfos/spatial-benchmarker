@@ -111,10 +111,8 @@ number of results, followed by the included boxes from the K
 
 ### Generating results
 The benchmarker expects there to be valid results in the same folder as the data
-and queries. Correct results are best generated using the naive index.
+and queries. Correct results are best generated using the mkresults script.
 
-To turn off the checking of results, use the `--no-check` option and
-generate a results report using `--report results`:
 ```bash
-bin/bench yourbenchmark/ -i naive -r results -n > yourbenchmark/results
+scripts/mkresults benchmarks/mybenchmark/
 ```
