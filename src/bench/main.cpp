@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
 		// Create reporter and index
 		auto reporter = reportType.getValue();
 		//auto index = algorithm.getValue(dataSet.getDimension());
-		DynamicObject<SpatialIndex> index ("./" + algorithm.getValue() + ".so");
+		DynamicObject<SpatialIndex> index ("./lib" + algorithm.getValue() + ".so");
 
 		// Index data
 		logger.endStart("Indexing " + filename + "data");

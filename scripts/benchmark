@@ -54,12 +54,12 @@ def create_database(connection):
 
 def get_configuration_id(connection, options):
 
-    for o in options:
+    for o in options.items():
         assert o[0].isalnum() and o[1].isalnum()
 
     where = '' if len(options) == 0 else 'where (%s)' % (
                 ' or '.join(
-                    "name = '%s' and value = '%s'" % tuple(o) for o in options
+                    "name = '%s' and value = '%s'" % o for o in options.items()
                 )
             )
 
@@ -85,7 +85,7 @@ def get_configuration_id(connection, options):
 
         connection.executemany(
                 'insert into `option` values (?, ?, ?)',
-                ((configuration_id, o[0], o[1]) for o in options)
+                ((configuration_id, o[0], o[1]) for o in options.items())
             )
 
         connection.commit()
@@ -127,10 +127,19 @@ def parse_arguments():
     return parser.parse_args()
 
 
-def run_make(options):
-    # subprocess.check_call(['make', 'clean'])
+def run_make(options, index):
+    subprocess.check_call('mkdir -p build'.split())
+    os.chdir('build')
     subprocess.check_call(
-            ['make'] + [d for d in options] + ['bin/bench']
+            ['cmake'] + ['-D%s=%s' % d for d in options.items()] + ['..']
+        )
+
+    subprocess.check_call(
+            ['make', 'bench']
+        )
+
+    subprocess.check_call(
+            ['make', index]
         )
 
 
@@ -146,7 +155,12 @@ def main():
     database = args.database
     benchmark = args.benchmark
     index = args.index
-    definitions = [d.split('=') for d in args.define]
+    definitions = dict(d.split('=') for d in args.define)
+
+    # Read dimension
+    if 'D' not in definitions:
+        with open(benchmark + "dimension") as f:
+            definitions['D'] = f.read().strip()
 
     # Check if database exists and create it if not
     database_exists = os.path.exists(database)
@@ -155,16 +169,16 @@ def main():
     if not database_exists:
         create_database(connection)
 
-    # Get a configuration id and commit
+    # Get a configuration id and commit hash
     configuration_id = get_configuration_id(connection, definitions)
     commit = get_commit()
 
     # Run make
-    run_make(args.define)
+    run_make(definitions, index)
 
     # Now run the benchmark
     results = subprocess.check_output(
-            ['bin/bench', index, benchmark, '-r', args.report]
+            ['./bench', index, '../' + benchmark, '-r', args.report]
         ).decode('utf-8')
 
     results_reader = csv.DictReader(
