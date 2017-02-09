@@ -4,7 +4,7 @@
 
 SpatialIndex * create()
 {
-	return new Rtree::GreeneRtree<D, M>();
+	return new Rtree::GreeneRtree<D, M, m>();
 }
 
 void destroy(SpatialIndex * index)

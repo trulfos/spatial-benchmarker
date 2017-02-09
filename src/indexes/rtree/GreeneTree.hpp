@@ -14,9 +14,10 @@ namespace Rtree
  *
  * @tparam D Dimenson
  * @tparam N Node type
+ * @tparam m Minimum node fill grade
  */
-template<unsigned D, unsigned C>
-class GreeneRtree : public QuadraticRtree<D, C> //TODO: Not logical inheritance
+template<unsigned D, unsigned C, unsigned m>
+class GreeneRtree : public QuadraticRtree<D, C, m> //TODO: Not logical inheritance
 {
 	protected:
 		/**

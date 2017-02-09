@@ -4,7 +4,7 @@
 
 SpatialIndex * create()
 {
-	return new Rtree::QuadraticRtree<D, M>();
+	return new Rtree::QuadraticRtree<D, M, m>();
 }
 
 void destroy(SpatialIndex * index)

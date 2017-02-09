@@ -14,8 +14,9 @@ namespace Rtree
  *
  * @tparam D Dimenson
  * @tparam N Node type
+ * @tparam m Minimum node fill grade
  */
-template<unsigned D, unsigned C>
+template<unsigned D, unsigned C, unsigned m>
 class QuadraticRtree : public Rtree<Node<D, C, Entry>>
 {
 	public:
@@ -126,7 +127,6 @@ class QuadraticRtree : public Rtree<Node<D, C, Entry>>
 			a = {*seeds[0]};
 			b = {*seeds[1]};
 
-			const unsigned m = N::capacity / 4;
 
 			for (auto e = entries.begin(); e != entries.end(); ++e) {
 				if (seeds[0] == e || seeds[1] == e) {
