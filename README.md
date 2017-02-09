@@ -1,10 +1,27 @@
-# Spatial index test framework
+# Spatial index benchmarking framework
+
+The spatial index benchmarking framework contains code needed to benchmark
+spatial indexes and a small set of indexes.
+
+Each index is compiled into a dynamic library that is loaded by the benchmarker
+at run time. The benchmarker loads the data, query and result set from a
+benchmark folder. Depending on which reporter is selected, the data is indexed
+and one or several metrics recorded and outputted.
+
+Configuration parameters for the indexes (such as dimension) is set at compile
+time, and to simplify the process of compiling the index and running the
+benchmarker, some python scripts are included in the `scripts` directory. In
+addition to simplifying compilation, these scripts also allow results to be
+stored in an SQLite file for later retrieval.
+
 
 ## Dependencies
 Dependencies (with ubuntu package name)
 
 - Templatized C++ Command Line Parser Manual (libtclap-dev)
 - OpenMP (libgomp1 for gcc)
+- CMake
+- Python 3 (for running scripts)
 
 For running unit tests
 
@@ -12,34 +29,57 @@ For running unit tests
 
 
 ## Building & running
-Build the benchmarker with
+
+CMake is used to generate build files.
+
+### Bencmarker
+An out of source build can be done by running
 ```bash
-make bin/bench
+mkdir build
+cd build
+cmake ..
+make bench
 ```
 
 For a overview of command line arguments, run
 ```bash
-bin/bench --help
+bench --help
 ```
 
+### Indexes
 
-Build `mkdata` and `mkqueries` using
+You should normally specify the options for an index when compiling it. This
+includes the dimnsionality. This will build the hilbert R-tree with a node size
+of 128 for data sets of dimension 3.
 ```bash
-make bin/mkdata
-make bin/mkqueries
+cmake -DD=3 -DM=128 ..
+make rtree-hilbert
 ```
-Use the `--help` option for printing command line options for these two
-commands.
+
+The `scripts/benchmark` script automatically compiles the benchmark for the
+correct dimension. For example, the following compiles the hilbert R-tree and
+runs the `abs02` benchmark in the benchmark folder with a node size of 128.
+```bash
+./scripts/benchmark rtree-hilbert benchmarks/abs02/ -DM=128
+```
+
+The results of the above are recorded in `results` (an sqlite database) and can
+be retrieved either manually using the `sqlite3` command or by running
+`scripts/plot`.
+
+
+### Unit tests
 
 Run all unit tests
 ```bash
-make check
+make
+make test
 ```
 
 You can also make and run a specific unit test
 ```bash
-make test/bench/rtree/Mbr
-./test/bench/rtree/Mbr
+make test_mbr
+./test_mbr
 ```
 
 ## Benchmarks
