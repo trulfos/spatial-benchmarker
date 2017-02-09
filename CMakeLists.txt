@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.7)
+cmake_minimum_required(VERSION 3.2)
 
 project("Spatial Indexing Framework")
 
@@ -84,7 +84,7 @@ foreach(name point box knnqueueentry hilbertcurve mbr)
 endforeach()
 
 # Framework files for indexes
-add_library(common STATIC
+add_library(common OBJECT
 	src/bench/BoxInputIterator.cpp
 	src/bench/DataObjectInputIterator.cpp
 	src/bench/SpatialIndex.cpp
@@ -114,9 +114,8 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 foreach(name rtree rtree-hilbert rtree-star rtree-rstar rtree-greene)
 	add_library(${name} MODULE EXCLUDE_FROM_ALL
 		src/indexes/${name}.cpp
+		$<TARGET_OBJECTS:common>
 	)
-
-	target_link_libraries(${name} common)
 endforeach()
 
 # The rest
@@ -124,7 +123,6 @@ foreach(name naive sequential vectorized parallel)
 	add_library(${name} MODULE EXCLUDE_FROM_ALL
 		src/indexes/${name}.cpp
 		src/indexes/${name}/SpatialIndex.cpp
+		$<TARGET_OBJECTS:common>
 	)
-
-	target_link_libraries(${name} common)
 endforeach()
