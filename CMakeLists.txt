@@ -99,18 +99,14 @@ add_library(common STATIC
 
 
 # Add spatial indexes
-if (NOT DEFINED M)
-	set(M 128)
-endif()
-
-if (NOT DEFINED D)
-	set(D 2)
-endif()
+set(D 2 CACHE STRING "Dimensionality of compiled indexes")
+set(M 128 CACHE STRING "Node capacity for R-tree indexes")
 
 configure_file(
-	${CMAKE_SOURCE_DIR}/src/indexes/configuration.hpp.in
-	${CMAKE_SOURCE_DIR}/src/indexes/configuration.hpp
+	src/indexes/configuration.hpp.in
+	configuration.hpp
 )
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 # R-trees
 foreach(name rtree rtree-hilbert rtree-star rtree-rstar rtree-greene)
