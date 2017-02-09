@@ -104,6 +104,11 @@ def parse_arguments():
             help='Path to sqlite database file'
         )
 
+    parser.add_argument(
+            '--plot', '-p', action='store_true',
+            help='Plot the result immediately using pyplot'
+        )
+
     return parser.parse_args()
 
 
@@ -124,6 +129,35 @@ def group(tuples):
     return [['key'] + sorted(list(fields)), list(groups.values())]
 
 
+def plot(keys, results):
+    import matplotlib.pyplot as pyplot
+
+    if len(keys) == 2:
+        pyplot.bar(
+                range(0, len(results)),
+                [a['value'] for a in results],
+                tick_label=list(a['key'] for a in results)
+            )
+    else:
+        indexes = set()
+
+        for r in results:
+            indexes |= r.keys()
+
+        indexes.discard('key')
+
+        for k in indexes:
+            pyplot.plot(
+                    [i for i in range(0, len(results)) if k in results[i]],
+                    [a[k] for a in results if k in a],
+                    label=k
+                )
+            pyplot.legend()
+
+
+    pyplot.show()
+
+
 def main():
     args = parse_arguments()
     connection = sqlite3.connect(args.database or 'results')
@@ -140,6 +174,11 @@ def main():
     else:
         results = [{'key': r[0], 'value': r[1]} for r in results]
         keys = ['key', 'value']
+
+    # Plot and exit if requested
+    if args.plot:
+        plot(keys, results)
+        return
 
     # Write results in tab separated csv format
     writer = csv.DictWriter(
