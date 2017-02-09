@@ -7,57 +7,80 @@ import sys
 
 def fetch(connection, args):
 
-    # Create where clause filters
-    filters = ' and '.join(
-            ['`metric` = :metric'] +
-            (['`benchmark` = :benchmark'] if args.benchmark else []) +
-            (['`name` = :group'] if args.group else [])
+    if ',' in args.group:
+        configs = [a.split(':') for a in args.group.split(',')]
+
+        where_clause = ' or '.join(
+                '(`index` = \'%s\' and `configuration` = %s)' %
+                tuple(c.split(':')) for c in args.group.split(',')
         )
 
-    # Create subquery
-    subquery = (
-            """
-            select max(`timestamp`)
-            from `result`
-                inner join `run` on `run`.`id` = `result`.`run_id`
-            """ +
-            ("""inner join `option`
-                    on `option`.`configuration` = `run`.`configuration`"""
-                if args.group else '') +
-            "where `run`.`index` = `r`.`index` and %s"
-        ) % filters
-
-
-    # Default select, join and group by
-    select_field = '`r`.`index`'
-    joins = 'inner join `run` `r` on `r`.`id` = `result`.`run_id`'
-    group_by = '`index`'
-
-    # Modify if we should group by option
-    if args.group:
-        group_by += ', `o`.`value`'
-        joins += 'inner join `option` `o`' \
-            'on `o`.`configuration` = `r`.`configuration`'
-        subquery += ' and `option`.`value` = `o`.`value`'
-        select_field = '`o`.`value`, ' + select_field
-
-    # Construct main query
-    cursor = connection.execute(
-            """
-            select `r`.`commit`, %s, %s(`result`.`value`)
-            from `result` %s
-            where %s and `timestamp` = (%s)
-            group by %s
-            """ % (
-                    select_field,
-                    args.aggregate,
-                    joins,
-                    filters,
-                    subquery,
-                    group_by
-                ),
-            args.__dict__
-        )
+        cursor = connection.execute(
+                """
+                with relevant_runs as (
+                        select `id`, `commit`, `timestamp`, `index`,
+                        `configuration`
+                        from `run`
+                        where %s
+                    )
+                select
+                    `r1`.`commit`,
+                    `r1`.`index` || ':' || `r1`.`configuration`,
+                    avg(`result`.`value`)
+                from relevant_runs `r1`
+                outer left join relevant_runs `r2`
+                    on `r1`.`timestamp` < `r2`.`timestamp` and
+                        `r1`.`configuration` = `r2`.`configuration` and
+                        `r1`.`index` = `r1`.`index`
+                inner join `result` on `result`.`run_id` = `r1`.`id`
+                where
+                    `r2`.`id` is null and
+                    `metric` = :metric
+                group by `r1`.`index`, `r1`.`configuration`
+                """ % where_clause,
+                args.__dict__
+            )
+    else:
+        cursor = connection.execute(
+                """
+                with relevant_runs as (
+                        select
+                            `run`.`id` `id`,
+                            `run`.`commit` `commit`,
+                            `run`.`timestamp` `timestamp`,
+                            `run`.`index` `index`,
+                            `option`.`value` `value`
+                        from `run`
+                            inner join `option`
+                            on `run`.`configuration` = `option`.`configuration`
+                        where
+                            `name` = :group and
+                            exists (
+                                select * from `result`
+                                where
+                                    `run_id` = `run`.`id` and
+                                    `metric` = :metric
+                            )
+                    )
+                select
+                    `r1`.`commit`,
+                    `r1`.`value`,
+                    `r1`.`index`,
+                    avg(`result`.`value`)
+                from relevant_runs `r1`
+                outer left join relevant_runs `r2`
+                    on `r1`.`timestamp` < `r2`.`timestamp` and
+                        `r1`.`value` = `r2`.`value` and
+                        `r1`.`index` = `r1`.`index`
+                inner join `result` on `result`.`run_id` = `r1`.`id`
+                where
+                    `r2`.`id` is null and
+                    `metric` = :metric
+                group by `r1`.`value`
+                order by `r1`.`value`
+                """,
+                args.__dict__
+            )
 
     # Fetch results
     results = cursor.fetchall()
@@ -80,18 +103,18 @@ def parse_arguments():
         )
 
     parser.add_argument(
+            'group', metavar='<option/configs>',
+            help='Group by given property (x-axis)'
+        )
+
+    parser.add_argument(
             'metric',
-            help='Name of metric to plot'
+            help='Name of metric to plot (y-axis)'
         )
 
     parser.add_argument(
             '--benchmark', '-b',
             help='Select specific benchmark.'
-        )
-
-    parser.add_argument(
-            '--group', '-g', metavar='<name>',
-            help='Group by given option (typically x-axis)'
         )
 
     parser.add_argument(
@@ -126,7 +149,11 @@ def group(tuples):
 
         groups[name][t[1]] = t[2]
 
-    return [['key'] + sorted(list(fields)), list(groups.values())]
+    # Sort as we have messed up the order when grouping
+    return [
+            ['key'] + sorted(list(fields)),
+            sorted(list(groups.values()), key=lambda r: int(r['key']))
+        ]
 
 
 def plot(keys, results):
@@ -148,7 +175,7 @@ def plot(keys, results):
 
         for k in indexes:
             pyplot.plot(
-                    [i for i in range(0, len(results)) if k in results[i]],
+                    [results[i]['key'] for i in range(0, len(results)) if k in results[i]],
                     [a[k] for a in results if k in a],
                     label=k
                 )
