@@ -5,5 +5,5 @@
  */
 constexpr unsigned D = ${D};
 constexpr unsigned M = ${M};
-//constexpr unsigned m = ${m};
-//constexpr unsigned p = ${p};
+constexpr unsigned m = ${m};
+constexpr unsigned p = ${p};

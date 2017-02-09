@@ -20,8 +20,9 @@ namespace Rtree
  *
  * @tparam D Dimension
  * @tparam C Node capacity
+ * @tparam m Minimum number of children in each node
  */
-template<unsigned D, unsigned C>
+template<unsigned D, unsigned C, unsigned m>
 class RRStarTree : public Rtree<RevisedNode<D, C, Entry>>
 {
 	public:
@@ -31,7 +32,6 @@ class RRStarTree : public Rtree<RevisedNode<D, C, Entry>>
 		using M = typename E::M;
 
 		static constexpr float EPSILON = 0.00001f;
-		static constexpr unsigned m = E::Node::capacity / 4;
 
 
 		/**
@@ -155,7 +155,7 @@ class RRStarTree : public Rtree<RevisedNode<D, C, Entry>>
 						return children.front()->mbr.overlapEnlargement(
 								child->mbr,
 								newEntry.mbr,
-								[](const M& m) { return m.perimeter(); }
+								[](const M& mbr) { return mbr.perimeter(); }
 							);
 					}
 				) - children.begin() + 1;

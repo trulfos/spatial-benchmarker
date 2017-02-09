@@ -101,6 +101,8 @@ add_library(common STATIC
 # Add spatial indexes
 set(D 2 CACHE STRING "Dimensionality of compiled indexes")
 set(M 128 CACHE STRING "Node capacity for R-tree indexes")
+set(m 64 CACHE STRING "Minimum node fill grade for R-tree indexes")
+set(p 42 CACHE STRING "Number of nodes to reinsert for R*-tree")
 
 configure_file(
 	src/indexes/configuration.hpp.in

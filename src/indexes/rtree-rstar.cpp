@@ -4,7 +4,7 @@
 
 SpatialIndex * create()
 {
-	return new Rtree::RRStarTree<D, M>();
+	return new Rtree::RRStarTree<D, M, m>();
 }
 
 void destroy(SpatialIndex * index)

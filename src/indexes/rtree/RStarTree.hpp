@@ -18,8 +18,10 @@ namespace Rtree
  *
  * @tparam D Dimension
  * @tparam C Node capacity
+ * @tparam m Minimum number of children in each node
+ * @tparam p Number of entries to reinsert (on first overflow)
  */
-template<unsigned D, unsigned C>
+template<unsigned D, unsigned C, unsigned m, unsigned p>
 class RStarTree : public Rtree<Node<D, C, Entry>>
 {
 	public:
@@ -41,8 +43,6 @@ class RStarTree : public Rtree<Node<D, C, Entry>>
 
 
 	private:
-		//TODO: This value should be changeable
-		unsigned m = E::Node::capacity / 2;
 
 		/**
 		 * Insert an entry in the tree.
@@ -106,8 +106,6 @@ class RStarTree : public Rtree<Node<D, C, Entry>>
 		 */
 		std::vector<E> extractEntries(E& parent, const E& newEntry)
 		{
-			unsigned p = E::Node::capacity - E::Node::capacity / 2;
-
 			// Collect all entries
 			std::vector<E> entries (
 					parent.begin(),
