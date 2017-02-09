@@ -79,56 +79,6 @@ class RRStarTree : public Rtree<RevisedNode<D, C, Entry>>
 	private:
 
 		/**
-		 * Extracts the most distant entries from the given entry.
-		 *
-		 * @param parent Parent from who's children entries should be extracted
-		 * @param newEntry Extra entry to include
-		 *
-		 * @return Extracted entries ordered bycenter distance to parent
-		 */
-		std::vector<E> extractEntries(E& parent, const E& newEntry)
-		{
-			unsigned p = E::Node::capacity - E::Node::capacity/2;
-
-			// Collect all entries
-			std::vector<E> entries (
-					parent.begin(),
-					parent.end()
-				);
-
-			entries.push_back(newEntry);
-
-
-			// Sort by center distance to parent
-			std::sort(
-					entries.begin(),
-					entries.end(),
-					[&](const E& a, const E& b) {
-						return (a.mbr.center() - parent.mbr.center()).squared()
-							< (b.mbr.center() - parent.mbr.center()).squared();
-					}
-				);
-
-			assert(p < E::Node::capacity);
-			assert(entries.size() > 0);
-
-			auto middle = entries.end() - p;
-
-			// Add back remaining entries to node
-			parent.assign(
-					entries.begin(),
-					middle
-				);
-
-			// Return extracted entries
-			return std::vector<E>(
-					middle,
-					entries.end()
-				);
-		};
-
-
-		/**
 		 * Find a suitable subtree for the entry.
 		 *
 		 * @param entry Entry to find location for
