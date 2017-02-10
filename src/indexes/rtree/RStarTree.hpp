@@ -24,6 +24,9 @@ namespace Rtree
 template<unsigned D, unsigned C, unsigned m, unsigned p>
 class RStarTree : public Rtree<Node<D, C, Entry>>
 {
+	static_assert(p < C, "p must be less than the node capacity C");
+	static_assert(2 * m <= C, "Min node fill level must be below capacity / 2");
+
 	public:
 		using N = Node<D, C, Entry>;
 		using E = typename N::Entry;
@@ -125,7 +128,6 @@ class RStarTree : public Rtree<Node<D, C, Entry>>
 					}
 				);
 
-			assert(p < E::Node::capacity);
 			assert(entries.size() > 0);
 
 			auto middle = entries.end() - p;

@@ -23,7 +23,7 @@ class WeightingFunction
 	static constexpr float shift = exp(-1.0f / (s * s));
 	static constexpr float scale = 1.0f / (1 - shift);
 
-	static_assert(2 * m <= capacity, "m must be less than or equal to M");
+	static_assert(2 * m <= capacity, "m must be less than or equal to M/2");
 
 public:
 

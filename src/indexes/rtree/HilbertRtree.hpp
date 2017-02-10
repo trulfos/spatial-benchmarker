@@ -15,8 +15,9 @@ namespace Rtree
  *
  * @tparam D Dimenson
  * @tparam N Node type
+ * @tparam s Node split strategy s:(s+1)
  */
-template<unsigned D, unsigned C>
+template<unsigned D, unsigned C, unsigned s>
 class HilbertRtree : public Rtree<Node<D, C, HilbertEntry>>
 {
 	public:
@@ -72,9 +73,6 @@ class HilbertRtree : public Rtree<Node<D, C, HilbertEntry>>
 
 				E& parent = **(top + 1);
 				EIt destination = *top;
-
-				// Number of neighbors to consider
-				constexpr unsigned s = 4;
 
 				// Calculate first (left) position to check
 				EIt start = std::max(

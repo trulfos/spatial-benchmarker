@@ -4,7 +4,7 @@
 
 SpatialIndex * create()
 {
-	return new Rtree::HilbertRtree<D, M>();
+	return new Rtree::HilbertRtree<D, M, s>();
 }
 
 void destroy(SpatialIndex * index)
