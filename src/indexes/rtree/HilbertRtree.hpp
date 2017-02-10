@@ -135,48 +135,6 @@ class HilbertRtree : public Rtree<Node<D, C, HilbertEntry>>
 	protected:
 
 		/**
-		 * Insert a new entry into the destination using sharing as strategy
-		 * when the node is full.
-		 *
-		 * @param parent Parent entry of destination
-		 * @param destination Iterator to destination entry
-		 * @param newEntry New entry to insert
-		 */
-		bool share(E& parent, EIt destination, E& newEntry)
-		{
-			return true;
-		}
-
-		void sort(E& entry)
-		{
-			std::sort(
-					entry.begin(), entry.end(),
-					[](const E& a, const E& b) {
-						return a.getHilbertValue() < b.getHilbertValue();
-					}
-				);
-		}
-
-
-		EIt selectNeighbor(
-				const EIt& parent,
-				const EIt& node
-			)
-		{
-			// This should be the case for all nodes except the root
-			assert(parent->end() - parent->begin() > 1);
-
-			// Special case for last entry - select previous
-			if (node + 1 == parent->end()) {
-				return node - 1;
-			}
-
-			// Default case - select next
-			return node + 1;
-		};
-
-
-		/**
 		 * Chooses subtree by comparing hilbert values.
 		 * The first entry with a hilbert value greater or equal to the new
 		 * entry is selected.
