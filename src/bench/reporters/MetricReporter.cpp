@@ -1,13 +1,13 @@
 #include "MetricReporter.hpp"
 
 void MetricReporter::addEntry(
-		const Query& query,
+		unsigned index,
 		const std::string& metric,
-		const std::string& value
+		value_type value
 	)
 {
 	results.emplace_back(
-			ResultEntry {query.getName(), metric, value}
+			ResultEntry {index, metric, value}
 		);
 }
 
@@ -15,11 +15,11 @@ void MetricReporter::addEntry(
 void MetricReporter::generate(std::ostream& stream) const
 {
 	// Print header
-	stream << "query\tmetric\tvalue\n";
+	stream << "index\tmetric\tvalue\n";
 
 	// Print data
 	for (const auto& r : results) {
-		stream << r.query << '\t'
+		stream << r.index << '\t'
 			<< r.metric << '\t'
 			<< r.value << '\n';
 	}

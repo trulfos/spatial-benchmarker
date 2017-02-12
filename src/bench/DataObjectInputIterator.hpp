@@ -11,6 +11,7 @@
 class DataObjectInputIterator : public BoxInputIterator
 {
 	public:
+		using value_type = const DataObject;
 
 		/**
 		 * Creates an input iterator pointing to the start of the stream.

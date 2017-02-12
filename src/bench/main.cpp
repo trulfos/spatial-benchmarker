@@ -7,7 +7,6 @@
 #include "SpatialIndex.hpp"
 #include "ReporterArg.hpp"
 #include "common/Logger.hpp"
-#include "common/ProgressLogger.hpp"
 #include "Benchmark.hpp"
 #include "DynamicObject.hpp"
 #include <algorithm>
@@ -42,12 +41,6 @@ int main(int argc, char *argv[])
 			false, "report style", cmd
 		);
 
-	TCLAP::SwitchArg noCheck(
-			"n", "no-check",
-			"Don't check the results. This avoids the need for a results file.",
-			cmd
-		);
-
 	TCLAP::UnlabeledValueArg<std::string> algorithm(
 			"index",
 			"Index to benchmark.",
@@ -74,12 +67,9 @@ int main(int argc, char *argv[])
 
 		// Load benchmark data
 		LazyDataSet dataSet = benchmark.getData();
-		LazyQuerySet querySet = benchmark.getQueries();
-		ResultSet resultSet = benchmark.getResults(noCheck.getValue());
 
 		// Create reporter and index
 		auto reporter = reportType.getValue();
-		//auto index = algorithm.getValue(dataSet.getDimension());
 		DynamicObject<SpatialIndex> index ("./lib" + algorithm.getValue() + ".so");
 
 		// Index data
@@ -89,32 +79,15 @@ int main(int argc, char *argv[])
 		logger.end();
 
 		// Benchmark
-		logger.endStart("Benchmarking");
-		ProgressLogger progress(std::clog, querySet.getSize());
+		logger.endStart("Generating " + reportType.getName() + " report");
 
-		for (auto testCase : zip(querySet, resultSet)) {
+		reporter->run(
+				algorithm.getName(),
+				benchmark,
+				*index.get(),
+				std::clog
+			);
 
-			// Do the search
-			Results results = reporter->run(
-					algorithm.getName(),
-					testCase.first,
-					*index.get()
-				);
-
-			// Check results
-			if (!noCheck.getValue()) {
-				std::sort(results.begin(), results.end());
-
-				if (results != testCase.second) {
-					std::cerr << C::red("Error") << "\n"
-						<< "Invalid results returned:\n\t" << results
-						<< "\n\nExpected:\n\t" << testCase.second
-						<< std::endl;
-				}
-			}
-
-			progress.increment();
-		}
 
 		// Output report
 		logger.endStart("Generating report");

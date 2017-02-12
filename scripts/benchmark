@@ -39,11 +39,10 @@ def create_database(connection):
             """
             create table `result` (
                 `run_id` integer not null,
-                `query` integer not null,
                 `metric` text not null,
-                `value` text not null,
+                `index` integer not null,
+                `value` integer not null,
 
-                primary key (`run_id`, `query`, `metric`),
                 foreign key (`run_id`) references `run` (`id`)
                     on delete cascade
                     on update cascade
@@ -197,7 +196,7 @@ def main():
     connection.executemany(
             'insert into `result` values (?, ?, ?, ?)',
             (
-                (run_id, r['query'], r['metric'], r['value'])
+                (run_id, r['index'], r['metric'], r['value'])
                 for r in results_reader
             )
         )

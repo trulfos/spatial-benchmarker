@@ -1,25 +1,27 @@
 #include "ResultsReporter.hpp"
 #include <algorithm>
+#include "ProgressLogger.hpp"
 
-Results ResultsReporter::run(
+void ResultsReporter::run(
 		const std::string& name,
-		const Query& query,
-		const SpatialIndex& index
+		Benchmark& benchmark,
+		const SpatialIndex& index,
+		std::ostream& logStream
 	)
 {
-	if (reference.empty()) {
-		reference = name;
-	}
+	auto queries = benchmark.getQueries();
+	ProgressLogger progress(logStream, queries.getSize());
 
-	Results results = index.search(query);
+	for (auto query : queries) {
 
+		resultSet.push_back(
+				index.search(query)
+			);
 
-	if (name == reference) {
-		resultSet.push_back(results);
 		std::sort(resultSet.back().begin(), resultSet.back().end());
-	}
 
-	return results;
+		progress.increment();
+	}
 }
 
 

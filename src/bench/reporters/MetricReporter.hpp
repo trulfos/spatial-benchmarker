@@ -13,6 +13,8 @@
 class MetricReporter : public Reporter
 {
 	public:
+		using value_type = unsigned long long;
+
 		/**
 		 * Output this report to the given stream.
 		 */
@@ -27,14 +29,14 @@ class MetricReporter : public Reporter
 		 * The output will be formatted automatically by this class when
 		 * `generate` is called.
 		 *
-		 * @param query Query the metric is valid for
+		 * @param index Index of result
 		 * @param metric Metric name
 		 * @param value Value measured for the given query-metric pair
 		 */
 		void addEntry(
-				const Query& query,
+				unsigned index,
 				const std::string& metric,
-				const std::string& value
+				value_type value
 			);
 
 
@@ -42,9 +44,9 @@ class MetricReporter : public Reporter
 
 		struct ResultEntry
 		{
-			std::string query;
+			unsigned index;
 			std::string metric;
-			std::string value;
+			value_type value;
 		};
 
 		std::vector<ResultEntry> results;

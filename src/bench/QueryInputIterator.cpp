@@ -7,13 +7,13 @@ QueryInputIterator::QueryInputIterator(
 	extract();
 };
 
-const Query& QueryInputIterator::operator*() const
+const RangeQuery& QueryInputIterator::operator*() const
 {
 	return query;
 };
 
 
-const Query * QueryInputIterator::operator->() const
+const RangeQuery * QueryInputIterator::operator->() const
 {
 	return &(operator*());
 };

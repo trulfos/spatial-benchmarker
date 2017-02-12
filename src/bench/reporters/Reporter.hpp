@@ -2,6 +2,7 @@
 #include "common/Query.hpp"
 #include "common/Results.hpp"
 #include "bench/SpatialIndex.hpp"
+#include "bench/Benchmark.hpp"
 #include <functional>
 #include <ostream>
 #include <string>
@@ -20,12 +21,14 @@ class Reporter
 		 * grouped by name.
 		 *
 		 * @param name Name to use in report
-		 * @param task Task to run
+		 * @param benchmark Query set to run
+		 * @param index Spatial index to benchmark
 		 */
-		virtual Results run(
+		virtual void run(
 				const std::string& name,
-				const Query& query,
-				const SpatialIndex& index
+				Benchmark& benchmark,
+				const SpatialIndex& index,
+				std::ostream& logStream
 			) = 0;
 
 		/**

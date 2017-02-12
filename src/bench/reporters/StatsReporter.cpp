@@ -1,20 +1,30 @@
 #include "StatsReporter.hpp"
 #include "bench/StatsCollector.hpp"
+#include "ProgressLogger.hpp"
 
-Results StatsReporter::run(
+void StatsReporter::run(
 		const std::string& name,
-		const Query& query,
-		const SpatialIndex& index
+		Benchmark& benchmark,
+		const SpatialIndex& index,
+		std::ostream& logStream
 	)
 {
-	// Collect statistics
-	StatsCollector stats;
-	Results results = index.search(query, stats);
+	auto queries = benchmark.getQueries();
+	ProgressLogger progress(logStream, queries.getSize());
+	unsigned i = 0;
 
-	// Store statistics
-	for (auto stat : stats) {
-		addEntry(query, stat.first, std::to_string(stat.second));
+	for (auto query : queries) {
+
+		// Collect statistics
+		StatsCollector stats;
+		Results results = index.search(query, stats);
+
+		// Store statistics
+		for (auto stat : stats) {
+			addEntry(i, stat.first, stat.second);
+		}
+
+		++i;
+		progress.increment();
 	}
-
-	return results;
 }

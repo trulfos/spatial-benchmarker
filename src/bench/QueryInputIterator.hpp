@@ -12,7 +12,7 @@
 class QueryInputIterator : public BoxInputIterator
 {
 	public:
-		using value_type = const Query;
+		using value_type = const RangeQuery;
 
 		/**
 		 * Creates an input iterator pointing to the start of the stream.
@@ -26,8 +26,8 @@ class QueryInputIterator : public BoxInputIterator
 
 
 		// "Override"...
-		const Query& operator*() const;
-		const Query * operator->() const;
+		const RangeQuery& operator*() const;
+		const RangeQuery * operator->() const;
 		QueryInputIterator operator++();
 		QueryInputIterator operator++(int);
 		difference_type operator-(QueryInputIterator other);

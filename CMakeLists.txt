@@ -20,29 +20,37 @@ else()
 	add_compile_options(${optimized_flags})
 endif()
 
-# Main executable
-add_executable(bench
-	src/bench/main.cpp
-
+add_library(reporters OBJECT
+	src/bench/reporters/TotalRunTimeReporter.cpp
 	src/bench/reporters/StatsReporter.cpp
 	src/bench/reporters/RunTimeReporter.cpp
 	src/bench/reporters/Reporter.cpp
+	src/bench/reporters/QueryRunTimeReporter.cpp
 	src/bench/reporters/MetricReporter.cpp
+	src/bench/reporters/ProgressLogger.cpp
 	src/bench/reporters/ResultsReporter.cpp
+	src/bench/reporters/AvgStatsReporter.cpp
+	src/bench/reporters/CorrectnessReporter.cpp
+)
+
+# Main executable
+add_executable(bench
+	src/bench/main.cpp
 	src/bench/ReporterArg.cpp
-	src/bench/SpatialIndex.cpp
 	src/bench/QueryInputIterator.cpp
 	src/bench/Benchmark.cpp
 	src/bench/DataObjectInputIterator.cpp
 	src/bench/BoxInputIterator.cpp
 
+	$<TARGET_OBJECTS:reporters>
+
+	src/bench/SpatialIndex.cpp
 	src/common/Box.cpp
 	src/common/DataObject.cpp
 	src/common/FileHeader.cpp
 	src/common/KnnQuery.cpp
 	src/common/Logger.cpp
 	src/common/Point.cpp
-	src/common/ProgressLogger.cpp
 	src/common/Query.cpp
 	src/common/RangeQuery.cpp
 	src/common/Results.cpp
@@ -88,8 +96,8 @@ endforeach()
 add_library(common OBJECT
 	src/bench/BoxInputIterator.cpp
 	src/bench/DataObjectInputIterator.cpp
-	src/bench/SpatialIndex.cpp
 
+	src/bench/SpatialIndex.cpp
 	src/common/Point.cpp
 	src/common/Box.cpp
 	src/common/DataObject.cpp

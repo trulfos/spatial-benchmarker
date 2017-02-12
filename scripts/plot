@@ -71,13 +71,12 @@ def fetch(connection, args):
                 outer left join relevant_runs `r2`
                     on `r1`.`timestamp` < `r2`.`timestamp` and
                         `r1`.`value` = `r2`.`value` and
-                        `r1`.`index` = `r1`.`index`
+                        `r1`.`index` = `r2`.`index`
                 inner join `result` on `result`.`run_id` = `r1`.`id`
                 where
                     `r2`.`id` is null and
                     `metric` = :metric
-                group by `r1`.`value`
-                order by `r1`.`value`
+                group by `r1`.`value`, `r1`.`index`
                 """,
                 args.__dict__
             )

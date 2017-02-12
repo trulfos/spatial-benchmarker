@@ -4,7 +4,7 @@
 /**
  * Collects and reports statistics from the benchmark.
  */
-class StatsReporter : public MetricReporter
+class AvgStatsReporter : public MetricReporter
 {
 	public:
 

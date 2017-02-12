@@ -1,6 +1,4 @@
 #include "RunTimeReporter.hpp"
-#include <algorithm>
-#include <limits>
 
 RunTimeReporter::RunTimeReporter()
 {
@@ -12,51 +10,6 @@ RunTimeReporter::RunTimeReporter()
 				"The clock resolution is too low for the selected period"
 			);
 	}
-}
-
-
-Results RunTimeReporter::run(
-		const std::string& name,
-		const Query& query,
-		const SpatialIndex& index
-	)
-{
-	unsigned long min = std::numeric_limits<unsigned long>::max();
-	unsigned runs = MAX_RUNS;
-	unsigned long total = 0;
-	Results results;
-
-	while (runs-- && total < MIN_TOTAL_TIME) {
-		clearCache();
-
-		// Time task
-		auto startTime = clock::now();
-		Results newResults = index.search(query);
-		auto endTime = clock::now();
-
-		// Check results
-		std::sort(newResults.begin(), newResults.end());
-
-		if (!results.empty() && results != newResults) {
-			throw std::runtime_error("Inconsistent results from index search");
-		}
-
-		results = newResults;
-
-		// Calculate runtime
-		unsigned long runtime =
-			std::chrono::duration_cast<std::chrono::microseconds>(
-						endTime - startTime
-					).count();
-
-		min = std::min(min, runtime);
-		total += runtime;
-	}
-
-	// Store result
-	addEntry(query, "runtime", std::to_string(min));
-
-	return results;
 }
 
 

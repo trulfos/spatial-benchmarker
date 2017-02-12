@@ -1,7 +1,16 @@
 #pragma once
-#include <utility>
 #include <iterator>
 
+/**
+ * Zips two containers. Useful when iterating through two containers
+ * simultaneously. Using the convenience function defined below, this makes the
+ * following possible:
+ *
+ * for (auto pair : zip(collection1, collection2) {
+ *     std::cout << pair.first << pair.second << std::endl;
+ * }
+ *
+ */
 template <typename A, typename B>
 class Zipped
 {
@@ -18,15 +27,20 @@ class Zipped
 				{
 				}
 
-				bool operator!=(const ZipIterator& other)
+				bool operator==(const ZipIterator& other) const
 				{
-					return iterA != other.iterA || iterB != other.iterB;
+					return iterA == other.iterA && iterB == other.iterB;
+				}
+
+				bool operator!=(const ZipIterator& other) const
+				{
+					return !(*this == other);
 				}
 
 				ZipIterator operator++()
 				{
-					iterA++;
-					iterB++;
+					++iterA;
+					++iterB;
 					return *this;
 				}
 
@@ -40,6 +54,8 @@ class Zipped
 				typename B::iterator iterB;
 
 		};
+
+		using iterator = ZipIterator;
 
 		Zipped(A& a, B& b) : a(a), b(b)
 		{
@@ -60,6 +76,11 @@ class Zipped
 		B& b;
 };
 
+/**
+ * Constructs a Zipped object rom two collections.
+ *
+ * This is a convenience function for automatic type deduction.
+ */
 template <typename A, typename B>
 Zipped<A, B> zip(A& a, B& b)
 {

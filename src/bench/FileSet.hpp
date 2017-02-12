@@ -26,6 +26,8 @@ class FileSet
 			start = Iterator(file, dimension);
 		};
 
+		FileSet() = default;
+
 
 		/**
 		 * Get iterator to current position in file.

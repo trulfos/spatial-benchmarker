@@ -9,13 +9,14 @@
 class ResultsReporter : public Reporter
 {
 	public:
-		Results run(
+		void run(
 				const std::string& name,
-				const Query& query,
-				const SpatialIndex& index
-			);
+				Benchmark& benchmark,
+				const SpatialIndex& index,
+				std::ostream& logStream
+			) override;
 
-		void generate(std::ostream& stream) const;
+		void generate(std::ostream& stream) const override;
 
 	protected:
 		ResultSet resultSet;

@@ -41,7 +41,7 @@ class Benchmark
 		 *
 		 * @param empty Return empty sets if true instead of reading from file
 		 */
-		ResultSet getResults(bool empty = false);
+		ResultSet getResults();
 
 	private:
 

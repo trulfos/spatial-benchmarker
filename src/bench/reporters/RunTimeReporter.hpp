@@ -21,26 +21,12 @@ class RunTimeReporter : public MetricReporter
 		 */
 		RunTimeReporter();
 
-
-		Results run(
-				const std::string& name,
-				const Query& query,
-				const SpatialIndex& index
-			);
-
 	protected:
 		/**
 		 * Used to determine how the cache should be cleared.
 		 */
-		const unsigned CACHE_SIZE = 4096; // kilobytes
-		const unsigned CACHE_LINE_SIZE = 64; // bytes
-
-		/**
-		 * The run time will be measured within these constraints (in order of
-		 * priority).
-		 */
-		const unsigned MAX_RUNS = 10;
-		const unsigned long MIN_TOTAL_TIME = 5 * 1e6; // µs
+		static const unsigned CACHE_SIZE = 4096; // kilobytes
+		static const unsigned CACHE_LINE_SIZE = 64; // bytes
 
 		/**
 		 * "Clears" the cache by writing data to a large array.

@@ -27,6 +27,8 @@ class ReporterArg : private TCLAP::ValueArg<std::string>
 
 		std::shared_ptr<Reporter> getValue();
 
+		std::string getName();
+
 		void reset();
 
 	private:

@@ -27,14 +27,8 @@ LazyQuerySet Benchmark::getQueries()
 	return LazyQuerySet(path, dimension);
 }
 
-ResultSet Benchmark::getResults(bool empty)
+ResultSet Benchmark::getResults()
 {
-	unsigned nQueries = getQueries().getSize();
-
-	if (empty) {
-		return ResultSet(nQueries);
-	}
-
 	std::string path = folder + "results";
 	std::ifstream stream (path);
 
@@ -44,10 +38,6 @@ ResultSet Benchmark::getResults(bool empty)
 
 	ResultSet results;
 	stream >> results;
-
-	if (nQueries != results.size()) {
-		throw std::logic_error("Result and query sets differ in size");
-	}
 
 	return results;
 }
