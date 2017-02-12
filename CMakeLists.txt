@@ -4,15 +4,16 @@ project("Spatial Indexing Framework")
 
 include_directories(src)
 
-set(optimized_flags -fvisibility=hidden -O3 -flto -fuse-linker-plugin -DNDEBUG)
+set(optimized_flags -O3 -flto -fuse-linker-plugin -DNDEBUG)
 
 add_compile_options(
 	-Wall -g -std=c++11 -fopenmp -march=native -fvisibility=hidden
 )
 
-link_libraries(${name} -fopenmp optimized ${optimized_flags})
+link_libraries(${name} -fvisibility=hidden -fopenmp optimized ${optimized_flags})
 
-if (CMAKE_BUILD_TYPE EQUAL "DEBUG")
+
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
 	add_definitions(-D_GLIBCXX_DEBUG)
 else()
 	add_definitions(-DNDEBUG)
@@ -96,6 +97,8 @@ add_library(common OBJECT
 	src/common/KnnQuery.cpp
 	src/common/RangeQuery.cpp
 )
+
+target_compile_options(common PRIVATE -fPIC)
 
 
 # Add spatial indexes
