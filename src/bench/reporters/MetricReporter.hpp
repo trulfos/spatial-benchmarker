@@ -13,7 +13,7 @@
 class MetricReporter : public Reporter
 {
 	public:
-		using value_type = unsigned long long;
+		using value_type = double;
 
 		/**
 		 * Output this report to the given stream.

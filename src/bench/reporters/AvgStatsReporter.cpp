@@ -42,6 +42,6 @@ void AvgStatsReporter::run(
 
 	// Record averages
 	for (auto stat : averages) {
-		addEntry(0, stat.first, stat.second / i);
+		addEntry(0, stat.first, double(stat.second) / i);
 	}
 }
