@@ -8,39 +8,59 @@ import sys
 def fetch(connection, args):
 
     if ',' in args.group:
-        configs = [a.split(':') for a in args.group.split(',')]
-
-        where_clause = ' or '.join(
-                '(`index` = \'%s\' and `configuration` = %s)' %
-                tuple(c.split(':')) for c in args.group.split(',')
-        )
+        ids = ', '.join(i for i in args.group.split(','))
 
         cursor = connection.execute(
                 """
-                with relevant_runs as (
-                        select `id`, `commit`, `timestamp`, `index`,
-                        `configuration`
+                with `relevant_runs` as (
+                        select `id`, `commit`, `timestamp`, `config_id`
                         from `run`
-                        where %s
+                        where `config_id` in (%s)
                     )
                 select
                     `r1`.`commit`,
-                    `r1`.`index` || ':' || `r1`.`configuration`,
+                    `r1`.`config_id`,
                     avg(`result`.`value`)
-                from relevant_runs `r1`
-                outer left join relevant_runs `r2`
+                from `relevant_runs` `r1`
+                outer left join `relevant_runs` `r2`
                     on `r1`.`timestamp` < `r2`.`timestamp` and
-                        `r1`.`configuration` = `r2`.`configuration` and
-                        `r1`.`index` = `r1`.`index`
+                        `r1`.`config_id` = `r2`.`config_id`
                 inner join `result` on `result`.`run_id` = `r1`.`id`
                 where
                     `r2`.`id` is null and
                     `metric` = :metric
-                group by `r1`.`index`, `r1`.`configuration`
-                """ % where_clause,
+                group by `r1`.`config_id`
+                """ % ids,
                 args.__dict__
             )
     else:
+        # Retrieve config ids
+        consts = {a.split('=') for a in args.group}
+        options = connection.execute(
+                'select distinct `name` from `option`'
+            ).fetchall()
+
+        names = set(o[0] for o in options)
+        variables = names - set(consts.keys())
+
+        filter_clause = ' and '.join(
+                ['`option`.`name` = ? and `option`.`value` = ?'] * len(consts)
+            )
+
+        """
+        with `config_ids` as (
+            select `config`.`id`
+            from `config`
+            inner join `option`
+                on `option`.`config_id` = `config`.`id`
+            where %s
+        )
+        with `relevant_runs` as (
+            select `run`.`id`
+            from 
+        )
+        """ % filter_clause
+
         cursor = connection.execute(
                 """
                 with relevant_runs as (
@@ -51,10 +71,12 @@ def fetch(connection, args):
                             `run`.`index` `index`,
                             `option`.`value` `value`
                         from `run`
+                            inner join `config`
+                                on `config`.`id` = `run`.`config_id`
                             inner join `option`
-                            on `run`.`configuration` = `option`.`configuration`
+                                on `config`.`id` = `option`.`config_id`
                         where
-                            `name` = :group and
+                            %s and
                             exists (
                                 select * from `result`
                                 where
@@ -77,7 +99,7 @@ def fetch(connection, args):
                     `r2`.`id` is null and
                     `metric` = :metric
                 group by `r1`.`value`, `r1`.`index`
-                """,
+                """ % filter_clause,
                 args.__dict__
             )
 
@@ -102,13 +124,13 @@ def parse_arguments():
         )
 
     parser.add_argument(
-            'group', metavar='<option/configs>',
-            help='Group by given property (x-axis)'
+            'metric',
+            help='Name of metric to plot (y-axis)'
         )
 
     parser.add_argument(
-            'metric',
-            help='Name of metric to plot (y-axis)'
+            'group', metavar='<option/configs>',
+            help='Group by given property (x-axis)'
         )
 
     parser.add_argument(
@@ -174,12 +196,14 @@ def plot(keys, results):
 
         for k in indexes:
             pyplot.plot(
-                    [results[i]['key'] for i in range(0, len(results)) if k in results[i]],
+                    [
+                        results[i]['key'] for i in range(0, len(results))
+                        if k in results[i]
+                    ],
                     [a[k] for a in results if k in a],
                     label=k
                 )
             pyplot.legend()
-
 
     pyplot.show()
 
@@ -201,11 +225,6 @@ def main():
         results = [{'key': r[0], 'value': r[1]} for r in results]
         keys = ['key', 'value']
 
-    # Plot and exit if requested
-    if args.plot:
-        plot(keys, results)
-        return
-
     # Write results in tab separated csv format
     writer = csv.DictWriter(
             sys.stdout,
@@ -215,6 +234,10 @@ def main():
 
     writer.writeheader()
     writer.writerows(results)
+
+    # Plot and exit if requested
+    if args.plot:
+        plot(keys, results)
 
 
 main()
