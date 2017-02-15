@@ -45,16 +45,15 @@ def get(db, index, options):
     # Perform the search
     rows = db.connection.execute(
             """
-            with `relevant` as (
-                select `config`.`id`, count(*) as c
+            select `id`, `index`, `name`, `value`
+            from (
+                select `config`.*, count(*) as c
                 from `config`
                 inner join `option` on `option`.`config_id` = `config`.`id`
                 where `index` = ? and (%s)
                 group by `config`.`id`
                 having c = ?
-            )
-            select `id`, `name`, `value`
-            from `relevant`
+            ) as `relevant`
             inner join `option`
                 on `option`.`config_id` = `relevant`.`id`
             """ % where_clause,
