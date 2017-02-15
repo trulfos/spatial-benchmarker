@@ -322,6 +322,8 @@ class RStarTree : public Rtree<Node<D, C, Entry>>
 					}
 				}
 
+				assert(localBestSplit < entries.size());
+
 				if (bestDimension == d) {
 					bestSplit = localBestSplit;
 				}

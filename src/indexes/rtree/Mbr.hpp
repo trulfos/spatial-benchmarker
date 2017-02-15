@@ -82,9 +82,9 @@ class Mbr
 		 *
 		 * @return Hypervolume of this.
 		 */
-		float volume() const
+		double volume() const
 		{
-			float v = 1.0f;
+			double v = 1.0f;
 			for (unsigned i = 0; i < D; i++) {
 				v *= top[i] - bottom[i];
 			}
@@ -97,7 +97,7 @@ class Mbr
 		 * @param Other MBR to include
 		 * @return Necessary enlargement
 		 */
-		float enlargement(const Mbr& other) const
+		double enlargement(const Mbr& other) const
 		{
 			return (*this + other).volume() - volume();
 		};
@@ -165,12 +165,12 @@ class Mbr
 		 * @param other Other MBR
 		 * @return Distance between this and other
 		 */
-		float distance2(const Mbr& other) const
+		double distance2(const Mbr& other) const
 		{
-			float d = 0.0f;
+			double d = 0.0f;
 
 			for (unsigned i = 0; i < D; i++) {
-				float diff = distanceAlong(i, other);
+				double diff = distanceAlong(i, other);
 
 				d += diff * diff;
 			}
@@ -187,14 +187,14 @@ class Mbr
 		 *
 		 * @return Distance between other and this along d
 		 */
-		float distanceAlong(unsigned d, const Mbr& other) const
+		double distanceAlong(unsigned d, const Mbr& other) const
 		{
 			return std::max(
 					std::max(
-						0.0f,
-						(float) (bottom[d] - other.top[d])
+						0.0,
+						(double) (bottom[d] - other.top[d])
 					),
-					(float) (other.bottom[d] - top[d])
+					(double) (other.bottom[d] - top[d])
 				);
 		};
 
@@ -204,9 +204,9 @@ class Mbr
 		 *
 		 * @return Perimeter
 		 */
-		float perimeter() const
+		double perimeter() const
 		{
-			float perimeter = 0.0f;
+			double perimeter = 0.0f;
 
 			for (unsigned d = 0; d < D; ++d) {
 				perimeter += top[d] - bottom[d];
@@ -260,7 +260,7 @@ class Mbr
 		 * @param measure Function to evaluate overlap
 		 */
 		template<class F>
-		float overlapEnlargement(const Mbr& other, const Mbr& n, F measure)
+		double overlapEnlargement(const Mbr& other, const Mbr& n, F measure)
 		{
 			Mbr enlarged = *this + n;
 
@@ -270,7 +270,7 @@ class Mbr
 			}
 
 
-			float overlap = measure(enlarged.intersection(other));
+			double overlap = measure(enlarged.intersection(other));
 
 			if (intersects(other)) {
 				overlap -= measure(intersection(other));

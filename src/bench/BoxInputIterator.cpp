@@ -1,6 +1,7 @@
 #include "BoxInputIterator.hpp"
 #include <cassert>
 #include "common/Coordinate.hpp"
+#include <cmath>
 
 /**
  * BoxSet implementation
@@ -64,6 +65,13 @@ BoxInputIterator BoxInputIterator::operator++()
 				reinterpret_cast<char *>(&b[i]),
 				sizeof(b[i])
 			);
+
+		if (
+				std::isinf(a[i]) || std::isnan(a[i]) ||
+				std::isinf(b[i]) || std::isnan(b[i])
+		) {
+			throw std::runtime_error("Read non-normal double");
+		}
 	}
 
 	// Construct box
