@@ -31,7 +31,7 @@ class RRStarTree : public Rtree<RevisedNode<D, C, Entry>>
 		using E = Entry<D, N>;
 		using M = typename E::M;
 
-		static constexpr float EPSILON = 0.00001f;
+		static constexpr double EPSILON = 0.00001f;
 
 
 		/**
@@ -179,7 +179,7 @@ class RRStarTree : public Rtree<RevisedNode<D, C, Entry>>
 			};
 
 			std::set<unsigned> visited;
-			std::vector<float> overlaps (p, 0.0f);
+			std::vector<double> overlaps (p, 0.0f);
 
 			std::stack<StackFrame> path;
 			path.emplace(0);
@@ -210,7 +210,7 @@ class RRStarTree : public Rtree<RevisedNode<D, C, Entry>>
 				E * child = children[j];
 
 				// Calculate overlap enlargement
-				float overlap = children[current]->mbr.overlapEnlargement(
+				double overlap = children[current]->mbr.overlapEnlargement(
 						child->mbr,
 						newEntry.mbr,
 						measure
@@ -247,7 +247,7 @@ class RRStarTree : public Rtree<RevisedNode<D, C, Entry>>
 		 *
 		 * @return Overlap of the MBR with the children
 		 */
-		float perimeterOverlap(E& parent, M mbr)
+		double perimeterOverlap(E& parent, M mbr)
 		{
 			return overlap(
 					parent,
@@ -269,13 +269,13 @@ class RRStarTree : public Rtree<RevisedNode<D, C, Entry>>
 		 * @return Overlap of the MBR with the children
 		 */
 		template<class F>
-		float overlap(E& parent, M mbr, F type)
+		double overlap(E& parent, M mbr, F type)
 		{
 			return std::accumulate(
 					parent.begin(),
 					parent.end(),
 					0.0f,
-					[&](const float& sum, const E& entry) {
+					[&](const double& sum, const E& entry) {
 						return mbr.intersects(entry.mbr) ?
 							sum + type(mbr.intersection(entry.mbr)) : sum;
 					}
@@ -311,11 +311,11 @@ class RRStarTree : public Rtree<RevisedNode<D, C, Entry>>
 
 
 		template<class ForwardIt>
-		float evaluateSplit(
+		double evaluateSplit(
 				ForwardIt begin,
 				ForwardIt middle,
 				ForwardIt end,
-				float maxPerimeter,
+				double maxPerimeter,
 			   	bool useVolume = true
 		) {
 			assert(end - begin > 0);
@@ -337,7 +337,7 @@ class RRStarTree : public Rtree<RevisedNode<D, C, Entry>>
 			if (mbrA.intersects(mbrB)) {
 				const M intersection = mbrA.intersection(mbrB);
 
-				float overlap = useVolume ?
+				double overlap = useVolume ?
 					intersection.volume() : intersection.perimeter();
 
 				if (overlap > EPSILON) {
@@ -355,7 +355,7 @@ class RRStarTree : public Rtree<RevisedNode<D, C, Entry>>
 		/**
 		 * Find the minimal split perimeter along the given axis.
 		 */
-		float minSplitPerimeter(unsigned d, std::vector<E>& entries)
+		double minSplitPerimeter(unsigned d, std::vector<E>& entries)
 		{
 			// Sort along the given dimension
 			sortBy(d, entries.begin(), entries.end());
@@ -410,7 +410,7 @@ class RRStarTree : public Rtree<RevisedNode<D, C, Entry>>
 				all += e.mbr;
 			}
 
-			float maxPerimeter = all.perimeter();
+			double maxPerimeter = all.perimeter();
 			WeightingFunction<E, m> wf(a);
 
 			// To be updated
@@ -455,7 +455,7 @@ class RRStarTree : public Rtree<RevisedNode<D, C, Entry>>
 			} else { // Not leaf case
 
 				// Use all axes
-				float minimum = std::numeric_limits<float>::infinity();
+				double minimum = std::numeric_limits<double>::infinity();
 
 				for (unsigned d = 0; d < E::dimension; ++d) {
 					// Sort along current dimension
@@ -473,7 +473,7 @@ class RRStarTree : public Rtree<RevisedNode<D, C, Entry>>
 
 					for (unsigned s = m; s < entries.size() - m; ++s) {
 						//TODO: weighting
-						float w = wf(s) * evaluateSplit(
+						double w = wf(s) * evaluateSplit(
 								entries.begin(),
 								entries.begin() + s,
 								entries.end(),

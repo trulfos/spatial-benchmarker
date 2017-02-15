@@ -19,9 +19,9 @@ class WeightingFunction
 
 
 	static constexpr unsigned capacity = E::Node::capacity;
-	static constexpr float s = 0.5f;
-	static constexpr float shift = exp(-1.0f / (s * s));
-	static constexpr float scale = 1.0f / (1 - shift);
+	static constexpr double s = 0.5f;
+	static constexpr double shift = exp(-1.0f / (s * s));
+	static constexpr double scale = 1.0f / (1 - shift);
 
 	static_assert(2 * m <= capacity, "m must be less than or equal to M/2");
 
@@ -49,10 +49,10 @@ public:
 
 		const Mbr & current = parent.mbr;
 		const Mbr original = parent.node->originalMbr();
-		const float width = current.getTop()[d] - current.getBottom()[d];
+		const double width = current.getTop()[d] - current.getBottom()[d];
 
 		// Recalculate cached values
-		float asym = width == 0.0f ? 0.0f : (
+		double asym = width == 0.0f ? 0.0f : (
 					(current.getTop()[d] + current.getBottom()[d])
 					- (original.getTop()[d] + original.getBottom()[d])
 				) / width;
@@ -69,10 +69,10 @@ public:
 	 *
 	 * @param i Split index
 	 */
-	float operator()(unsigned i) const
+	double operator()(unsigned i) const
 	{
-		float e = preScale * (i - preShift);
-		float r = scale * (exp(-e * e) - shift);
+		double e = preScale * (i - preShift);
+		double r = scale * (exp(-e * e) - shift);
 
 		assert (r <= 1.0f && r >= -1.0f);
 
@@ -87,8 +87,8 @@ private:
 	unsigned dimension = 0;
 
 	// Temporary results
-	float preShift;
-	float preScale;
+	double preShift;
+	double preScale;
 
 
 };

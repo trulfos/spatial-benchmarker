@@ -192,12 +192,12 @@ class RStarTree : public Rtree<Node<D, C, Entry>>
 		{
 			//TODO: Drag the algorithm out into a template?
 			E * best = parent.node->entries;
-			float minimum = std::numeric_limits<float>::infinity();
+			double minimum = std::numeric_limits<double>::infinity();
 
 			for (E& entry : *(parent.node)) {
 
 				// Calculate overlap enlargement
-				float o = overlap(parent, entry.mbr + newEntry.mbr)
+				double o = overlap(parent, entry.mbr + newEntry.mbr)
 					- overlap(parent, entry.mbr);
 
 				if (o < minimum) {
@@ -229,13 +229,13 @@ class RStarTree : public Rtree<Node<D, C, Entry>>
 		 *
 		 * @return Overlap of the MBR with the children
 		 */
-		float overlap(E& parent, M mbr)
+		double overlap(E& parent, M mbr)
 		{
 			return std::accumulate(
 					parent.begin(),
 					parent.end(),
 					0.0f,
-					[&](const float& sum, const E& entry) {
+					[&](const double& sum, const E& entry) {
 						return mbr.intersects(entry.mbr) ?
 							sum + mbr.intersection(entry.mbr).volume() : sum;
 					}
@@ -266,7 +266,7 @@ class RStarTree : public Rtree<Node<D, C, Entry>>
 			// Choose split dimension and index
 			unsigned bestDimension = E::dimension;
 			unsigned bestSplit = entries.size();
-			float minPerimeter = std::numeric_limits<float>::infinity();
+			double minPerimeter = std::numeric_limits<double>::infinity();
 
 			for (unsigned d = 0; d < E::dimension; ++d) {
 
@@ -289,7 +289,7 @@ class RStarTree : public Rtree<Node<D, C, Entry>>
 
 				// Determine best split and best perimeter for this dimension
 				unsigned localBestSplit = entries.size();
-				float minOverlap = std::numeric_limits<float>::infinity();
+				double minOverlap = std::numeric_limits<double>::infinity();
 
 				for (unsigned s = m; s < entries.size() - m; ++s) {
 
@@ -306,14 +306,14 @@ class RStarTree : public Rtree<Node<D, C, Entry>>
 					}
 
 					// Calculate perimeter (for dimension selection)
-					float perimeter = mbrA.perimeter() + mbrB.perimeter();
+					double perimeter = mbrA.perimeter() + mbrB.perimeter();
 					if (perimeter < minPerimeter) {
 						bestDimension = d;
 						minPerimeter = perimeter;
 					}
 
 					// Calcualte overlap (for split point selection)
-					float overlap = mbrA.intersects(mbrB) ?
+					double overlap = mbrA.intersects(mbrB) ?
 							mbrA.intersection(mbrB).volume() : 0.0f;
 
 					if (overlap < minOverlap) { //TODO: Fallback to perimeter or volume?

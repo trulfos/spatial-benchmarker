@@ -106,12 +106,12 @@ class QuadraticRtree : public Rtree<Node<D, C, Entry>>
 
 			// Choose the two seeds by checking all combinations
 			typename std::vector<E>::iterator seeds[2];
-			float wasted = -std::numeric_limits<float>::infinity();
+			double wasted = -std::numeric_limits<double>::infinity();
 
 			for (auto i = entries.begin(); i != entries.end(); ++i) {
 				for (auto j = i + 1; j != entries.end(); ++j) {
 
-					float waste = (i->mbr + j->mbr).volume() - (
+					double waste = (i->mbr + j->mbr).volume() - (
 							i->mbr.volume() + j->mbr.volume()
 						);
 
