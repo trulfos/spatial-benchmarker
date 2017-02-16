@@ -21,7 +21,8 @@ BoxInputIterator::BoxInputIterator()
 
 bool BoxInputIterator::operator==(const BoxInputIterator& other) const
 {
-	return (!stream && !other.stream) || stream == other.stream;
+	return ((!stream || !*stream) && (!other.stream || !*other.stream))
+		|| stream == other.stream;
 }
 
 
@@ -33,7 +34,6 @@ bool BoxInputIterator::operator!=(const BoxInputIterator& other) const
 
 const Box& BoxInputIterator::operator*() const
 {
-	//TODO: assert(stream != nullptr && *stream);
 	return box;
 }
 
@@ -46,7 +46,7 @@ const Box * BoxInputIterator::operator->() const
 
 BoxInputIterator BoxInputIterator::operator++()
 {
-	assert(stream != nullptr && *stream);
+	assert(*stream);
 
 	unsigned dimension = box.getDimension();
 
@@ -77,11 +77,6 @@ BoxInputIterator BoxInputIterator::operator++()
 	// Construct box
 	box = Box(a, b);
 
-	// Check if we were successful
-	if (!*stream) {
-		stream = nullptr;
-	}
-
 	return *this;
 }
 
@@ -107,7 +102,7 @@ BoxInputIterator::difference_type BoxInputIterator::operator-(
 	if (other.stream == nullptr) {
 
 		// Prevent endless recursion
-		assert(stream != nullptr);
+		assert(stream != nullptr && *stream);
 
 		return -(other - *this);
 	}
@@ -122,6 +117,30 @@ BoxInputIterator::difference_type BoxInputIterator::operator-(
 unsigned BoxInputIterator::getDimension() const
 {
 	return box.getDimension();
+}
+
+
+Box BoxInputIterator::getBounds()
+{
+	// Save state
+	std::istream::pos_type position = stream->tellg();
+	Box original = box;
+
+	// Loop through entire stream to find min/max
+	stream->seekg(0, std::istream::beg);
+
+	Box bounds = box;
+
+	while (*stream) {
+		operator++();
+		bounds.include(box);
+	}
+
+	// Restore state
+	stream->seekg(position);
+	box = original;
+
+	return bounds;
 }
 
 

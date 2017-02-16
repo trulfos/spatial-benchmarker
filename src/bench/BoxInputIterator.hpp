@@ -51,6 +51,12 @@ class BoxInputIterator : public std::iterator<std::input_iterator_tag, Box>
 		 */
 		unsigned getDimension() const;
 
+
+		/**
+		 * Get the bounds of the data this iterator points to.
+		 */
+		Box getBounds();
+
 	private:
 		std::istream * stream;
 		Box box;

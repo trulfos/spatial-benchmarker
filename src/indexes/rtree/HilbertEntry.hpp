@@ -53,12 +53,22 @@ class HilbertEntry : public BaseEntry<D, N, HilbertEntry>
 		{
 		};
 
+
+		HilbertEntry(const DataObject& object)
+		{
+			throw std::logic_error(
+					"Cannot instantiate Hilbert entry without bounding box"
+				);
+		};
+
+
 		/**
 		 * Create a new entry from the given object.
 		 */
-		HilbertEntry(const DataObject& object) : Entry(object)
+		HilbertEntry(const DataObject& object, const Box& bounds)
+			: Entry(object)
 		{
-			hilbertValue = HC::map(this->mbr.center());
+			hilbertValue = HC::map(this->mbr.center(), bounds);
 		};
 
 

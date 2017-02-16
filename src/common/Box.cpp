@@ -102,6 +102,15 @@ float Box::getVolume() const
 	return v;
 }
 
+
+void Box::include(const Box& other)
+{
+	for (unsigned i = 0; i < getDimension(); ++i) {
+			points[0][i] = std::min(points[0][i], other.points[0][i]);
+			points[1][i] = std::max(points[1][i], other.points[1][i]);
+	}
+}
+
 std::istream& operator>>(
 		std::istream& stream,
 		Box& box

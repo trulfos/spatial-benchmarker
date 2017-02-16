@@ -60,6 +60,14 @@ class Box
 		 */
 		float getVolume() const;
 
+
+		/**
+		 * Include the other box in this. The resulting box is the bounding box
+		 * of both boxes.
+		 */
+		void include(const Box& other);
+
+
 	private:
 		Point points[2];
 };

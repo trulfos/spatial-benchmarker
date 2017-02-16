@@ -7,6 +7,7 @@
 #include <bitset>
 #include "common/Coordinate.hpp"
 #include "common/Point.hpp"
+#include "common/Box.hpp"
 
 namespace Rtree
 {
@@ -35,15 +36,20 @@ public:
 	/**
 	 * Map a point from cartesian space to Hilbart value.
 	 */
-	static H map(Point point)
+	static H map(Point point, const Box& bounds)
 	{
 		assert(point.getDimension() == D);
 
-#		ifndef NDEBUG
+		// Normalize all coordinates
+		auto points = bounds.getPoints();
+		for (unsigned i = 0; i < point.getDimension(); ++i) {
+			assert(points.second[i] - points.first[i] > 0.0);
+			point[i] = (point[i] - points.first[i]) / (points.second[i] - points.first[i]);
+		}
+
 		for (auto c : point) {
 			assert(c <= 1.0f && c >= 0.0f);
 		}
-#		endif
 
 		// Size of the Hilbert grid (in bits for each dimension)
 		constexpr unsigned size = (8 * sizeof(H) + (D - 1)) / D;
