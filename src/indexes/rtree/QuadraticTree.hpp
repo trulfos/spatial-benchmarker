@@ -5,6 +5,7 @@
 #include "Node.hpp"
 #include "Entry.hpp"
 #include "common/Algorithm.hpp"
+#include <cmath>
 
 namespace Rtree
 {
@@ -23,6 +24,7 @@ class QuadraticRtree : public Rtree<Node<D, C, Entry>>
 
 		using N = Node<D, C, Entry>;
 		using E = typename N::Entry;
+		using M = typename E::M;
 
 
 		/**
@@ -33,7 +35,7 @@ class QuadraticRtree : public Rtree<Node<D, C, Entry>>
 		void insert(const DataObject& object) override
 		{
 			E entry (object);
-			E rootEntry (this->getRoot(), typename E::M());
+			E rootEntry (this->getRoot(), M());
 			std::vector<E *> path {&rootEntry};
 
 			// Find leaf node
@@ -97,50 +99,77 @@ class QuadraticRtree : public Rtree<Node<D, C, Entry>>
 		{
 			// Contruct buffer with all entries
 			std::vector<E> entries (a.begin(), a.end());
-
 			entries.insert(
 					entries.end(),
 					b.begin(), b.end()
 				);
 
-
 			// Choose the two seeds by checking all combinations
-			typename std::vector<E>::iterator seeds[2];
-			double wasted = -std::numeric_limits<double>::infinity();
+			auto combinations = makeCombinationsView(
+					entries.begin(), entries.end()
+				);
 
-			for (auto i = entries.begin(); i != entries.end(); ++i) {
-				for (auto j = i + 1; j != entries.end(); ++j) {
+			auto seeds = argmin(
+					combinations.begin(), combinations.end(),
+					[](std::pair<E&, E&> pair) {
+						M mbrA = pair.first.mbr;
+						M mbrB = pair.first.mbr;
 
-					double waste = (i->mbr + j->mbr).volume() - (
-							i->mbr.volume() + j->mbr.volume()
-						);
-
-					if (waste > wasted) {
-						seeds[0] = i;
-						seeds[1] = j;
-						wasted = waste;
+						return (mbrA + mbrB).volume() - (
+								mbrA.volume() + mbrB.volume()
+							);
 					}
-				}
+				).getIterators();
+
+			// This should be guaranteed by the combinations view
+			assert(seeds.first < seeds.second);
+
+			// Assign and remove seeds from entries
+			a = {*seeds.first};
+			b = {*seeds.second};
+
+
+			if (seeds.first != entries.end() - 2) {
+				std::iter_swap(seeds.second, entries.end() - 1);
+				std::iter_swap(seeds.first, entries.end() - 2);
 			}
 
-			// Distribute the remaining entries
-			a = {*seeds[0]};
-			b = {*seeds[1]};
+			entries.resize(entries.size() - 2);
 
+			// Add entries
+			for (auto entry = entries.begin(); entry != entries.end(); ++entry) {
 
-			for (auto e = entries.begin(); e != entries.end(); ++e) {
-				if (seeds[0] == e || seeds[1] == e) {
+				// Do we have to add all to one side?
+				if (a.node->nEntries >= C - m - 1) {
+					b.add(*entry);
 					continue;
 				}
 
+				if (b.node->nEntries >= C - m - 1) {
+					a.add(*entry);
+					continue;
+				}
+
+				// Select the one waisting the most space
+				auto selected = argmin(
+						entry, entries.end(),
+						[&](const E& entry) {
+							return -std::fabs(
+									a.mbr.enlargement(entry.mbr)
+									- b.mbr.enlargement(entry.mbr)
+								);
+						}
+					);
+
+				std::iter_swap(entry, selected);
+
 				if (
-					b.node->nEntries >= m ||
-					(a.mbr.enlargement(e->mbr) < b.mbr.enlargement(e->mbr)
-						&& a.node->nEntries < m)
+						a.mbr.enlargement(entry->mbr) >
+						b.mbr.enlargement(entry->mbr)
 				) {
-					a.add(*e);
+					b.add(*entry);
 				} else {
-					b.add(*e);
+					a.add(*entry);
 				}
 			}
 		};
