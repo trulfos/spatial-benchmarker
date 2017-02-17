@@ -123,7 +123,8 @@ unsigned BoxInputIterator::getDimension() const
 Box BoxInputIterator::getBounds()
 {
 	// Save state
-	std::istream::pos_type position = stream->tellg();
+	auto state = stream->rdstate();
+	auto position = stream->tellg();
 	Box original = box;
 
 	// Loop through entire stream to find min/max
@@ -137,7 +138,7 @@ Box BoxInputIterator::getBounds()
 	}
 
 	// Restore state
-	stream->clear();
+	stream->clear(state);
 	stream->seekg(position);
 	box = original;
 
