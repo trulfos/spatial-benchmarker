@@ -48,13 +48,32 @@ class Rtree : public ::SpatialIndex
 		 */
 		void load(LazyDataSet& dataSet)
 		{
-			if (!dataSet.getSize()) {
-				return;
+			unsigned dataDim = dataSet.getDimension();
+
+			if (dataDim != E::dimension) {
+				throw std::runtime_error(
+						"R-tree not compiled for data set dimension. "
+						"Please recompile with D=" + std::to_string(dataDim)
+					);
 			}
 
+			if (!dataSet.getSize()) {
+				throw std::runtime_error(
+						"The given data set is empty. Aborting."
+					);
+			}
+
+			// Index objects
 			for (auto& object : dataSet) {
 				insert(object);
 			}
+
+			// Sanity check
+#			ifndef NDEBUG
+			if (!hasValidStructure()) {
+				throw std::logic_error("Invalid R-tree structure ⇒ hunt bugs");
+			}
+#			endif
 		};
 
 
@@ -110,6 +129,50 @@ class Rtree : public ::SpatialIndex
 			root = newRoot;
 			height++;
 		};
+
+
+		/**
+		 * Perform a sanity check on the R-tree structure.
+		 *
+		 * Does a depth first traversal and checks all parents include their
+		 * children.
+		 *
+		 * @return True if valid structure
+		 */
+		bool hasValidStructure()
+		{
+			std::vector<std::pair<E *, unsigned>> path;
+			path.emplace_back(root->entries, root->nEntries);
+
+			while (!path.empty()) {
+				auto& top = path.back();
+
+				if (top.second == 0) {
+					path.pop_back();
+					continue;
+				}
+
+				top.second -= 1;
+				E& entry = *(top.first++);
+
+				if (path.size() < height) {
+					N * node = entry.node;
+
+					// Check all entries
+					for (auto& e : entry) {
+						if (!entry.mbr.contains(e.mbr)) {
+							return false;
+						}
+					}
+
+					path.emplace_back(node->entries, node->nEntries);
+				}
+			}
+
+			return true;
+		};
+
+
 
 
 	protected:
