@@ -137,6 +137,7 @@ Box BoxInputIterator::getBounds()
 	}
 
 	// Restore state
+	stream->clear();
 	stream->seekg(position);
 	box = original;
 
