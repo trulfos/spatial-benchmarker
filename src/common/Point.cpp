@@ -2,15 +2,6 @@
 #include <iomanip>
 #include <iterator>
 
-Point::Point(unsigned int dimension)
-{
-	resize(dimension);
-}
-
-Point::Point(std::initializer_list<Coordinate> list) : std::vector<Coordinate>(list)
-{
-}
-
 unsigned int Point::getDimension() const
 {
 	return size();

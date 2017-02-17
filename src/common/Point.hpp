@@ -13,17 +13,9 @@ class Point : private std::vector<Coordinate>
 {
 	public:
 
+		using std::vector<Coordinate>::vector;
+
 		Point() = default;
-
-		/**
-		 * Create a point of the given dimension.
-		 */
-		Point(unsigned dimension);
-
-		/**
-		 * Create a point from a list of coordinates.
-		 */
-		Point(std::initializer_list<Coordinate> list);
 
 		/**
 		 * Initialize a point with random distribution.

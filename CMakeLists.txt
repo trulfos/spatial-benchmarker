@@ -78,6 +78,8 @@ add_executable(test_knnqueueentry
 )
 
 add_executable(test_hilbertcurve
+	src/common/Point.cpp
+	src/common/Box.cpp
 	src/indexes/rtree/HilbertCurve.test.cpp
 )
 

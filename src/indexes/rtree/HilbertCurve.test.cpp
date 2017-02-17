@@ -2,7 +2,6 @@
 #include <array>
 #include <cstdint>
 #include "HilbertCurve.hpp"
-#include "common/Point.cpp"
 
 using Rtree::HilbertCurve;
 
@@ -24,10 +23,17 @@ struct TestCase
 template<class A>
 void checkAll(A cases)
 {
+	constexpr unsigned dimension = A::value_type::dimension;
 	using HC = HilbertCurve<std::uint64_t, A::value_type::dimension>;
 
+	// Create bounding box
+	Box bounds (
+			Point(dimension, 0.0),
+			Point(dimension, 1.0)
+		);
+
 	for (auto& c : cases) {
-		std::uint64_t r = HC::map(c.point) >> (8 * sizeof(r) - c.bits);
+		std::uint64_t r = HC::map(c.point, bounds) >> (8 * sizeof(r) - c.bits);
 
 		cr_expect(
 				r == c.answer,

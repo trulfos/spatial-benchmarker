@@ -21,13 +21,13 @@ Box::Box(const Point& a, const Point& b)
 
 
 Box::Box(unsigned dimension)
-	:points({dimension, dimension})
+	:points({Point(dimension), Point(dimension)})
 {
 };
 
 
 Box::Box(const Point& center, float size)
-	: points({center.getDimension(), center.getDimension()})
+	: points({Point(center.getDimension()), Point(center.getDimension())})
 {
 	unsigned d = center.getDimension();
 
