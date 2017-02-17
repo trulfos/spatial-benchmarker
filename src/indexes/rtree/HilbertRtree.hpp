@@ -31,15 +31,8 @@ class HilbertRtree : public Rtree<Node<D, C, HilbertEntry>>
 		 */
 		void load(LazyDataSet& dataSet) override
 		{
-			if (!dataSet.getSize()) {
-				return;
-			}
-
-			Box bounds = dataSet.begin().getBounds();
-
-			for (auto& object : dataSet) {
-				insert(E(object, bounds));
-			}
+			bounds = dataSet.begin().getBounds();
+			Rtree<N>::load(dataSet);
 		};
 
 
@@ -48,8 +41,9 @@ class HilbertRtree : public Rtree<Node<D, C, HilbertEntry>>
 		 *
 		 * @param object DataObject to insert
 		 */
-		void insert(const E& entry) override
+		void insert(const DataObject& object) override
 		{
+			E entry (object, bounds);
 			E rootEntry (this->getRoot(), typename E::M());
 			std::vector<EIt> path {&rootEntry};
 
@@ -149,6 +143,8 @@ class HilbertRtree : public Rtree<Node<D, C, HilbertEntry>>
 
 
 	protected:
+
+		Box bounds;
 
 		/**
 		 * Chooses subtree by comparing hilbert values.

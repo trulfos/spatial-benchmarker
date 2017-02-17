@@ -39,6 +39,7 @@ public:
 	static H map(Point point, const Box& bounds)
 	{
 		assert(point.getDimension() == D);
+		assert(bounds.getDimension() == D);
 
 		// Normalize all coordinates
 		auto points = bounds.getPoints();
