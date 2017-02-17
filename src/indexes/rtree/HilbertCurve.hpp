@@ -47,9 +47,11 @@ public:
 			point[i] = (point[i] - points.first[i]) / (points.second[i] - points.first[i]);
 		}
 
+#		ifndef NDEBUG
 		for (auto c : point) {
 			assert(c <= 1.0f && c >= 0.0f);
 		}
+#		endif
 
 		// Size of the Hilbert grid (in bits for each dimension)
 		constexpr unsigned size = (8 * sizeof(H) + (D - 1)) / D;
