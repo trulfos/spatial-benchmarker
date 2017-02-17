@@ -30,8 +30,9 @@ class QuadraticRtree : public Rtree<Node<D, C, Entry>>
 		 *
 		 * @param object DataObject to insert
 		 */
-		void insert(const E& entry) override
+		void insert(const DataObject& object) override
 		{
+			E entry (object);
 			E rootEntry (this->getRoot(), typename E::M());
 			std::vector<E *> path {&rootEntry};
 
@@ -43,21 +44,20 @@ class QuadraticRtree : public Rtree<Node<D, C, Entry>>
 			}
 
 			// Split nodes bottom-up as long as necessary
-			E e = entry;
 			auto top = path.rbegin();
 
 			while (top != path.rend() && (*(top))->node->isFull()) {
-				e = E(this->allocateNode(), {e});
-				redistribute(**top, e);
+				entry = E(this->allocateNode(), {entry});
+				redistribute(**top, entry);
 				top++;
 			}
 
 			// Split root?
 			if (top == path.rend()) {
-				E newRoot (this->allocateNode(), {**path.begin(), e});
+				E newRoot (this->allocateNode(), {**path.begin(), entry});
 				this->addLevel(newRoot.node);
 			} else {
-				(*top)->add(e);
+				(*top)->add(entry);
 			}
 		};
 

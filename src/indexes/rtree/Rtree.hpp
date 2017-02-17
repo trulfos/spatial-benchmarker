@@ -63,7 +63,7 @@ class Rtree : public ::SpatialIndex
 		 *
 		 * @param object Data object to insert
 		 */
-		virtual void insert(const E& entry) = 0;
+		virtual void insert(const DataObject& object) = 0;
 
 
 		/**

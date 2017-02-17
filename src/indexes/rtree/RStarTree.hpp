@@ -39,9 +39,9 @@ class RStarTree : public Rtree<Node<D, C, Entry>>
 		 * @param index Index to insert into
 		 * @param object DataObject to insert
 		 */
-		void insert(const E& entry) override
+		void insert(const DataObject& object) override
 		{
-			insert(entry, 0);
+			insert(object, 0);
 		};
 
 

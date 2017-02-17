@@ -39,8 +39,9 @@ class RRStarTree : public Rtree<RevisedNode<D, C, Entry>>
 		 *
 		 * @param object DataObject to insert
 		 */
-		virtual void insert(const E& entry) override
+		virtual void insert(const DataObject& object) override
 		{
+			E entry (object);
 			E rootEntry (this->getRoot(), M());
 			std::vector<E *> path {&rootEntry};
 
@@ -57,21 +58,20 @@ class RRStarTree : public Rtree<RevisedNode<D, C, Entry>>
 			}
 
 			// Split nodes bottom-up as long as necessary
-			E e = entry;
 			auto top = path.rbegin();
 
 			while (top != path.rend() && (*(top))->node->isFull()) {
-				e = E(this->allocateNode(), {e});
-				redistribute(**top, e, top == path.rbegin());
+				entry = E(this->allocateNode(), {entry});
+				redistribute(**top, entry, top == path.rbegin());
 				top++;
 			}
 
 			// Split root?
 			if (top == path.rend()) {
-				E newRoot (this->allocateNode(), {**path.begin(), e});
+				E newRoot (this->allocateNode(), {**path.begin(), entry});
 				this->addLevel(newRoot.node);
 			} else {
-				(*top)->add(e);
+				(*top)->add(entry);
 			}
 		};
 
