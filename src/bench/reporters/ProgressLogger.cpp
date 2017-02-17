@@ -5,7 +5,7 @@ ProgressLogger::ProgressLogger(std::ostream& stream, unsigned max)
 	: stream(stream), max(max)
 {
 	stream << "\033[?25l"; // Hides cursor
-	draw();
+	set(progress);
 }
 
 ProgressLogger::~ProgressLogger()
@@ -15,29 +15,27 @@ ProgressLogger::~ProgressLogger()
 
 void ProgressLogger::set(unsigned p)
 {
+	unsigned oldCount = (2 * (LENGTH - 2) * progress + max) / (2 * max);
+	unsigned count = (2 * (LENGTH - 2) * p + max) / (2 * max);
+
+	if (oldCount != count) {
+		stream << '\r';
+
+		for (unsigned i = 0; i < count; ++i) {
+			stream << "█";
+		}
+
+		for (unsigned i = 0; i < LENGTH - 2 - count; ++i) {
+			stream << "░";
+		}
+
+		stream << std::flush;
+	}
+
 	progress = p;
-	draw();
 }
 
 void ProgressLogger::increment()
 {
-	progress++;
-	draw();
-}
-
-void ProgressLogger::draw()
-{
-	unsigned count = (2 * (LENGTH - 2) * progress + max) / (2 * max);
-
-	stream << '\r';
-
-	for (unsigned i = 0; i < count; ++i) {
-		stream << "█";
-	}
-
-	for (unsigned i = 0; i < LENGTH - 2 - count; ++i) {
-		stream << "░";
-	}
-
-	stream << std::flush;
+	set(progress + 1);
 }

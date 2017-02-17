@@ -35,9 +35,4 @@ class ProgressLogger
 		unsigned progress = 0;
 		std::ostream& stream;
 		unsigned max;
-
-		/**
-		 * (Re)draws the progressbar.
-		 */
-		void draw();
 };
