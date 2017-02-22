@@ -86,6 +86,12 @@ class Split
 			return mbrs[0].perimeter() + mbrs[1].perimeter();
 		}
 
+
+		bool hasVolume() const
+		{
+			return mbrs[0].volume() != 0.0 && mbrs[1].volume() != 0.0;
+		}
+
 	private:
 		unsigned sort, dimension, splitPoint;
 		std::array<M, 2> mbrs;

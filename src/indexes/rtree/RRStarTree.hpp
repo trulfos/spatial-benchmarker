@@ -300,14 +300,24 @@ class RRStarTree : public Rtree<RevisedNode<D, C, Entry>>
 				splits.restrictTo(split.getDimension());
 			}
 
+			// Can we use volume?
+			// TODO: This can be optimized by iterating through sorts instead of
+			//		splits.
+			bool useVolume = std::all_of(
+					first, splits.end(),
+					[](const Split<E>& split) {
+						return split.hasVolume();
+					}
+				);
+
 			// Determine best split
 			Split<E> split = *argmin(
 					first, splits.end(),
 					[&](const Split<E>& split) {
 
+						// Evaluate goal and weight functions
 						wf.setDimension(split.getDimension());
-
-						double g = wg(split, true /* TODO */ );
+						double g = wg(split, useVolume);
 						double f = wf(split.getSplitPoint());
 
 						return g < 0.0 ? g * f : g / f;
