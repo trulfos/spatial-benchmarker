@@ -24,6 +24,15 @@ class SpatialIndex
 
 
 		/**
+		 * Check the structure of this index.
+		 * Does nothing by default and assumes a valid structure.
+		 *
+		 * @return True if structure is valid.
+		 */
+		virtual bool checkStructure();
+
+
+		/**
 		 * Perform a search using the given query.
 		 */
 		Results search(const Query& query) const;

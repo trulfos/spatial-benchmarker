@@ -76,6 +76,12 @@ int main(int argc, char *argv[])
 		logger.endStart("Indexing " + filename + "data");
 		index->load(dataSet);
 
+		// Check indexing vent well
+		logger.endStart("Running index self check");
+		if (!index->checkStructure()) {
+			throw std::logic_error("Invalid index structure detected");
+		}
+
 		logger.end();
 
 		// Benchmark

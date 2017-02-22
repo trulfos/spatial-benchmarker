@@ -67,14 +67,44 @@ class Rtree : public ::SpatialIndex
 			for (auto& object : dataSet) {
 				insert(object);
 			}
-
-			// Sanity check
-#			ifndef NDEBUG
-			if (!hasValidStructure()) {
-				throw std::logic_error("Invalid R-tree structure ⇒ hunt bugs");
-			}
-#			endif
 		};
+
+
+		/**
+		 * Check all MBRs are contained within their parents MBR.
+		 */
+		bool checkStructure()
+		{
+			std::vector<std::pair<E *, unsigned>> path;
+			path.emplace_back(root->entries, root->nEntries);
+
+			while (!path.empty()) {
+				auto& top = path.back();
+
+				if (top.second == 0) {
+					path.pop_back();
+					continue;
+				}
+
+				top.second -= 1;
+				E& entry = *(top.first++);
+
+				if (path.size() < height) {
+					// Check all entries
+					for (auto& e : entry) {
+						if (!entry.mbr.contains(e.mbr)) {
+							return false;
+						}
+					}
+
+					// Push frame on stack
+					N * node = entry.node;
+					path.emplace_back(node->entries, node->nEntries);
+				}
+			}
+
+			return true;
+		}
 
 
 		/**
@@ -129,49 +159,6 @@ class Rtree : public ::SpatialIndex
 			root = newRoot;
 			height++;
 		};
-
-
-		/**
-		 * Perform a sanity check on the R-tree structure.
-		 *
-		 * Does a depth first traversal and checks all parents include their
-		 * children.
-		 *
-		 * @return True if valid structure
-		 */
-		bool hasValidStructure()
-		{
-			std::vector<std::pair<E *, unsigned>> path;
-			path.emplace_back(root->entries, root->nEntries);
-
-			while (!path.empty()) {
-				auto& top = path.back();
-
-				if (top.second == 0) {
-					path.pop_back();
-					continue;
-				}
-
-				top.second -= 1;
-				E& entry = *(top.first++);
-
-				if (path.size() < height) {
-					N * node = entry.node;
-
-					// Check all entries
-					for (auto& e : entry) {
-						if (!entry.mbr.contains(e.mbr)) {
-							return false;
-						}
-					}
-
-					path.emplace_back(node->entries, node->nEntries);
-				}
-			}
-
-			return true;
-		};
-
 
 
 

@@ -6,7 +6,14 @@
 
 SpatialIndex::~SpatialIndex()
 {
-};
+}
+
+
+bool SpatialIndex::checkStructure()
+{
+	// Return true by default to allow missing implementations
+	return true;
+}
 
 Results SpatialIndex::search(const Query& query) const
 {
