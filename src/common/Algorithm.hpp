@@ -194,7 +194,7 @@ class CombinationsView
 			>;
 
 		class CombinationsIterator
-			: public std::iterator<value_type, std::forward_iterator_tag>
+			: public std::iterator<std::forward_iterator_tag, value_type>
 
 		{
 			public:
