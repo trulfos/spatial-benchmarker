@@ -2,6 +2,9 @@
 #include <cassert>
 #include <functional>
 #include <type_traits>
+#include <tuple>
+
+#include <iostream>
 
 /**
  * Set of algorithm templates.
@@ -79,7 +82,7 @@ min_value(ForwardIt start, ForwardIt end, TransformFunc transform)
  * iterators.
  */
 template<typename T>
-class RangeIterator : public std::iterator<std::forward_iterator_tag, T>
+class RangeIterator : public std::iterator<std::forward_iterator_tag, const T>
 {
 	public:
 		RangeIterator(const T& value) : value(value)
@@ -92,7 +95,7 @@ class RangeIterator : public std::iterator<std::forward_iterator_tag, T>
 			return *this;
 		};
 
-		const T& operator*()
+		const T& operator*() const
 		{
 			return value;
 		};

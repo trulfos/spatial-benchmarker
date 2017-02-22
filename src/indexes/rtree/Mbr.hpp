@@ -266,7 +266,7 @@ class Mbr
 
 			// They may not overlap at all
 			if (!enlarged.intersects(other)) {
-				return 0.0f;
+				return 0.0;
 			}
 
 

@@ -45,6 +45,8 @@ public:
 	 */
 	void setDimension(unsigned d)
 	{
+		assert(d < E::dimension);
+
 		dimension = d;
 
 		const Mbr & current = parent.mbr;
@@ -59,7 +61,7 @@ public:
 
 		assert(asym <= 1.0f && asym >= -1.0f);
 
-		preShift = 0.5f * (capacity - 1.0f + (capacity + 1.0f - 2.0f * m) * asym);
+		preShift = 0.5f * (capacity + 1.0f + (capacity + 1.0f - 2.0f * m) * asym);
 		preScale = 2.0f / (s * (capacity + 1 + (capacity + 1 - 2 * m) * fabs(asym)));
 	}
 

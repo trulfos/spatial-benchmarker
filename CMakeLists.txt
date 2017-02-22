@@ -89,9 +89,17 @@ add_executable(test_mbr
 	src/indexes/rtree/Mbr.test.cpp
 )
 
-foreach(name point box knnqueueentry hilbertcurve mbr)
+add_executable(test_weightingfunction
+	src/common/Point.cpp
+	src/common/Box.cpp
+	src/indexes/rtree/WeightingFunction.test.cpp
+)
+
+foreach(name point box knnqueueentry hilbertcurve mbr weightingfunction)
 	add_test(NAME ${name} COMMAND test_${name})
 	target_link_libraries(test_${name} criterion)
+	# TODO: This should also set appropriate compile options to avoid optimizing
+	# away the tests.
 endforeach()
 
 # Framework files for indexes

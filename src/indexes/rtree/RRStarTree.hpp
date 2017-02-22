@@ -10,7 +10,10 @@
 #include "Entry.hpp"
 #include "RevisedNode.hpp"
 #include "WeightingFunction.hpp"
-
+#include "GoalFunction.hpp"
+#include "Cartesian.hpp"
+#include "Split.hpp"
+#include "SplitSet.hpp"
 
 namespace Rtree
 {
@@ -31,7 +34,6 @@ class RRStarTree : public Rtree<RevisedNode<D, C, Entry>>
 		using E = Entry<D, N>;
 		using M = typename E::M;
 
-		static constexpr double EPSILON = 0.00001f;
 
 
 		/**
@@ -102,7 +104,7 @@ class RRStarTree : public Rtree<RevisedNode<D, C, Entry>>
 						covering.begin(),
 						covering.end(),
 						[](E * const & entry) {
-							return entry->mbr.volume() < EPSILON;
+							return entry->mbr.volume() == 0.0;
 						}
 					);
 
@@ -143,27 +145,32 @@ class RRStarTree : public Rtree<RevisedNode<D, C, Entry>>
 			// enlargement is 0 for the new entry
 			if (
 					perimeterOverlap(parent, children[0]->mbr + newEntry.mbr)
-					- perimeterOverlap(parent, newEntry.mbr) < EPSILON
+					== perimeterOverlap(parent, newEntry.mbr)
 			) {
 				return *children[0];
 			}
 
 			// Determine threshold (optimization)
-			auto p = argmin(
-					children.begin() + 1, children.end(),
-					[&](E * const & child) {
-						return children.front()->mbr.overlapEnlargement(
-								child->mbr,
-								newEntry.mbr,
-								[](const M& mbr) { return mbr.perimeter(); }
-							);
-					}
-				) - children.begin() + 1;
+			unsigned p = children.size();
+
+			for (unsigned i = p; i < children.size(); ++i) {
+				double deltaOvlp = children.front()->mbr.overlapEnlargement(
+						children[p]->mbr,
+						newEntry.mbr,
+						[](const M& mbr) { return mbr.perimeter(); }
+					);
+
+				if (deltaOvlp > 0.0) {
+					p = i + 1;
+				}
+			}
 
 			// Determine whether volume or perimeter should be used
-			bool useVolume = std::all_of(
+			bool useVolume = !std::any_of(
 					children.begin(), children.begin() + p,
-					[&](const E * e) { return e->mbr.intersects(newEntry.mbr); }
+					[&](const E * e) {
+						return (e->mbr + newEntry.mbr).volume() == 0.0;
+					}
 				);
 
 			auto measure = useVolume?
@@ -178,8 +185,8 @@ class RRStarTree : public Rtree<RevisedNode<D, C, Entry>>
 				StackFrame(unsigned i) : index(i) {};
 			};
 
-			std::set<unsigned> visited;
-			std::vector<double> overlaps (p, 0.0f);
+			std::set<unsigned> visited; // CAND
+			std::vector<double> overlaps (p, 0.0f); // <delta>ovlp
 
 			std::stack<StackFrame> path;
 			path.emplace(0);
@@ -194,7 +201,7 @@ class RRStarTree : public Rtree<RevisedNode<D, C, Entry>>
 				if (j >= p) {
 
 					// We may have found what we are looking for
-					if (overlaps[current] < EPSILON) {
+					if (overlaps[current] == 0.0) {
 						return *children[current];
 					}
 
@@ -207,18 +214,17 @@ class RRStarTree : public Rtree<RevisedNode<D, C, Entry>>
 					continue;
 				}
 
-				E * child = children[j];
-
 				// Calculate overlap enlargement
 				double overlap = children[current]->mbr.overlapEnlargement(
-						child->mbr,
+						children[j]->mbr,
 						newEntry.mbr,
 						measure
 					);
 
+				overlaps[current] += overlap;
+
 				// Descend if overlapping and not visited
-				if (overlap > EPSILON && !visited.count(j)) {
-					overlaps[j] += overlap;
+				if (overlap != 0.0 && !visited.count(j)) {
 					path.emplace(j);
 					visited.emplace(j);
 				}
@@ -249,140 +255,16 @@ class RRStarTree : public Rtree<RevisedNode<D, C, Entry>>
 		 */
 		double perimeterOverlap(E& parent, M mbr)
 		{
-			return overlap(
-					parent,
-					mbr,
-					[](const M& intersection) {
-						return intersection.perimeter();
-					}
-				);
-		};
-
-
-		/**
-		 * Calculate the overlap between an MBR and the children of an entry's
-		 * node.
-		 *
-		 * @param parent Parent entry who's children will be used
-		 * @param mbr MBR to calculate overlap for
-		 *
-		 * @return Overlap of the MBR with the children
-		 */
-		template<class F>
-		double overlap(E& parent, M mbr, F type)
-		{
 			return std::accumulate(
 					parent.begin(),
 					parent.end(),
 					0.0f,
 					[&](const double& sum, const E& entry) {
 						return mbr.intersects(entry.mbr) ?
-							sum + type(mbr.intersection(entry.mbr)) : sum;
+							sum + mbr.intersection(entry.mbr).perimeter() : sum;
 					}
 				);
 		};
-
-
-		/**
-		 * Sort the given entries by their projection in the given dimension.
-		 * TODO: Move this
-		 */
-		template<class ForwardIt>
-		void sortBy(unsigned dimension, ForwardIt begin, ForwardIt end)
-		{
-			using E = typename ForwardIt::value_type;
-			std::sort(
-					begin, end,
-					[&](const E& a, const E& b) {
-
-						auto diff = a.mbr.getBottom()[dimension]
-							- b.mbr.getBottom()[dimension];
-
-						if (diff == 0.0f) {
-							return diff < 0.0f;
-						}
-
-						return a.mbr.getTop()[dimension]
-							< b.mbr.getTop()[dimension];
-					}
-				);
-		}
-
-
-
-		template<class ForwardIt>
-		double evaluateSplit(
-				ForwardIt begin,
-				ForwardIt middle,
-				ForwardIt end,
-				double maxPerimeter,
-			   	bool useVolume = true
-		) {
-			assert(end - begin > 0);
-
-			// Sum up MBRs (again)
-			M mbrA = std::accumulate(
-					begin, middle,
-					begin->mbr,
-					[](const M& sum, const E& e) { return sum + e.mbr; }
-				);
-
-			M mbrB = std::accumulate(
-					middle, end,
-					(end - 1)->mbr,
-					[](const M& sum, const E& e) { return sum + e.mbr; }
-				);
-
-			// Return overlap (if any)
-			if (mbrA.intersects(mbrB)) {
-				const M intersection = mbrA.intersection(mbrB);
-
-				double overlap = useVolume ?
-					intersection.volume() : intersection.perimeter();
-
-				if (overlap > EPSILON) {
-					return overlap;
-				}
-			}
-
-			// Otherwise, use (negative) perimeter
-			return mbrA.perimeter()
-				+ mbrB.perimeter()
-				- maxPerimeter;
-		};
-
-
-		/**
-		 * Find the minimal split perimeter along the given axis.
-		 */
-		double minSplitPerimeter(unsigned d, std::vector<E>& entries)
-		{
-			// Sort along the given dimension
-			sortBy(d, entries.begin(), entries.end());
-
-
-			return min_value(
-					makeRangeIt(m), makeRangeIt(unsigned(entries.size()) - m),
-					[&](const unsigned s) {
-
-						// Generate MBRs for the two groups
-						M mbrA = entries.front().mbr;
-						M mbrB = entries.back().mbr;
-
-						for (unsigned i = 1; i < s; ++i) {
-							mbrA += entries[i].mbr;
-						}
-
-						for (unsigned i = s; i < entries.size() - 1; ++i) {
-							mbrB += entries[i].mbr;
-						}
-
-						// Calculate perimeter (for dimension selection)
-						return mbrA.perimeter() + mbrB.perimeter();
-
-					}
-				);
-		}
 
 
 		/**
@@ -393,135 +275,54 @@ class RRStarTree : public Rtree<RevisedNode<D, C, Entry>>
 		 */
 		void redistribute(E& a, E& b, bool isLeaf = false) //TODO: isLeaf
 		{
-			// Contruct buffer with all entries
-			std::vector<E> entries (a.begin(), a.end());
+			// Functions for evaluating splits
+			GoalFunction<E> wg (a.mbr + b.mbr);
+			WeightingFunction<E, m> wf (a);
 
-			entries.insert(
-					entries.end(),
-					b.begin(), b.end()
+			// Construct set of possible splits
+			SplitSet<E, m> splits (
+					a.begin(), b.begin(),
+					a.end(), b.end()
 				);
 
-			// This is assumed
-			assert(entries.size() > 2 * m);
+			auto first = splits.begin();
 
-			// Calculate max perimeter
-			M all = entries.front().mbr;
-			for (const E& e : entries) {
-				all += e.mbr;
-			}
 
-			double maxPerimeter = all.perimeter();
-			WeightingFunction<E, m> wf(a);
-
-			// To be updated
-			unsigned bestDimension = E::dimension;
-			unsigned bestSplit = E::Node::capacity;
-
+			// Restrict to single dimension for leafs
 			if (isLeaf) {
-				// Select an axis
-				bestDimension = *argmin(
-						makeRangeIt(0u), makeRangeIt(E::dimension),
-						[&](unsigned i) {
-							return minSplitPerimeter(i, entries);
-						}
-					);
-
-				// Sort along current dimension
-				sortBy(bestDimension, entries.begin(), entries.end());
-
-				// Is volume of every split candidate > 0?
-				bool hasVolume = std::all_of(
-						entries.begin() + m, entries.end() - m,
-						[](const E& e) { return e.mbr.volume() >= EPSILON; }
-					);
-
-				wf.setDimension(bestDimension);
-
-				// Select split point
-				bestSplit = *argmin(
-						makeRangeIt(m), makeRangeIt((unsigned) entries.size() - m),
-						[&](unsigned s) {
-
-							return wf(s) * evaluateSplit(
-									entries.begin(),
-									entries.begin() + s,
-									entries.end(),
-									maxPerimeter,
-									hasVolume
-								);
-						}
-					);
-
-			} else { // Not leaf case
-
-				// Use all axes
-				double minimum = std::numeric_limits<double>::infinity();
-
-				for (unsigned d = 0; d < E::dimension; ++d) {
-					// Sort along current dimension
-					sortBy(d, entries.begin(), entries.end());
-
-					// Is volume of every split candidate > 0?
-					bool hasVolume = std::all_of(
-							entries.begin() + m, entries.end() - m,
-							[](const E& e) {
-								return e.mbr.volume() >= EPSILON;
+				const Split<E>& split = *argmin(
+							first, splits.end(),
+							[](const Split<E>& split) {
+								return split.perimeter();
 							}
 						);
 
-					wf.setDimension(d);
-
-					for (unsigned s = m; s < entries.size() - m; ++s) {
-						//TODO: weighting
-						double w = wf(s) * evaluateSplit(
-								entries.begin(),
-								entries.begin() + s,
-								entries.end(),
-								maxPerimeter,
-								hasVolume
-							);
-
-						if (w < minimum) {
-							minimum = w;
-							bestSplit = s;
-							bestDimension = d;
-						}
-					}
-				}
+				splits.restrictTo(split.getDimension());
 			}
 
-			assert(bestDimension < E::dimension);
-			assert(bestSplit < E::Node::capacity);
+			// Determine best split
+			Split<E> split = *argmin(
+					first, splits.end(),
+					[&](const Split<E>& split) {
 
-			// Distribute entries
-			auto middle = entries.begin() + bestSplit;
+						wf.setDimension(split.getDimension());
 
-			std::nth_element(
-					entries.begin(),
-					middle,
-					entries.end(),
-					[&](const E& a, const E& b) {
+						double g = wg(split, true /* TODO */ );
+						double f = wf(split.getSplitPoint());
 
-						//TODO: Is this right?
-						auto diff = a.mbr.getBottom()[bestDimension]
-							- b.mbr.getBottom()[bestDimension];
-
-						if (diff == 0.0f) {
-							return diff < 0.0f;
-						}
-
-						return a.mbr.getTop()[bestDimension]
-							< b.mbr.getTop()[bestDimension];
+						return g < 0.0 ? g * f : g / f;
 					}
 				);
 
-			a.assign(entries.begin(), middle);
-			b.assign(middle, entries.end());
+			// Distribute entries
+			auto partitions = split.getEntries();
+			a.assign(partitions[0].begin(), partitions[0].end());
+			b.assign(partitions[1].begin(), partitions[1].end());
 
 			// Update center positions
 			a.node->captureMbr();
 			b.node->captureMbr();
-		};
+		}
 };
 
 }
