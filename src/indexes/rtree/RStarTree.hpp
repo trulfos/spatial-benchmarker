@@ -8,6 +8,7 @@
 #include "common/Algorithm.hpp"
 #include "Node.hpp"
 #include "Entry.hpp"
+#include "CoveringSet.hpp"
 
 
 namespace Rtree
@@ -155,11 +156,17 @@ class RStarTree : public Rtree<Node<D, C, Entry>>
 		 */
 		E& chooseSubtree(E& parent, const E& newEntry, unsigned elevation)
 		{
-			if (elevation == 2) {
-				return leastOverlapEnlargement(parent, newEntry);
+			CoveringSet<E> covering (parent.begin(), parent.end(), newEntry);
+
+			if (!covering.empty()) {
+				return covering.getMinVolume();
 			}
 
-			return leastVolumeEnlargement(parent, newEntry);
+			if (elevation != 2) {
+				return leastVolumeEnlargement(parent, newEntry);
+			}
+
+			return leastOverlapEnlargement(parent, newEntry);
 		};
 
 
@@ -190,33 +197,41 @@ class RStarTree : public Rtree<Node<D, C, Entry>>
 		 */
 		E& leastOverlapEnlargement(E& parent, const E& newEntry)
 		{
-			//TODO: Drag the algorithm out into a template?
-			E * best = parent.node->entries;
-			double minimum = std::numeric_limits<double>::infinity();
-
-			for (E& entry : *(parent.node)) {
-
-				// Calculate overlap enlargement
-				double o = overlap(parent, entry.mbr + newEntry.mbr)
-					- overlap(parent, entry.mbr);
-
-				if (o < minimum) {
-					minimum = o,
-					best = &entry;
-				}
-
-				// Resolve ties using volume enlargement
-				if (fabs(o - minimum) < 0.000001f) {
-					if (
-						best->mbr.enlargement(newEntry.mbr)
-							> entry.mbr.enlargement(newEntry.mbr)
-					) {
-						best = &entry;
+			// Sort by volume
+			std::sort(
+					parent.begin(), parent.end(),
+					[](const E& a, const E&b) {
+						return a.mbr.volume() < b.mbr.volume();
 					}
-				}
+				);
+
+			// Find entry with no enlargement (if any)
+			auto noEnlargementEntry = std::find_if(
+					parent.begin(), parent.end(),
+					[&](const E& e) {
+						return overlap(parent, e.mbr + newEntry.mbr)
+								== overlap(parent, e.mbr);
+					}
+				);
+
+			if (noEnlargementEntry != parent.end()) {
+				return *noEnlargementEntry;
 			}
 
-			return *best;
+			return *argmin(
+					parent.begin(), parent.end(),
+					[&](const E& entry) {
+						// Calculate overlap enlargement
+						double o = overlap(parent, entry.mbr + newEntry.mbr)
+							- overlap(parent, entry.mbr);
+
+						// Resolve ties using volume enlargement
+						return std::make_tuple(
+								o,
+								entry.mbr.enlargement(newEntry.mbr)
+							);
+					}
+				);
 		};
 
 
