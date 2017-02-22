@@ -14,6 +14,7 @@
 #include "Cartesian.hpp"
 #include "Split.hpp"
 #include "SplitSet.hpp"
+#include "CoveringSet.hpp"
 
 namespace Rtree
 {
@@ -89,34 +90,14 @@ class RRStarTree : public Rtree<RevisedNode<D, C, Entry>>
 		E& chooseSubtree(E& parent, const E& newEntry)
 		{
 			// Construct set of covering entries
-			std::vector<E *> covering;
+			CoveringSet<E> covering (parent.begin(), parent.end(), newEntry);
 
-			for (E& entry : parent) {
-				if (entry.mbr.contains(newEntry.mbr)) {
-					covering.push_back(&entry);
+			if (!covering.empty()) {
+				if (!covering.allHasVolume()) {
+					return covering.getMinPerimeter();
 				}
-			}
 
-			if (covering.size()) {
-
-				// Determine if any of the entries lack volume
-				bool noVolume = std::any_of(
-						covering.begin(),
-						covering.end(),
-						[](E * const & entry) {
-							return entry->mbr.volume() == 0.0;
-						}
-					);
-
-				// Minimize perimeter/volume
-				return **argmin(
-						covering.begin(),
-						covering.end(),
-						[&](E * const & entry) {
-							return noVolume ?
-								entry->mbr.perimeter() : entry->mbr.volume();
-						}
-					);
+				return covering.getMinVolume();
 			}
 
 			// Create a sorted view of the children (by delta perimeter)
