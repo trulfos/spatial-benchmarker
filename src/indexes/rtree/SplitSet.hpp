@@ -15,10 +15,13 @@ class SplitSet
 	public:
 		static constexpr unsigned D = E::dimension;
 
+		using value_type = Split<E>;
+
 		/**
 		 * Iterator for iterating through a split set.
 		 */
-		class SplitIterator : std::iterator<Split<E>, std::forward_iterator_tag>
+		class SplitIterator
+			: public std::iterator<std::forward_iterator_tag, value_type>
 		{
 			public:
 				/**
@@ -83,7 +86,7 @@ class SplitSet
 				 */
 				SplitIterator operator++()
 				{
-					unsigned splitPoint = split->getSplitPoint() + 1;
+					++splitPoint;
 
 					// Increment sort order?
 					if (splitPoint == entryView.size() - m) {
@@ -176,8 +179,6 @@ class SplitSet
 				}
 		};
 
-
-		using value_type = Split<E>;
 		using iterator = SplitIterator;
 
 		/**
