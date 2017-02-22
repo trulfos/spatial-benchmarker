@@ -232,14 +232,14 @@ class Rtree : public ::SpatialIndex
 					if (path.size() == height) {
 						resultSet.push_back(entry.id);
 					} else {
-						N * node = entry.node;
-						path.emplace(node->entries, node->nEntries);
+						stats["node_accesses"]++;
 
 						if (path.size() == height - 1) {
 							stats["leaf_accesses"]++;
 						}
 
-						stats["node_accesses"]++;
+						N * node = entry.node;
+						path.emplace(node->entries, node->nEntries);
 					}
 				}
 
