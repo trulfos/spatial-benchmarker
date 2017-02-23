@@ -83,6 +83,11 @@ class RStarTree : public Rtree<Node<D, C, Entry>>
 					return;
 				}
 
+				// Adjust bounding rectangles upwards in the tree
+				for (auto n = top + 1; n != path.rend(); n++) {
+					(*n)->recalculateMbr();
+				}
+
 				// Split node
 				e = E(this->allocateNode(), {e});
 				redistribute(**top, e);

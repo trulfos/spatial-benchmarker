@@ -120,6 +120,21 @@ class BaseEntry
 
 
 		/**
+		 * Recalculates the MBR of this entry using the MBRs of its children.
+		 */
+		void recalculateMbr()
+		{
+			assert(node->nEntries > 0);
+
+			mbr = node->entries[0].mbr;
+
+			for (const E& e : *this) {
+				mbr += e.mbr;
+			}
+		}
+
+
+		/**
 		 * Calculates the overlap of this entry with other entries as defined by
 		 * Beckmann et al. for the R*-tree.
 		 *
