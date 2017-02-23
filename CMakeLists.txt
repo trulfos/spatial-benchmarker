@@ -95,7 +95,19 @@ add_executable(test_weightingfunction
 	src/indexes/rtree/WeightingFunction.test.cpp
 )
 
-foreach(name point box knnqueueentry hilbertcurve mbr weightingfunction)
+add_executable(test_combinationsview
+	src/indexes/rtree/CombinationsView.test.cpp
+)
+
+foreach(name
+		point
+		box
+		knnqueueentry
+		hilbertcurve
+		mbr
+		weightingfunction
+		combinationsview
+	)
 	add_test(NAME ${name} COMMAND test_${name})
 	target_link_libraries(test_${name} criterion)
 	# TODO: This should also set appropriate compile options to avoid optimizing

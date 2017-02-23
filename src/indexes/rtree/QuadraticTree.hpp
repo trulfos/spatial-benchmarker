@@ -5,6 +5,7 @@
 #include "Node.hpp"
 #include "Entry.hpp"
 #include "common/Algorithm.hpp"
+#include "CombinationsView.hpp"
 #include <cmath>
 
 namespace Rtree
