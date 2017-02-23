@@ -88,12 +88,12 @@ class CombinationsView
 		{
 		}
 
-		iterator begin()
+		iterator begin() const
 		{
 			return CombinationsIterator(this, first);
 		}
 
-		iterator end()
+		iterator end() const
 		{
 			return CombinationsIterator(this, last);
 		}

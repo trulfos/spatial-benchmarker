@@ -67,7 +67,7 @@ class SplitSet
 				{
 				}
 
-				bool operator==(const SplitIterator& other)
+				bool operator==(const SplitIterator& other) const
 				{
 					return splitPoint == other.splitPoint &&
 						sortOrder == other.sortOrder &&
@@ -75,7 +75,7 @@ class SplitSet
 				}
 
 
-				bool operator!=(const SplitIterator& other)
+				bool operator!=(const SplitIterator& other) const
 				{
 					return !(*this == other);
 				}
@@ -123,7 +123,7 @@ class SplitSet
 					return *this;
 				}
 
-				const Split<E>& operator*()
+				const Split<E>& operator*() const
 				{
 					return *split;
 				}
@@ -202,7 +202,7 @@ class SplitSet
 		/**
 		 * Start iteration over all splits in this set.
 		 */
-		iterator begin()
+		iterator begin() const
 		{
 			if (dimension == D) {
 				return iterator(entries);
@@ -214,7 +214,7 @@ class SplitSet
 		/**
 		 * Past-the-end iterator for this set.
 		 */
-		iterator end()
+		iterator end() const
 		{
 			return iterator();
 		}
