@@ -16,6 +16,8 @@ void CorrectnessReporter::run(
 		throw std::logic_error("Result and query set differ in size");
 	}
 
+	unsigned i = 0;
+
 	for (auto testCase : zip(queries, results)) {
 		Results results = index.search(testCase.first);
 
@@ -23,17 +25,20 @@ void CorrectnessReporter::run(
 		std::sort(results.begin(), results.end());
 
 		// Compare to known results
-		correct.push_back(results == testCase.second);
+		if (results != testCase.second) {
+			incorrect.push_back(i);
+		}
+
+		++i;
 	}
 }
 
 void CorrectnessReporter::generate(std::ostream& stream) const
 {
-	stream << "index\tcorrect\n";
+	stream << "index\tincorrect\n";
 
-	unsigned i = 0;
-	for (bool c : correct) {
-		stream << i++ << '\t' << (c ? '1' : '0') << '\n';
+	for (unsigned c : incorrect) {
+		stream << c << "\t1\n";
 	}
 
 	stream << std::flush;

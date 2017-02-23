@@ -19,6 +19,6 @@ class CorrectnessReporter : public Reporter
 		void generate(std::ostream& stream) const override;
 
 	private:
-		std::vector<bool> correct;
+		std::vector<unsigned> incorrect;
 
 };
