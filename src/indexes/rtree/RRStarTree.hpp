@@ -11,7 +11,6 @@
 #include "RevisedNode.hpp"
 #include "WeightingFunction.hpp"
 #include "GoalFunction.hpp"
-#include "Cartesian.hpp"
 #include "Split.hpp"
 #include "SplitSet.hpp"
 #include "CoveringSet.hpp"
