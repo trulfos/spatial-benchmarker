@@ -153,16 +153,16 @@ Test(mbr, perimeter)
 {
 	cr_assert_float_eq(
 			Mbr<2>({Point({1.0f, 2.0f}), Point({3.0f, 4.0f})}).perimeter(),
-			8.0f,
+			4.0f,
 			EPSILON,
-			"Perimeter of 2x2 MBR should be 8"
+			"Perimeter of 2x2 MBR should be 4"
 		);
 
 	cr_assert_float_eq(
 			Mbr<2>({Point({0.0f, 0.0f}), Point({1.0f, 0.0f})}).perimeter(),
-			2.0f,
+			1.0f,
 			EPSILON,
-			"Perimeter of 1x0 MBR should be 2"
+			"Perimeter of 1x0 MBR should be 1"
 		);
 
 	cr_assert_float_eq(
@@ -170,6 +170,16 @@ Test(mbr, perimeter)
 			0.0f,
 			EPSILON,
 			"Perimeter of 0x0 MBR should be 0"
+		);
+
+	cr_assert_float_eq(
+			Mbr<3>({
+					Point {-1.0f, -1.0f, -1.0f},
+					Point {1.0f, 1.0f, 1.0f}
+				}).perimeter(),
+			6.0f,
+			EPSILON,
+			"Perimeter of 2x2x2 MBR should be 6"
 		);
 }
 

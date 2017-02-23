@@ -202,6 +202,11 @@ class Mbr
 		/**
 		 * Calculate the perimeter of this MBR.
 		 *
+		 * Note that this is the perimeter as defined by Beckmann and Seeger,
+		 * which is simply the sum of the length in each dimension. This
+		 * generalizes easier to more dimensions and avoids multiplying by a
+		 * useless constant.
+		 *
 		 * @return Perimeter
 		 */
 		double perimeter() const
@@ -212,7 +217,7 @@ class Mbr
 				perimeter += top[d] - bottom[d];
 			}
 
-			return 2*perimeter;
+			return perimeter;
 		};
 
 
