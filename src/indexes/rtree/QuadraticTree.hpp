@@ -49,10 +49,10 @@ class QuadraticRtree : public Rtree<Node<D, C, Entry>>
 			// Split nodes bottom-up as long as necessary
 			auto top = path.rbegin();
 
-			while (top != path.rend() && (*(top))->node->isFull()) {
+			while (top != path.rend() && (*top)->node->isFull()) {
 				entry = E(this->allocateNode(), {entry});
 				redistribute(**top, entry);
-				top++;
+				++top;
 			}
 
 			// Split root?
@@ -128,13 +128,12 @@ class QuadraticRtree : public Rtree<Node<D, C, Entry>>
 					}
 				).getIterators();
 
-			// This should be guaranteed by the combinations view
-			assert(seeds.first < seeds.second);
 
 			// Assign and remove seeds from entries
 			a = {*seeds.first};
 			b = {*seeds.second};
 
+			assert(seeds.first < seeds.second);
 
 			if (seeds.first != entries.end() - 2) {
 				std::iter_swap(seeds.second, entries.end() - 1);
@@ -186,6 +185,9 @@ class QuadraticRtree : public Rtree<Node<D, C, Entry>>
 					a.add(*entry);
 				}
 			}
+
+			assert(a.node->nEntries >= m);
+			assert(b.node->nEntries >= m);
 		};
 };
 
