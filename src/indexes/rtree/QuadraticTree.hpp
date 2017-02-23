@@ -81,7 +81,10 @@ class QuadraticRtree : public Rtree<Node<D, C, Entry>>
 					parent.begin(),
 					parent.end(),
 					[&](const E& entry) {
-						return entry.mbr.enlargement(newEntry.mbr);
+						return std::make_tuple(
+								entry.mbr.enlargement(newEntry.mbr),
+								entry.mbr.volume()
+							);
 					}
 				);
 		}
@@ -115,8 +118,10 @@ class QuadraticRtree : public Rtree<Node<D, C, Entry>>
 						M mbrA = pair.first.mbr;
 						M mbrB = pair.first.mbr;
 
-						return (mbrA + mbrB).volume() - (
-								mbrA.volume() + mbrB.volume()
+						return -(
+								(mbrA + mbrB).volume() - (
+										mbrA.volume() + mbrB.volume()
+									)
 							);
 					}
 				).getIterators();
