@@ -72,7 +72,8 @@ class QuadraticRtree : public Rtree<Node<D, C, Entry>>
 		 * Find the child requiring the least MBR enlargement to include the
 		 * given MBR.
 		 *
-		 * @param mbr MBR to include
+		 * @param parent Parent entry from which to select a child
+		 * @param newEntry New entry to include
 		 * @return Entry requiring the least enlargement to include mbr
 		 */
 		template<class E>
@@ -146,12 +147,12 @@ class QuadraticRtree : public Rtree<Node<D, C, Entry>>
 			for (auto entry = entries.begin(); entry != entries.end(); ++entry) {
 
 				// Do we have to add all to one side?
-				if (a.node->nEntries >= C - m - 1) {
+				if (a.node->nEntries >= C - m) {
 					b.add(*entry);
 					continue;
 				}
 
-				if (b.node->nEntries >= C - m - 1) {
+				if (b.node->nEntries >= C - m) {
 					a.add(*entry);
 					continue;
 				}
@@ -170,8 +171,15 @@ class QuadraticRtree : public Rtree<Node<D, C, Entry>>
 				std::iter_swap(entry, selected);
 
 				if (
-						a.mbr.enlargement(entry->mbr) >
-						b.mbr.enlargement(entry->mbr)
+						std::make_tuple(
+								a.mbr.enlargement(entry->mbr),
+								a.mbr.volume(),
+								a.node->nEntries
+							) > std::make_tuple(
+								b.mbr.enlargement(entry->mbr),
+								b.mbr.volume(),
+								b.node->nEntries
+							)
 				) {
 					b.add(*entry);
 				} else {
