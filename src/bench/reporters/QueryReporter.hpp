@@ -1,11 +1,11 @@
 #pragma once
-#include "Reporter.hpp"
+#include "MetricReporter.hpp"
 #include "bench/LazyQuerySet.hpp"
 
 /**
  * This (base) reporter allows loading queries from file.
  */
-class QueryReporter : public Reporter
+class QueryReporter : public MetricReporter
 {
 	public:
 

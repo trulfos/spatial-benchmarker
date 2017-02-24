@@ -1,5 +1,5 @@
 #pragma once
-#include "QueryReporter.hpp"
+#include "Reporter.hpp"
 
 /**
  * Abstract class for a metric reporter.
@@ -10,17 +10,15 @@
  *
  * Sub classes should call the `addEntry` method to add rows in the output.
  */
-class MetricReporter : public QueryReporter
+class MetricReporter : public Reporter
 {
 	public:
 		using value_type = double;
 
-		using QueryReporter::QueryReporter;
-
 		/**
 		 * Output this report to the given stream.
 		 */
-		virtual void generate(std::ostream& stream) const;
+		virtual void generate(std::ostream& stream) const override;
 
 
 	protected:
@@ -36,7 +34,6 @@ class MetricReporter : public QueryReporter
 		 * @param value Value measured for the given query-metric pair
 		 */
 		void addEntry(
-				unsigned index,
 				const std::string& metric,
 				value_type value
 			);

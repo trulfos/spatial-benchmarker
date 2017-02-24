@@ -1,15 +1,15 @@
 #pragma once
 #include "RunTimeReporter.hpp"
-#include "MetricReporter.hpp"
+#include "QueryReporter.hpp"
 
 /**
  * Reports the run time of each query.
  */
-class QueryRunTimeReporter : public MetricReporter, private RunTimeReporter
+class QueryRunTimeReporter : public QueryReporter, private RunTimeReporter
 {
 	public:
 
-		using MetricReporter::MetricReporter;
+		using QueryReporter::QueryReporter;
 
 		void run(
 				const SpatialIndex& index,

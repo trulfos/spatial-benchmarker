@@ -1,6 +1,6 @@
 #pragma once
-#include "MetricReporter.hpp"
 #include "common/ResultSet.hpp"
+#include "QueryReporter.hpp"
 
 /**
  * Checks the correctness of the results given to this reporter and spits out an

@@ -19,7 +19,7 @@ void StatsReporter::run(
 
 		// Store statistics
 		for (auto stat : stats) {
-			addEntry(i, stat.first, stat.second);
+			addEntry(stat.first, stat.second);
 		}
 
 		++i;

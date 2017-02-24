@@ -1,6 +1,6 @@
 #pragma once
 #include "RunTimeReporter.hpp"
-#include "MetricReporter.hpp"
+#include "QueryReporter.hpp"
 
 /**
  * This reporter loads all queries to memory and executes them all while
@@ -9,11 +9,11 @@
  *
  * This saves time when evaluating the index.
  */
-class TotalRunTimeReporter : public MetricReporter, private RunTimeReporter
+class TotalRunTimeReporter : public QueryReporter, private RunTimeReporter
 {
 	public:
 
-		using MetricReporter::MetricReporter;
+		using QueryReporter::QueryReporter;
 
 		void run(
 				const SpatialIndex& index,

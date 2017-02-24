@@ -71,43 +71,6 @@ class Rtree : public ::SpatialIndex
 
 
 		/**
-		 * Check all MBRs are contained within their parents MBR.
-		 */
-		bool checkStructure()
-		{
-			std::vector<std::pair<E *, unsigned>> path;
-			path.emplace_back(root->entries, root->nEntries);
-
-			while (!path.empty()) {
-				auto& top = path.back();
-
-				if (top.second == 0) {
-					path.pop_back();
-					continue;
-				}
-
-				top.second -= 1;
-				E& entry = *(top.first++);
-
-				if (path.size() < height) {
-					// Check all entries
-					for (auto& e : entry) {
-						if (!entry.mbr.contains(e.mbr)) {
-							return false;
-						}
-					}
-
-					// Push frame on stack
-					N * node = entry.node;
-					path.emplace_back(node->entries, node->nEntries);
-				}
-			}
-
-			return true;
-		}
-
-
-		/**
 		 * Insert a data object into this index.
 		 *
 		 * @param object Data object to insert
@@ -161,8 +124,94 @@ class Rtree : public ::SpatialIndex
 		};
 
 
+		/**
+		 * Check all MBRs are contained within their parents MBR.
+		 */
+		bool checkStructure() const
+		{
+			collectStatistics();
+			return true;
+			bool valid = true;
+
+			traverse([&](const E& entry, unsigned level) {
+				for (const auto& e : entry) {
+					valid &= entry.mbr.contains(e.mbr);
+				}
+
+				return valid;
+			});
+
+			return valid;
+		}
+
+
+		/**
+		 * Collects tree statistics.
+		 *
+		 * Walks through the tree and e.g. counts the number of nodes at each
+		 * level.
+		 *
+		 * @return Statistics collected
+		 */
+		StatsCollector collectStatistics() const override
+		{
+			StatsCollector stats;
+
+			traverse([&](const E& entry, unsigned level) {
+				std::string key = "level_" + std::to_string(height - level);
+				stats[key] += entry.node->nEntries;
+				return true;
+			});
+
+			return stats;
+		};
+
+
+
 
 	protected:
+
+		/**
+		 * Traverses the entire tree and executes the visitor for each entry.
+		 *
+		 * The tree is traversed in preorder and executes the visitor with the
+		 * entry and level as arguments. The children of an entry is visited if
+		 * the visitor returns true. Data entrys are not visited and a fake
+		 * entry is created for the root.
+		 *
+		 * @param visitor Function taking a entry and the level (depth)
+		 */
+		template<class F>
+		void traverse(F visitor) const
+		{
+			std::vector<std::pair<E *, unsigned>> path;
+			path.emplace_back(root->entries, root->nEntries);
+
+			E rootEntry (root, M());
+
+			// Call for root
+			if (!visitor(rootEntry, path.size() - 1)) {
+				return;
+			}
+
+			while (!path.empty()) {
+				auto& top = path.back();
+
+				if (top.second == 0) {
+					path.pop_back();
+					continue;
+				}
+
+				top.second -= 1;
+				E& entry = *(top.first++);
+
+				// Call visitor and push children
+				if (path.size() < height && visitor(entry, path.size() - 1)) {
+					N * node = entry.node;
+					path.emplace_back(node->entries, node->nEntries);
+				}
+			}
+		}
 
 		/**
 		 * Range search with Guttman's algorithm.

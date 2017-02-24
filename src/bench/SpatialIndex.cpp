@@ -9,10 +9,16 @@ SpatialIndex::~SpatialIndex()
 }
 
 
-bool SpatialIndex::checkStructure()
+bool SpatialIndex::checkStructure() const
 {
 	// Return true by default to allow missing implementations
 	return true;
+}
+
+
+StatsCollector SpatialIndex::collectStatistics() const
+{
+	throw std::runtime_error("This index does not support stats collection");
 }
 
 Results SpatialIndex::search(const Query& query) const

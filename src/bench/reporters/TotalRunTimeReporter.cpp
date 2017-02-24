@@ -44,7 +44,7 @@ void TotalRunTimeReporter::run(
 						endTime - startTime
 					).count();
 
-		addEntry(i, "total_runtime", result);
+		addEntry("total_runtime", result);
 
 		// Rearrange queries
 		std::vector<RangeQuery> permutation (queries.size());

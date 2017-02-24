@@ -29,7 +29,17 @@ class SpatialIndex
 		 *
 		 * @return True if structure is valid.
 		 */
-		virtual bool checkStructure();
+		virtual bool checkStructure() const;
+
+
+		/**
+		 * Collect statistics for this index.
+		 * This can be used to collect statistics concerning the index structure
+		 * which are independent of the query being run.
+		 *
+		 * @return Statistics about the index
+		 */
+		virtual StatsCollector collectStatistics() const;
 
 
 		/**

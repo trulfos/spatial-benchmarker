@@ -11,8 +11,6 @@ void QueryRunTimeReporter::run(
 	auto queries = getQuerySet();
 	ProgressLogger progress(logStream, queries.getSize());
 
-	unsigned i = 0;
-
 	for (auto query : queries) {
 
 		unsigned runs = MAX_RUNS;
@@ -52,7 +50,7 @@ void QueryRunTimeReporter::run(
 		// TODO: Check result
 
 		// Store result
-		addEntry(i++, "query_runtime", min);
+		addEntry("query_runtime", min);
 
 		// Update progress bar
 		progress.increment();

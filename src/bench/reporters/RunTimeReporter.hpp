@@ -1,5 +1,4 @@
 #pragma once
-#include "MetricReporter.hpp"
 #include <map>
 #include <chrono>
 #include <vector>

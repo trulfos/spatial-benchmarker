@@ -5,6 +5,7 @@
 #include "reporters/StatsReporter.hpp"
 #include "reporters/AvgStatsReporter.hpp"
 #include "reporters/CorrectnessReporter.hpp"
+#include "reporters/StructReporter.hpp"
 
 ReporterArg::ReporterArg(
 			const std::string& name,
@@ -105,6 +106,9 @@ std::shared_ptr<Reporter> ReporterArg::createReporter(
 	}
 	if (name == "correctness") {
 		return std::make_shared<CorrectnessReporter>(arguments[0], arguments[1]);
+	}
+	if (name == "struct") {
+		return std::make_shared<StructReporter>();
 	}
 
 	throw TCLAP::ArgParseException("No reporter named " + name, "reporterarg");

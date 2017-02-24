@@ -32,6 +32,7 @@ add_library(reporters OBJECT
 	src/bench/reporters/ResultsReporter.cpp
 	src/bench/reporters/AvgStatsReporter.cpp
 	src/bench/reporters/CorrectnessReporter.cpp
+	src/bench/reporters/StructReporter.cpp
 )
 
 # Main executable

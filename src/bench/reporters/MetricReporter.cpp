@@ -1,7 +1,6 @@
 #include "MetricReporter.hpp"
 
 void MetricReporter::addEntry(
-		unsigned index,
 		const std::string& name,
 		value_type value
 	)

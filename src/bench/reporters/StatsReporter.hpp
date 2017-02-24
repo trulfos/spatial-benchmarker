@@ -1,14 +1,14 @@
 #pragma once
-#include "MetricReporter.hpp"
+#include "QueryReporter.hpp"
 
 /**
  * Collects and reports statistics from the benchmark.
  */
-class StatsReporter : public MetricReporter
+class StatsReporter : public QueryReporter
 {
 	public:
 
-		using MetricReporter::MetricReporter;
+		using QueryReporter::QueryReporter;
 
 		void run(
 				const SpatialIndex& index,
