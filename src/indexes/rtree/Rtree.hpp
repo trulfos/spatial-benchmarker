@@ -157,9 +157,14 @@ class Rtree : public ::SpatialIndex
 		{
 			StatsCollector stats;
 
+			stats["height"] = height;
+			stats["nodes"] = 0;
+			stats["level_" + std::to_string(height)] = 1;
+
 			traverse([&](const E& entry, unsigned level) {
-				std::string key = "level_" + std::to_string(height - level);
+				std::string key = "level_" + std::to_string(height - level - 1);
 				stats[key] += entry.node->nEntries;
+				stats["nodes"]++;
 				return true;
 			});
 
@@ -261,7 +266,6 @@ class Rtree : public ::SpatialIndex
 			stats["iterations"] = 0;
 			stats["leaf_accesses"] = (height == 1 ? 1 : 0);
 			stats["node_accesses"] = 1;
-			stats["height"] = height;
 
 			while (!path.empty()) {
 				stats["iterations"]++;
