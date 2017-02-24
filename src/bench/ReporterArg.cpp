@@ -7,61 +7,105 @@
 #include "reporters/CorrectnessReporter.hpp"
 
 ReporterArg::ReporterArg(
-			const std::string& flag,
 			const std::string& name,
 			const std::string& desc,
-			bool req,
+			bool required,
 			const std::string& typeDesc,
 			TCLAP::CmdLineInterface& parser
 		)
-	: TCLAP::ValueArg<std::string>(flag, name, desc, req, "", typeDesc, parser),
-		reporter(std::make_shared<TotalRunTimeReporter>())
+	: Base(name, desc, required, typeDesc, parser)
 {
 }
 
 
 bool ReporterArg::processArg(int *i, std::vector<std::string>& args)
 {
-	bool success = TCLAP::ValueArg<std::string>::processArg(i, args);
-
-	if (!success) {
+	// Leave "heavy lifting" to base
+	if (!Base::processArg(i, args)) {
 		return false;
 	}
 
-	std::string name = TCLAP::ValueArg<std::string>::getValue();
-
-	if (name == "runtime") {
-		reporter = std::make_shared<TotalRunTimeReporter>();
-	} else if (name == "qruntime") {
-		reporter = std::make_shared<QueryRunTimeReporter>();
-	} else if (name == "results") {
-		reporter = std::make_shared<ResultsReporter>();
-	} else if (name == "stats") {
-		reporter = std::make_shared<AvgStatsReporter>();
-	} else if (name == "qstats") {
-		reporter = std::make_shared<StatsReporter>();
-	} else if (name == "correctness") {
-		reporter = std::make_shared<CorrectnessReporter>();
-	} else {
-		throw TCLAP::ArgParseException("No reporter named " + name, toString());
-	}
+	// Create reporter
+	reporters.push_back(
+			createReporter(args[*i])
+		);
 
 	return true;
 }
 
-std::shared_ptr<Reporter> ReporterArg::getValue()
+
+
+ReporterArg::container_type ReporterArg::getValue()
 {
-	return reporter;
+	return reporters;
+}
+
+ReporterArg::Base::container_type ReporterArg::getDefinitions()
+{
+	return Base::getValue();
+}
+
+ReporterArg::iterator ReporterArg::begin()
+{
+	return reporters.begin();
 }
 
 
-std::string ReporterArg::getName()
+ReporterArg::iterator ReporterArg::end()
 {
-	return TCLAP::ValueArg<std::string>::getValue();
+	return reporters.end();
 }
 
-void ReporterArg::reset()
+
+ReporterArg::const_iterator ReporterArg::begin() const
 {
-	TCLAP::ValueArg<std::string>::reset();
-	reporter.reset();
+	return reporters.begin();
+}
+
+
+ReporterArg::const_iterator ReporterArg::end() const
+{
+	return reporters.end();
+}
+
+
+std::shared_ptr<Reporter> ReporterArg::createReporter(
+		const std::string& value
+	)
+{
+	// Separate reporter name from extra arguments
+	size_t splitPoint = value.find(':');
+
+	std::string name = value.substr(0, splitPoint);
+	std::vector<std::string> arguments;
+
+	size_t base = splitPoint;
+
+	while (base != std::string::npos) {
+		splitPoint = value.find(':', base + 1);
+		arguments.push_back(value.substr(base + 1, splitPoint));
+		base = splitPoint;
+	}
+
+	// Instantiate reporter
+	if (name == "runtime") {
+		return std::make_shared<TotalRunTimeReporter>(arguments[0]);
+	}
+	if (name == "qruntime") {
+		return std::make_shared<QueryRunTimeReporter>(arguments[0]);
+	}
+	if (name == "results") {
+		return std::make_shared<ResultsReporter>(arguments[0]);
+	}
+	if (name == "stats") {
+		return std::make_shared<AvgStatsReporter>(arguments[0]);
+	}
+	if (name == "qstats") {
+		return std::make_shared<StatsReporter>(arguments[0]);
+	}
+	if (name == "correctness") {
+		return std::make_shared<CorrectnessReporter>(arguments[0], arguments[1]);
+	}
+
+	throw TCLAP::ArgParseException("No reporter named " + name, "reporterarg");
 }

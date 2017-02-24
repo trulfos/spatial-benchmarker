@@ -1,4 +1,0 @@
-#!/bin/bash
-
-# Shortcut for computing the correct results for a bench
-bin/bench naive $1 --no-check --report results > ${1}results

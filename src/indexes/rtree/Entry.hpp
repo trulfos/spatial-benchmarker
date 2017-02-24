@@ -171,14 +171,14 @@ class BaseEntry
 		};
 
 
-		const_iterator cbegin() const
+		const_iterator begin() const
 		{
-			return node->begin();
+			return begin();
 		};
 
-		const_iterator cend() const
+		const_iterator end() const
 		{
-			return node->end();
+			return end();
 		};
 
 };

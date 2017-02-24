@@ -7,7 +7,7 @@
 /**
  * Reports the run time of each query.
  */
-class RunTimeReporter : public MetricReporter
+class RunTimeReporter
 {
 	public:
 		using clock = std::chrono::steady_clock;

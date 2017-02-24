@@ -1,5 +1,6 @@
 #pragma once
 #include "RunTimeReporter.hpp"
+#include "MetricReporter.hpp"
 
 /**
  * This reporter loads all queries to memory and executes them all while
@@ -8,12 +9,13 @@
  *
  * This saves time when evaluating the index.
  */
-class TotalRunTimeReporter : public RunTimeReporter
+class TotalRunTimeReporter : public MetricReporter, private RunTimeReporter
 {
 	public:
+
+		using MetricReporter::MetricReporter;
+
 		void run(
-				const std::string& name,
-				Benchmark& benchmark,
 				const SpatialIndex& index,
 				std::ostream& logStream
 			) override;

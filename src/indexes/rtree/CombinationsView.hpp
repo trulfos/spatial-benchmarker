@@ -21,7 +21,7 @@ class CombinationsView
 
 		{
 			public:
-				CombinationsIterator(CombinationsView * view, FIt current)
+				CombinationsIterator(const CombinationsView * view, FIt current)
 					: first(current), second(current), view(view)
 				{
 					if (current != view->last) {
@@ -79,7 +79,7 @@ class CombinationsView
 
 			private:
 				FIt first, second;
-				CombinationsView * view;
+				const CombinationsView * view;
 		};
 
 		using iterator = CombinationsIterator;

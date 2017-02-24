@@ -2,12 +2,12 @@
 
 void MetricReporter::addEntry(
 		unsigned index,
-		const std::string& metric,
+		const std::string& name,
 		value_type value
 	)
 {
 	results.emplace_back(
-			ResultEntry {index, metric, value}
+			ResultEntry {name, value}
 		);
 }
 
@@ -15,12 +15,11 @@ void MetricReporter::addEntry(
 void MetricReporter::generate(std::ostream& stream) const
 {
 	// Print header
-	stream << "index\tmetric\tvalue\n";
+	stream << "name\tvalue\n";
 
 	// Print data
 	for (const auto& r : results) {
-		stream << r.index << '\t'
-			<< r.metric << '\t'
+		stream << r.name << '\t'
 			<< r.value << '\n';
 	}
 

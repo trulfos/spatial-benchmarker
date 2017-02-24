@@ -21,6 +21,7 @@ else()
 endif()
 
 add_library(reporters OBJECT
+	src/bench/reporters/QueryReporter.cpp
 	src/bench/reporters/TotalRunTimeReporter.cpp
 	src/bench/reporters/StatsReporter.cpp
 	src/bench/reporters/RunTimeReporter.cpp
@@ -38,7 +39,6 @@ add_executable(bench
 	src/bench/main.cpp
 	src/bench/ReporterArg.cpp
 	src/bench/QueryInputIterator.cpp
-	src/bench/Benchmark.cpp
 	src/bench/DataObjectInputIterator.cpp
 	src/bench/BoxInputIterator.cpp
 

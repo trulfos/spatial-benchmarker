@@ -1,5 +1,5 @@
 #pragma once
-#include "Reporter.hpp"
+#include "QueryReporter.hpp"
 
 /**
  * Abstract class for a metric reporter.
@@ -10,10 +10,12 @@
  *
  * Sub classes should call the `addEntry` method to add rows in the output.
  */
-class MetricReporter : public Reporter
+class MetricReporter : public QueryReporter
 {
 	public:
 		using value_type = double;
+
+		using QueryReporter::QueryReporter;
 
 		/**
 		 * Output this report to the given stream.
@@ -44,8 +46,7 @@ class MetricReporter : public Reporter
 
 		struct ResultEntry
 		{
-			unsigned index;
-			std::string metric;
+			std::string name;
 			value_type value;
 		};
 

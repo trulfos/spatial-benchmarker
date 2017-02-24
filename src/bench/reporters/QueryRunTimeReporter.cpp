@@ -4,13 +4,11 @@
 #include <limits>
 
 void QueryRunTimeReporter::run(
-		const std::string& name,
-		Benchmark& benchmark,
 		const SpatialIndex& index,
 		std::ostream& logStream
 	)
 {
-	auto queries = benchmark.getQueries();
+	auto queries = getQuerySet();
 	ProgressLogger progress(logStream, queries.getSize());
 
 	unsigned i = 0;
@@ -43,7 +41,9 @@ void QueryRunTimeReporter::run(
 			std::sort(newResults.begin(), newResults.end());
 
 			if (!results.empty() && results != newResults) {
-				throw std::runtime_error("Inconsistent results from index search");
+				throw std::runtime_error(
+						"Inconsistent results from index search"
+					);
 			}
 
 			results = newResults;

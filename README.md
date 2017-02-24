@@ -32,7 +32,7 @@ For running unit tests
 
 CMake is used to generate build files.
 
-### Bencmarker
+### Benchmarker
 An out of source build can be done by running
 ```bash
 mkdir build
@@ -46,10 +46,28 @@ For a overview of command line arguments, run
 bench --help
 ```
 
+### Reporters
+
+The benchmarker supports several reporters and runs the reporters given by
+reporter definitions on the command line.
+
+A reporter definition consists of the reporter name and (possibly) extra
+arguments for the reporter, separated  by a `:` character:
+```
+<reporter definition> := <reporter name>[<argument>(':'<argument>)*]
+```
+
+For example, to run the statisitcs reporter for the `querysets/queryset1`
+queryset, the reporter definition
+```
+stats:queryset/queryset1
+```
+can be used.
+
 ### Indexes
 
 You should normally specify the options for an index when compiling it. This
-includes the dimnsionality. This will build the hilbert R-tree with a node size
+includes the dimensionality. This will build the hilbert R-tree with a node size
 of 128 for data sets of dimension 3.
 ```bash
 cmake -DD=3 -DM=128 ..
@@ -86,33 +104,3 @@ make test_mbr
 
 Data and query sets by Beckmann and Seeger can be downloaded from
 [Becmann and Seeger's site](http://www.mathematik.uni-marburg.de/~seeger/rrstar/).
-
-### Benchmark folder structure
-A benchmark consists of a folder with the following files:
-
-#### dimension
-This file contains the dimensionality of the data as text. E.g.
-```
-9
-```
-for a 9-dimensional benchmark.
-
-
-#### data
-Data set as a sequence of boxes. Each box is given by the lower and upper
-coordinate in each dimension (as binary doubles).
-
-#### queries
-Same format as data file. These are assumed to be range queries.
-
-#### results
-The correct results of the queries above queries. Each line starts with the
-number of results, followed by the included boxes from the K
-
-### Generating results
-The benchmarker expects there to be valid results in the same folder as the data
-and queries. Correct results are best generated using the mkresults script.
-
-```bash
-scripts/mkresults benchmarks/mybenchmark/
-```

@@ -1,11 +1,6 @@
 #pragma once
-#include "common/Query.hpp"
-#include "common/Results.hpp"
 #include "bench/SpatialIndex.hpp"
-#include "bench/Benchmark.hpp"
-#include <functional>
 #include <ostream>
-#include <string>
 
 /**
  * Abstract base class for reporter.
@@ -17,16 +12,10 @@ class Reporter
 		 * Run the given task and record whatever this reporter is going to
 		 * report.
 		 *
-		 * Several runs can use the same name. This results in the results being
-		 * grouped by name.
-		 *
-		 * @param name Name to use in report
-		 * @param benchmark Query set to run
 		 * @param index Spatial index to benchmark
+		 * @param logStream Destination stream for log output
 		 */
 		virtual void run(
-				const std::string& name,
-				Benchmark& benchmark,
 				const SpatialIndex& index,
 				std::ostream& logStream
 			) = 0;

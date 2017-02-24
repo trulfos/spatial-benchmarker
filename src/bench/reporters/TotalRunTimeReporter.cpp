@@ -3,15 +3,13 @@
 #include <algorithm>
 
 void TotalRunTimeReporter::run(
-		const std::string& name,
-		Benchmark& benchmark,
 		const SpatialIndex& index,
 		std::ostream& logStream
 	)
 {
 	ProgressLogger progress(logStream, RUNS);
 
-	auto querySet = benchmark.getQueries();
+	auto querySet = getQuerySet();
 
 	// Load queries into memory
 	std::vector<RangeQuery> queries (querySet.getSize());

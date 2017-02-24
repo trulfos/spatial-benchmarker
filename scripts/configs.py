@@ -3,11 +3,11 @@ import argparse
 from database import Database
 
 
-def create(db, index, definitions):
-    if get(db, index, definitions):
+def create(db, index, data, definitions):
+    if get(db, index, data, definitions):
         raise Exception("This config already exists")
 
-    config_id = db.insert('config', index=index).lastrowid
+    config_id = db.insert('config', index=index, data=data).lastrowid
     db.insertmany(
             'option',
             ({'name': d[0], 'value': d[1], 'config_id': config_id}
@@ -23,20 +23,25 @@ def group(records):
     groups = {}
 
     for r in records:
-        id = r[0]
-        if id not in groups:
-            groups[id] = {'id': id, 'index': r[1], 'definitions': {}}
+        config_id = r[0]
+        if config_id not in groups:
+            groups[config_id] = {
+                    'id': config_id,
+                    'index': r[1],
+                    'data': r[2],
+                    'definitions': {}
+                }
 
-        groups[id]['definitions'][r[2]] = r[3]
+        groups[config_id]['definitions'][r[3]] = r[4]
 
     return list(groups.values())
 
 
-def get(db, index, options):
+def get(db, index, data, options):
     where_clause = ' or '.join(['(`name` = ? and `value` = ?)'] * len(options))
 
     # Collect all params
-    params = [index]
+    params = [index, data]
     for o in options.items():
         params += o
 
@@ -45,17 +50,16 @@ def get(db, index, options):
     # Perform the search
     rows = db.connection.execute(
             """
-            select `id`, `index`, `name`, `value`
+            select `config_id`, `index`, `data`, `name`, `value`
             from (
                 select `config`.*, count(*) as c
                 from `config`
-                inner join `option` on `option`.`config_id` = `config`.`id`
-                where `index` = ? and (%s)
-                group by `config`.`id`
+                inner join `option` using (`config_id`)
+                where `index` = ? and `data` = ? and (%s)
+                group by `config_id`
                 having c = ?
             ) as `relevant`
-            inner join `option`
-                on `option`.`config_id` = `relevant`.`id`
+            inner join `option` using (`config_id`)
             """ % where_clause,
             params
         ).fetchall()
@@ -64,7 +68,7 @@ def get(db, index, options):
 
 
 def get_by_id(db, id):
-    results = get_all(db, id=id)
+    results = get_all(db, config_id=id)
 
     if not results:
         return None
@@ -82,10 +86,9 @@ def get_all(db, **kwargs):
 
     rows = db.connection.execute(
             """
-            select `id`, `index`, `name`, `value`
+            select `config_id`, `index`, `data`, `name`, `value`
             from `config`
-            inner join `option`
-                on `option`.`config_id` = `config`.`id`
+            inner join `option` using (`config_id`)
             """ + where_clause,
             list(kwargs.values())
         ).fetchall()
@@ -96,7 +99,7 @@ def get_all(db, **kwargs):
 def print_all(records):
     for r in records:
         print(
-                "-- Config %d (%s) --" % (r['id'], r['index']) +
+                "-- Config %(id)d (%(index)s, %(data)s) --" % r +
                 ''.join("\n %s:\t%s" % c for c in r['definitions'].items()) +
                 '\n'
             )
@@ -134,10 +137,11 @@ def main():
         return
 
     index = args.config[0]
-    definitions = dict(d.split('=') for d in args.config[1:])
+    definitions = dict(d.split('=') for d in args.config[2:])
 
     if args.create:
-        print("New config with id %d" % create(db, index, definitions))
+        data = args.config[1]
+        print("New config with id %d" % create(db, index, data, definitions))
     elif index.isdecimal():
         if len(definitions):
             print("Warning: Unused arguments")

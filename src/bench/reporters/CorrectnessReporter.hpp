@@ -1,17 +1,25 @@
 #pragma once
 #include "MetricReporter.hpp"
+#include "common/ResultSet.hpp"
 
 /**
  * Checks the correctness of the results given to this reporter and spits out an
  * error if any of the results are wrong.
  */
-class CorrectnessReporter : public Reporter
+class CorrectnessReporter : public QueryReporter
 {
 	public:
 
+		/**
+		 * Construct a new correctness reporter using the given query and result
+		 * file.
+		 */
+		CorrectnessReporter(
+				const std::string& queryPath,
+				const std::string& resultsPath
+			);
+
 		void run(
-				const std::string& name,
-				Benchmark& benchmark,
 				const SpatialIndex& index,
 				std::ostream& logStream
 			) override;
@@ -20,5 +28,8 @@ class CorrectnessReporter : public Reporter
 
 	private:
 		std::vector<unsigned> incorrect;
+		std::string resultsPath;
+
+		ResultSet getResults();
 
 };

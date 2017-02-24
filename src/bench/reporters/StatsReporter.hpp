@@ -8,9 +8,9 @@ class StatsReporter : public MetricReporter
 {
 	public:
 
+		using MetricReporter::MetricReporter;
+
 		void run(
-				const std::string& name,
-				Benchmark& benchmark,
 				const SpatialIndex& index,
 				std::ostream& logStream
 			) override;

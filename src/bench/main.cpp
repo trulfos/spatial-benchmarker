@@ -1,56 +1,37 @@
 #include "LazyDataSet.hpp"
-#include "LazyQuerySet.hpp"
-#include "common/Results.hpp"
-#include "common/ResultSet.hpp"
 #include "common/Color.hpp"
-#include "Zipped.hpp"
 #include "SpatialIndex.hpp"
 #include "ReporterArg.hpp"
 #include "common/Logger.hpp"
-#include "Benchmark.hpp"
 #include "DynamicObject.hpp"
-#include <algorithm>
-#include <fstream>
 #include <iostream>
 #include <string>
 #include <tclap/CmdLine.h>
-
-template <typename T>
-void readFrom(T& data, std::string filename)
-{
-	std::fstream file;
-	file.exceptions(std::fstream::badbit | std::fstream::failbit);
-	file.open(filename, std::fstream::in);
-	file >> data;
-}
-
 
 int main(int argc, char *argv[])
 {
 
 	Logger logger (std::clog, "Spatial index test framework");
 
-
 	logger.start("Parsing command line options");
+	TCLAP::CmdLine cmd("Specialication project test framework", ' ', "0.5.0");
 
-	TCLAP::CmdLine cmd("Specialication project test framework", ' ', "0.4.0");
-
-	ReporterArg reportType(
-			"r", "report",
-			"Generate a report in the give style.",
-			false, "report style", cmd
-		);
-
-	TCLAP::UnlabeledValueArg<std::string> algorithm(
+	TCLAP::UnlabeledValueArg<std::string> algorithm (
 			"index",
 			"Index to benchmark.",
 			true, "", "index name", cmd
 		);
 
-	TCLAP::UnlabeledValueArg<std::string> dataFilename(
-			"benchmark",
-			"Folder containing benchmark data.",
-			true, "", "benchmark folder", cmd
+	TCLAP::UnlabeledValueArg<std::string> dataFilename (
+			"dataset",
+			"File with rectangles for data set.",
+			true, "", "data set file", cmd
+		);
+
+	ReporterArg reporters (
+			"reporter",
+			"Generate a report in the give style.",
+			true, "reporter definition(s)", cmd
 		);
 
 	cmd.parse(argc, argv);
@@ -61,22 +42,17 @@ int main(int argc, char *argv[])
 
 		logger.endStart("Preparing to run " + algorithm.getName());
 
-		logger.start("Opening benchmark " + filename);
-
-		Benchmark benchmark (filename);
-
-		// Load benchmark data
-		LazyDataSet dataSet = benchmark.getData();
-
-		// Create reporter and index
-		auto reporter = reportType.getValue();
+		// Create index
 		DynamicObject<SpatialIndex> index ("./lib" + algorithm.getValue() + ".so");
 
+		// Load benchmark data
+		logger.start("Indexing " + filename);
+		LazyDataSet dataSet (filename);
+
 		// Index data
-		logger.endStart("Indexing " + filename + "data");
+		logger.endStart("Inserting data from " + filename);
 		index->load(dataSet);
 
-		// Check indexing vent well
 		logger.endStart("Running index self check");
 		if (!index->checkStructure()) {
 			throw std::logic_error("Invalid index structure detected");
@@ -85,19 +61,20 @@ int main(int argc, char *argv[])
 		logger.end();
 
 		// Benchmark
-		logger.endStart("Generating " + reportType.getName() + " report");
+		logger.start("Generating reports");
 
-		reporter->run(
-				algorithm.getName(),
-				benchmark,
-				*index.get(),
-				std::clog
-			);
+		for (auto reporter : reporters) {
+			logger.endStart("Running reporter...");
+			reporter->run(*index, std::clog);
+		}
 
+		logger.end();
 
-		// Output report
+		// Output reports
 		logger.endStart("Generating report");
-		std::cout << reporter;
+		for (auto reporter : reporters) {
+			std::cout << reporter << std::endl;
+		}
 
 		return 0;
 

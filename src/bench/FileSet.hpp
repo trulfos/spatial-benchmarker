@@ -16,13 +16,30 @@ class FileSet
 		using value_type = typename Iterator::value_type;
 		using iterator = Iterator;
 
-		FileSet(const std::string& filename, unsigned dimension)
+		FileSet(const std::string& filename)
 			: file(filename, std::ifstream::in | std::ifstream::binary)
 		{
 			if (!file) {
 				throw std::runtime_error("Cannot read file " + filename);
 			}
 
+			// Find dimension from file name
+			size_t firstNumber = filename.find_first_of(
+					"0123456789",
+					filename.rfind('/')
+				);
+
+			if (firstNumber == std::string::npos) {
+				throw std::runtime_error(
+						"File \"" + filename + "\" does not end with dimension"
+					);
+			}
+
+			unsigned dimension = std::stoul(
+					filename.substr(firstNumber)
+				);
+
+			// Create iterator
 			start = Iterator(file, dimension);
 		};
 

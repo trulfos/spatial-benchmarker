@@ -1,17 +1,17 @@
 #pragma once
 #include "common/ResultSet.hpp"
-#include "Reporter.hpp"
+#include "QueryReporter.hpp"
 #include <vector>
 
 /**
  * Reports the results of a run.
  */
-class ResultsReporter : public Reporter
+class ResultsReporter : public QueryReporter
 {
 	public:
+		using QueryReporter::QueryReporter;
+
 		void run(
-				const std::string& name,
-				Benchmark& benchmark,
 				const SpatialIndex& index,
 				std::ostream& logStream
 			) override;

@@ -2,15 +2,20 @@
 #include "bench/Zipped.hpp"
 #include <algorithm>
 
+CorrectnessReporter::CorrectnessReporter(
+		const std::string& queryPath,
+		const std::string& resultsPath
+	) : QueryReporter(queryPath), resultsPath(resultsPath)
+{
+}
+
 void CorrectnessReporter::run(
-		const std::string& name,
-		Benchmark& benchmark,
 		const SpatialIndex& index,
 		std::ostream& logStream
 	)
 {
-	auto queries = benchmark.getQueries();
-	auto results = benchmark.getResults();
+	auto queries = getQuerySet();
+	auto results = getResults();
 
 	if (queries.getSize() != results.size()) {
 		throw std::logic_error("Result and query set differ in size");
@@ -42,4 +47,18 @@ void CorrectnessReporter::generate(std::ostream& stream) const
 	}
 
 	stream << std::flush;
+}
+
+ResultSet CorrectnessReporter::getResults()
+{
+	std::ifstream stream (resultsPath);
+
+	if (!stream) {
+		throw std::runtime_error("Could not read file " + resultsPath);
+	}
+
+	ResultSet results;
+	stream >> results;
+
+	return results;
 }

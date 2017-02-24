@@ -3,13 +3,11 @@
 #include "ProgressLogger.hpp"
 
 void AvgStatsReporter::run(
-		const std::string& name,
-		Benchmark& benchmark,
 		const SpatialIndex& index,
 		std::ostream& logStream
 	)
 {
-	auto queries = benchmark.getQueries();
+	auto queries = getQuerySet();
 	ProgressLogger progress(logStream, queries.getSize());
 	StatsCollector averages;
 	unsigned i = 0;

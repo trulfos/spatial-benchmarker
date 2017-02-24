@@ -30,17 +30,17 @@ class Database:
         statements = [
                 """
                 create table `config` (
-                    `id` integer primary key autoincrement,
-                    `index` text not null
+                    `config_id` integer primary key autoincrement,
+                    `index` text not null,
+                    `data` text not null
                 )
                 """,
                 """
                 create table `run` (
-                    `id` integer primary key autoincrement,
+                    `run_id` integer primary key autoincrement,
                     `config_id` integer not null,
                     `timestamp` datetime default current_timestamp not null,
                     `commit` text not null,
-                    `benchmark` text not null,
 
                     foreign key (`config_id`) references `config` (`id`)
                 )
@@ -56,10 +56,21 @@ class Database:
                 )
                 """,
                 """
+                create table `reporter` (
+                    `reporter_id` integer primary key autoincrement,
+                    `config_id` integer not null,
+                    `name` text not null,
+                    `arguments` text not null,
+
+                    unique (`config_id`, `name`, `arguments`),
+                    foreign key (`config_id`) references `config` (`id`)
+                )
+                """,
+                """
                 create table `result` (
                     `run_id` integer not null,
-                    `metric` text not null,
-                    `index` integer not null,
+                    `reporter_id` integer not null,
+                    `name` text not null,
                     `value` real not null,
 
                     foreign key (`run_id`) references `run` (`id`)
