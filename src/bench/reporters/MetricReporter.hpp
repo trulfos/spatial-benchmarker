@@ -10,10 +10,11 @@
  *
  * Sub classes should call the `addEntry` method to add rows in the output.
  */
+template<typename T = double>
 class MetricReporter : public Reporter
 {
 	public:
-		using value_type = double;
+		using value_type = T;
 
 		/**
 		 * Output this report to the given stream.
@@ -53,3 +54,36 @@ class MetricReporter : public Reporter
 std::ostream& operator<<(
 		std::ostream& stream, const std::shared_ptr<Reporter>& reporter
 	);
+
+
+/**
+ * Implementations
+ */
+
+
+template<typename T>
+void MetricReporter<T>::addEntry(
+		const std::string& name,
+		value_type value
+	)
+{
+	results.emplace_back(
+			ResultEntry {name, value}
+		);
+}
+
+
+template<typename T>
+void MetricReporter<T>::generate(std::ostream& stream) const
+{
+	// Print header
+	stream << "name\tvalue\n";
+
+	// Print data
+	for (const auto& r : results) {
+		stream << r.name << '\t'
+			<< r.value << '\n';
+	}
+
+	stream << std::flush;
+}

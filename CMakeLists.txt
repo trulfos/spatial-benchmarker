@@ -27,7 +27,6 @@ add_library(reporters OBJECT
 	src/bench/reporters/RunTimeReporter.cpp
 	src/bench/reporters/Reporter.cpp
 	src/bench/reporters/QueryRunTimeReporter.cpp
-	src/bench/reporters/MetricReporter.cpp
 	src/bench/reporters/ProgressLogger.cpp
 	src/bench/reporters/ResultsReporter.cpp
 	src/bench/reporters/AvgStatsReporter.cpp

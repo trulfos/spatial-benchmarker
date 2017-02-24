@@ -5,7 +5,7 @@
 /**
  * This (base) reporter allows loading queries from file.
  */
-class QueryReporter : public MetricReporter
+class QueryReporter : public MetricReporter<double>
 {
 	public:
 

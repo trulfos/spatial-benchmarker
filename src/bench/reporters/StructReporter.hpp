@@ -4,7 +4,7 @@
 /**
  * Reports on the structure of an index.
  */
-class StructReporter : public MetricReporter
+class StructReporter : public MetricReporter<unsigned long long>
 {
 	public:
 
