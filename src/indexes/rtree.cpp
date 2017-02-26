@@ -2,7 +2,7 @@
 #include "configuration.hpp"
 #include "rtree/QuadraticTree.hpp"
 
-SpatialIndex * create()
+SpatialIndex * create(unsigned, unsigned long long)
 {
 	return new Rtree::QuadraticRtree<D, M, m>();
 }

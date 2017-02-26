@@ -34,23 +34,8 @@ T * aligned_alloc(std::size_t alignment, std::size_t size, void *& buffer)
 }
 
 
-void SpatialIndex::load(LazyDataSet& dataSet)
+SpatialIndex::SpatialIndex(unsigned dimension, unsigned long long size)
 {
-	// Initialize sizes
-	dimension = dataSet.getDimension();
-	nObjects = dataSet.getSize();
-
-	// Shortcuts to avoid handling edge cases
-	if (!nObjects) {
-		throw std::logic_error("Vectorized needs at least one block");
-	}
-
-	static_assert(
-			std::is_same<double, Coordinate>::value,
-			"Vectorized is currently adapted for doubles"
-		);
-
-
 	// Allocate buffers
 	nBlocks = (nObjects - 1) / blockSize + 1;
 
@@ -62,24 +47,33 @@ void SpatialIndex::load(LazyDataSet& dataSet)
 
 	ids = new DataObject::Id[nObjects];
 
-	// Copy data into buffers
-	unsigned i = 0;
-	for (DataObject object : dataSet) {
+}
 
-		ids[i] = object.getId();
 
-		const auto& points = object.getBox().getPoints();
-		unsigned base = 2 * blockSize * dimension * (i / blockSize)
-				+ i % blockSize;
+void SpatialIndex::insert(const DataObject& object)
+{
+	static_assert(
+			std::is_same<double, Coordinate>::value,
+			"Vectorized is currently adapted for doubles"
+		);
 
-		for (unsigned j = 0; j < dimension; j++) {
-			const unsigned k = base + 2 * blockSize * j;
-			positions[k] = points.first[j];
-			positions[k + blockSize] = points.second[j];
-		}
+	auto& i = nObjects;
 
-		i++;
+	// Copy object id
+	ids[i] = object.getId();
+
+	// Insert box data
+	const auto& points = object.getBox().getPoints();
+	unsigned base = 2 * blockSize * dimension * (i / blockSize)
+			+ i % blockSize;
+
+	for (unsigned j = 0; j < dimension; j++) {
+		const unsigned k = base + 2 * blockSize * j;
+		positions[k] = points.first[j];
+		positions[k + blockSize] = points.second[j];
 	}
+
+	i++;
 };
 
 SpatialIndex::~SpatialIndex()

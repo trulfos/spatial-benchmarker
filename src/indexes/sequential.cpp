@@ -1,9 +1,9 @@
 #include "interface.hpp"
-#include "sequential/SpatialIndex.hpp"
+#include "scanning/Sequential.hpp"
 
-SpatialIndex * create()
+SpatialIndex * create(unsigned dimension, unsigned long long size)
 {
-	return new Sequential::SpatialIndex();
+	return new Scanning::Sequential(dimension, size);
 }
 
 void destroy(SpatialIndex * index)

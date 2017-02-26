@@ -1,9 +1,7 @@
 #pragma once
 #include "common/Coordinate.hpp"
 #include "common/DataObject.hpp"
-#include "bench/LazyDataSet.hpp"
 #include "bench/SpatialIndex.hpp"
-#include <vector>
 
 namespace Vectorized
 {
@@ -15,13 +13,13 @@ class SpatialIndex : public ::SpatialIndex
 {
 
 	public:
-		SpatialIndex() = default;
+		SpatialIndex(unsigned dimension, unsigned long long size);
 		~SpatialIndex();
 
 		// Cannot be copied
 		SpatialIndex(const SpatialIndex&) = delete;
 
-		void load(LazyDataSet& dataSet);
+		void insert(const DataObject& object);
 
 	protected:
 		Results rangeSearch(const Box& box) const;
@@ -29,7 +27,7 @@ class SpatialIndex : public ::SpatialIndex
 
 	private:
 		unsigned nBlocks;
-		unsigned nObjects;
+		unsigned long long nObjects = 0;
 		unsigned dimension;
 		void * buffer;
 		Coordinate * positions;

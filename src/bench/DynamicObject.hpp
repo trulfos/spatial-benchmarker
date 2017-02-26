@@ -10,8 +10,9 @@
  * of the dynamic library.
  *
  * @tparam T base type returned by create metode
+ * @tparam Args Argument types that should be forwarded to create function
  */
-template<class T>
+template<class T, class ...Args>
 class DynamicObject : public std::shared_ptr<T>
 {
 	public:
@@ -21,8 +22,9 @@ class DynamicObject : public std::shared_ptr<T>
 		 * library.
 		 *
 		 * @param name Library name
+		 * @param args Arguments to forward to create function
 		 */
-		DynamicObject(const std::string& name)
+		DynamicObject(const std::string& name, Args ...args)
 		{
 			// Open library
 			void * library = dlopen(name.c_str(), RTLD_NOW); //TODO: Flags?
@@ -46,11 +48,11 @@ class DynamicObject : public std::shared_ptr<T>
 
 			// Fetch methods
 			Create create = locateMethod<Create>(library, "create");
-			Destroy destroy = locateMethod<Destroy>(library, "create");
-
+			Destroy destroy = locateMethod<Destroy>(library, "destroy");
+			
 			// Set pointer and delete function
 			this->reset(
-					create(),
+					create(args...),
 					[destroy, library](T * o) {
 						destroy(o);
 						dlclose(library);
@@ -59,7 +61,7 @@ class DynamicObject : public std::shared_ptr<T>
 		};
 
 	private:
-		using Create = T * (*)();
+		using Create = T * (*)(Args...);
 		using Destroy = void (*)(T *);
 
 		/**

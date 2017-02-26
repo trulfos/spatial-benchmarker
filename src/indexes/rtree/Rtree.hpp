@@ -44,33 +44,6 @@ class Rtree : public ::SpatialIndex
 
 
 		/**
-		 * Load the given data set and construct the tree from it.
-		 */
-		void load(LazyDataSet& dataSet)
-		{
-			unsigned dataDim = dataSet.getDimension();
-
-			if (dataDim != E::dimension) {
-				throw std::runtime_error(
-						"R-tree not compiled for data set dimension. "
-						"Please recompile with D=" + std::to_string(dataDim)
-					);
-			}
-
-			if (!dataSet.getSize()) {
-				throw std::runtime_error(
-						"The given data set is empty. Aborting."
-					);
-			}
-
-			// Index objects
-			for (auto& object : dataSet) {
-				insert(object);
-			}
-		};
-
-
-		/**
 		 * Insert a data object into this index.
 		 *
 		 * @param object Data object to insert
@@ -127,7 +100,7 @@ class Rtree : public ::SpatialIndex
 		/**
 		 * Check all MBRs are contained within their parents MBR.
 		 */
-		bool checkStructure() const
+		bool checkStructure() const override
 		{
 			collectStatistics();
 			return true;

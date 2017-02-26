@@ -4,6 +4,7 @@
 #include "ReporterArg.hpp"
 #include "common/Logger.hpp"
 #include "DynamicObject.hpp"
+#include "reporters/ProgressLogger.hpp"
 #include <iostream>
 #include <string>
 #include <tclap/CmdLine.h>
@@ -42,16 +43,27 @@ int main(int argc, char *argv[])
 
 		logger.endStart("Preparing to run " + algorithm.getName());
 
-		// Create index
-		DynamicObject<SpatialIndex> index ("./lib" + algorithm.getValue() + ".so");
-
 		// Load benchmark data
-		logger.start("Indexing " + filename);
+		logger.start("Opening data set " + filename);
 		LazyDataSet dataSet (filename);
+
+		// Create index
+		DynamicObject<SpatialIndex, unsigned, unsigned long long> index (
+				"./lib" + algorithm.getValue() + ".so",
+				dataSet.getDimension(),
+				dataSet.getSize()
+			);
 
 		// Index data
 		logger.endStart("Inserting data from " + filename);
-		index->load(dataSet);
+		ProgressLogger progress (std::clog, dataSet.getSize());
+
+		index->setBounds(dataSet.begin().getBounds()); // <- Hack for Hilbert
+
+		for (const DataObject& object : dataSet) {
+			index->insert(object);
+			progress.increment();
+		}
 
 		logger.endStart("Running index self check");
 		if (!index->checkStructure()) {

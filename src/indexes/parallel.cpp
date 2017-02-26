@@ -1,9 +1,9 @@
 #include "interface.hpp"
-#include "parallel/SpatialIndex.hpp"
+#include "scanning/Parallel.hpp"
 
-SpatialIndex * create()
+SpatialIndex * create(unsigned dimension, unsigned long long size)
 {
-	return new Parallel::SpatialIndex();
+	return new Scanning::Parallel(dimension, size);
 }
 
 void destroy(SpatialIndex * index)

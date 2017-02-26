@@ -8,6 +8,10 @@ SpatialIndex::~SpatialIndex()
 {
 }
 
+void SpatialIndex::setBounds(const Box& bounds)
+{
+	// NOOP
+}
 
 bool SpatialIndex::checkStructure() const
 {

@@ -2,7 +2,7 @@
 #include "configuration.hpp"
 #include "rtree/HilbertRtree.hpp"
 
-SpatialIndex * create()
+SpatialIndex * create(unsigned, unsigned long long)
 {
 	return new Rtree::HilbertRtree<D, M, s>();
 }

@@ -7,7 +7,7 @@ include_directories(src)
 set(optimized_flags -O3 -flto -fuse-linker-plugin -DNDEBUG)
 
 add_compile_options(
-	-Wall -g -std=c++11 -fopenmp -march=native -fvisibility=hidden
+	-Wall -g -std=c++11 -march=native -fvisibility=hidden
 )
 
 link_libraries(${name} -fvisibility=hidden -fopenmp optimized ${optimized_flags})
@@ -152,8 +152,26 @@ foreach(name rtree rtree-hilbert rtree-star rtree-rstar rtree-greene)
 	)
 endforeach()
 
-# The rest
-foreach(name naive sequential vectorized parallel)
+# Scanning indexes
+add_library(sequential MODULE EXCLUDE_FROM_ALL
+	src/indexes/sequential.cpp
+	src/indexes/scanning/Scanning.cpp
+	src/indexes/scanning/Sequential.cpp
+	$<TARGET_OBJECTS:common>
+)
+
+add_library(parallel MODULE EXCLUDE_FROM_ALL
+	src/indexes/parallel.cpp
+	src/indexes/scanning/Scanning.cpp
+	src/indexes/scanning/Parallel.cpp
+	$<TARGET_OBJECTS:common>
+)
+
+target_link_libraries(parallel -fopenmp)
+target_compile_options(parallel PRIVATE -fopenmp)
+
+# The rest (TM)
+foreach(name naive vectorized)
 	add_library(${name} MODULE EXCLUDE_FROM_ALL
 		src/indexes/${name}.cpp
 		src/indexes/${name}/SpatialIndex.cpp

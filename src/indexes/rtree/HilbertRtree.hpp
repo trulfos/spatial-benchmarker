@@ -26,15 +26,11 @@ class HilbertRtree : public Rtree<Node<D, C, HilbertEntry>>
 		using E = typename N::Entry;
 		using EIt = typename E::iterator;
 
-		/**
-		 * Load the given data set and construct the tree from it.
-		 */
-		void load(LazyDataSet& dataSet) override
-		{
-			bounds = dataSet.begin().getBounds();
-			Rtree<N>::load(dataSet);
-		};
 
+		void setBounds(const Box& bounds) override
+		{
+			this->bounds = bounds;
+		}
 
 		/**
 		 * Insert an entry in the tree.

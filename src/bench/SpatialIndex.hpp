@@ -2,8 +2,8 @@
 #include "common/Query.hpp"
 #include "common/Results.hpp"
 #include "common/Box.hpp"
+#include "common/DataObject.hpp"
 #include "StatsCollector.hpp"
-#include "LazyDataSet.hpp"
 
 /**
  * This abstract class is a common interface to all spatial indexes.
@@ -16,11 +16,19 @@ class SpatialIndex
 
 
 		/**
-		 * Index a data set.
+		 * Set the data domain.
 		 *
-		 * @param dataSet Data set to index
+		 * @param bounds Data domain
 		 */
-		virtual void load(LazyDataSet& dataSet) = 0;
+		virtual void setBounds(const Box& bounds);
+
+
+		/**
+		 * Index an object.
+		 *
+		 * @param object Data object to insert
+		 */
+		virtual void insert(const DataObject& object) = 0;
 
 
 		/**

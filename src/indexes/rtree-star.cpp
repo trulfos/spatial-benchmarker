@@ -2,7 +2,7 @@
 #include "configuration.hpp"
 #include "rtree/RStarTree.hpp"
 
-SpatialIndex * create()
+SpatialIndex * create(unsigned, unsigned long long)
 {
 	if (p != 0) {
 		return new Rtree::RStarTree<D, M, m, p>();

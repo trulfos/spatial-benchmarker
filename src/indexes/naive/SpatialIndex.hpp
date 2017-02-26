@@ -14,7 +14,7 @@ class SpatialIndex : public ::SpatialIndex
 {
 
 	public:
-		void load(LazyDataSet& dataSet);
+		void insert(const DataObject& object) override;
 
 	protected:
 		Results rangeSearch(const Box& box) const;

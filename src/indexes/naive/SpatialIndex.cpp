@@ -15,9 +15,9 @@ float d(const Point& a, const Point& b) {
 }
 
 
-void SpatialIndex::load(LazyDataSet& data)
+void SpatialIndex::insert(const DataObject& object)
 {
-	dataSet.assign(data.begin(), data.end());
+	dataSet.push_back(object);
 };
 
 
