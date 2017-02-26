@@ -14,16 +14,14 @@ class ProgressLogger
 		 * @param stream Stream to log to
 		 * @param max Maximum progress value
 		 */
-		ProgressLogger(std::ostream& stream, unsigned max = 100);
-
-		~ProgressLogger();
+		ProgressLogger(std::ostream& stream, unsigned long long max = 100);
 
 		/**
 		 * Set progress to the given value.
 		 *
 		 * @param progress Progress relative to max
 		 */
-		void set(unsigned progress);
+		void set(unsigned long long progress);
 
 		/**
 		 * Increment progress by one.
@@ -32,7 +30,7 @@ class ProgressLogger
 
 	private:
 		const unsigned LENGTH = 80;
-		unsigned progress = 0;
+		unsigned long long progress = 0;
 		std::ostream& stream;
 		unsigned max;
 };
