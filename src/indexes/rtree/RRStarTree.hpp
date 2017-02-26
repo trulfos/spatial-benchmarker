@@ -78,7 +78,22 @@ class RRStarTree : public Rtree<RevisedNode<D, C, Entry>>
 		};
 
 
+		/**
+		 * Provide a couple of extra statistics.
+		 */
+		StatsCollector collectStatistics() const override
+		{
+			auto stats = Rtree<N>::collectStatistics();
+
+			stats["perimeter_splits"] = perimeterSplits;
+
+			return stats;
+		}
+
+
 	private:
+
+		unsigned perimeterSplits = 0;
 
 		/**
 		 * Find a suitable subtree for the entry.
@@ -281,14 +296,16 @@ class RRStarTree : public Rtree<RevisedNode<D, C, Entry>>
 			}
 
 			// Can we use volume?
-			// TODO: This can be optimized by iterating through sorts instead of
-			//		splits.
 			bool useVolume = std::all_of(
 					first, splits.end(),
 					[](const Split<E>& split) {
 						return split.hasVolume();
 					}
 				);
+
+			if (!useVolume) {
+				perimeterSplits++;
+			}
 
 			// Determine best split
 			Split<E> split = *argmin(
