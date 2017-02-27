@@ -14,6 +14,7 @@
 #include "Split.hpp"
 #include "SplitSet.hpp"
 #include "CoveringSet.hpp"
+#include "ReferenceView.hpp"
 
 namespace Rtree
 {
@@ -115,42 +116,29 @@ class RRStarTree : public Rtree<RevisedNode<D, C, Entry>>
 			}
 
 			// Create a sorted view of the children (by delta perimeter)
-			std::vector<E *> children;
+			ReferenceView<E> children (parent.begin(), parent.end());
 
-			std::transform(
-					parent.begin(), parent.end(),
-					std::back_inserter(children),
-					[](E& entry) {
-						return &entry;
-					}
-				);
-
-			std::sort(
-					children.begin(), children.end(),
-					[&](E * const & a, E * const & b) {
-						return (a->mbr + newEntry.mbr).perimeter()
-								- a->mbr.perimeter()
-							< (b->mbr + newEntry.mbr).perimeter()
-								- b->mbr.perimeter();
-					}
-				);
+			children.sort([&](const E& a, const E& b) {
+					return (a.mbr + newEntry.mbr).perimeter() - a.mbr.perimeter()
+						< (b.mbr + newEntry.mbr).perimeter() - b.mbr.perimeter();
+				});
 
 
 			// Optimize by returning the first one if its perimeter
 			// enlargement is 0 for the new entry
 			if (
-					perimeterOverlap(parent, children[0]->mbr + newEntry.mbr)
+					perimeterOverlap(parent, children[0].mbr + newEntry.mbr)
 					== perimeterOverlap(parent, newEntry.mbr)
 			) {
-				return *children[0];
+				return children[0];
 			}
 
 			// Determine threshold (optimization)
 			unsigned p = children.size();
 
 			for (unsigned i = p; i < children.size(); ++i) {
-				double deltaOvlp = children.front()->mbr.overlapEnlargement(
-						children[p]->mbr,
+				double deltaOvlp = children[0].mbr.overlapEnlargement(
+						children[p].mbr,
 						newEntry.mbr,
 						[](const M& mbr) { return mbr.perimeter(); }
 					);
@@ -163,8 +151,8 @@ class RRStarTree : public Rtree<RevisedNode<D, C, Entry>>
 			// Determine whether volume or perimeter should be used
 			bool useVolume = !std::any_of(
 					children.begin(), children.begin() + p,
-					[&](const E * e) {
-						return (e->mbr + newEntry.mbr).volume() == 0.0;
+					[&](const E& e) {
+						return (e.mbr + newEntry.mbr).volume() == 0.0;
 					}
 				);
 
@@ -181,7 +169,7 @@ class RRStarTree : public Rtree<RevisedNode<D, C, Entry>>
 			};
 
 			std::set<unsigned> visited; // CAND
-			std::vector<double> overlaps (p, 0.0f); // <delta>ovlp
+			std::vector<double> overlaps (p, 0.0); // <delta>ovlp
 
 			std::stack<StackFrame> path;
 			path.emplace(0);
@@ -197,7 +185,7 @@ class RRStarTree : public Rtree<RevisedNode<D, C, Entry>>
 
 					// We may have found what we are looking for
 					if (overlaps[current] == 0.0) {
-						return *children[current];
+						return children[current];
 					}
 
 					path.pop();
@@ -210,8 +198,8 @@ class RRStarTree : public Rtree<RevisedNode<D, C, Entry>>
 				}
 
 				// Calculate overlap enlargement
-				double overlap = children[current]->mbr.overlapEnlargement(
-						children[j]->mbr,
+				double overlap = children[current].mbr.overlapEnlargement(
+						children[j].mbr,
 						newEntry.mbr,
 						measure
 					);
@@ -234,7 +222,7 @@ class RRStarTree : public Rtree<RevisedNode<D, C, Entry>>
 						}
 					);
 
-			return *children[bestIndex];
+			return children[bestIndex];
 
 		};
 

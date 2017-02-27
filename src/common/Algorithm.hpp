@@ -129,9 +129,15 @@ RangeIterator<T> makeRangeIt(T value)
  * dereferencing operator dereferences twice to get the actual value pointed to.
  */
 template<typename Iterator>
-class DerefIterator : public std::iterator<std::forward_iterator_tag, typename Iterator::value_type>
+class DerefIterator
+	: public std::iterator<
+			  std::random_access_iterator_tag,
+			  typename Iterator::value_type
+		  >
 {
 	public:
+		using difference_type = typename std::iterator_traits<Iterator>::difference_type;
+
 		DerefIterator(const Iterator& iterator) : iterator(iterator)
 		{
 		};
@@ -141,6 +147,16 @@ class DerefIterator : public std::iterator<std::forward_iterator_tag, typename I
 			++iterator;
 			return *this;
 		};
+
+		DerefIterator operator+(difference_type n)
+		{
+			return DerefIterator(iterator + n);
+		}
+
+		difference_type operator-(const DerefIterator other)
+		{
+			return iterator - other.iterator;
+		}
 
 		decltype(*(typename Iterator::value_type()))& operator*()
 		{
