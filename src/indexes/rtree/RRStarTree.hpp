@@ -140,7 +140,7 @@ class RRStarTree : public Rtree<RevisedNode<D, C, Entry>>
 				double deltaOvlp = children[0].mbr.overlapEnlargement(
 						children[p].mbr,
 						newEntry.mbr,
-						[](const M& mbr) { return mbr.perimeter(); }
+						&M::perimeter
 					);
 
 				if (deltaOvlp > 0.0) {
@@ -155,11 +155,6 @@ class RRStarTree : public Rtree<RevisedNode<D, C, Entry>>
 						return (e.mbr + newEntry.mbr).volume() == 0.0;
 					}
 				);
-
-			auto measure = useVolume?
-				[](const M& mbr) { return mbr.volume(); } :
-					[] (const M& mbr) { return mbr.perimeter(); };
-
 
 			// Start depth-first traversal
 			struct StackFrame {
@@ -201,7 +196,7 @@ class RRStarTree : public Rtree<RevisedNode<D, C, Entry>>
 				double overlap = children[current].mbr.overlapEnlargement(
 						children[j].mbr,
 						newEntry.mbr,
-						measure
+						useVolume? &M::volume : &M::perimeter
 					);
 
 				overlaps[current] += overlap;

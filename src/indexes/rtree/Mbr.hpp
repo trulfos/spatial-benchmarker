@@ -259,13 +259,15 @@ class Mbr
 		 * Calculate the enlargement of the overlap between this and another MBR
 		 * if a new MBR is added to this.
 		 *
-		 * @param original Original MBR of the first subject
 		 * @param other Other MBR to compute overlap with
 		 * @param n MBR to add
-		 * @param measure Function to evaluate overlap
+		 * @param measure Member function to use for evaluating overlap
 		 */
-		template<class F>
-		double overlapEnlargement(const Mbr& other, const Mbr& n, F measure)
+		double overlapEnlargement(
+				const Mbr& other,
+				const Mbr& n,
+				double (Mbr::*measure)() const
+			)
 		{
 			Mbr enlarged = *this + n;
 
@@ -275,10 +277,10 @@ class Mbr
 			}
 
 
-			double overlap = measure(enlarged.intersection(other));
+			double overlap = (enlarged.intersection(other).*measure)();
 
 			if (intersects(other)) {
-				overlap -= measure(intersection(other));
+				overlap -= (intersection(other).*measure)();
 			}
 
 			return overlap;
