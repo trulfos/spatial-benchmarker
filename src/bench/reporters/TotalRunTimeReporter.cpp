@@ -1,6 +1,7 @@
 #include "TotalRunTimeReporter.hpp"
 #include "ProgressLogger.hpp"
 #include <algorithm>
+#include <random>
 
 void TotalRunTimeReporter::run(
 		const SpatialIndex& index,
@@ -8,6 +9,7 @@ void TotalRunTimeReporter::run(
 	)
 {
 	ProgressLogger progress(logStream, RUNS);
+	std::default_random_engine engine (11);
 
 	auto querySet = getQuerySet();
 
@@ -47,15 +49,10 @@ void TotalRunTimeReporter::run(
 		addEntry("total_runtime", result);
 
 		// Rearrange queries
-		std::vector<RangeQuery> permutation (queries.size());
-
-		unsigned position = 0;
-		for (const RangeQuery& query : queries) {
-			permutation[position] = query;
-			position = (position + 11) % queries.size();
-		}
-
-		queries = permutation;
+		std::shuffle(
+				queries.begin(), queries.end(),
+				engine
+			);
 
 		// Update progress bar
 		progress.increment();
