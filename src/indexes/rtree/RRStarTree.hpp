@@ -125,11 +125,17 @@ class RRStarTree : public Rtree<RevisedNode<D, C, Entry>>
 				});
 
 
-			// Optimize by returning the first one if its perimeter
+			// Optimize by returning the first one if its overlap perimeter
 			// enlargement is 0 for the new entry
 			if (
-					perimeterOverlap(parent, children[0].mbr + newEntry.mbr)
-					== perimeterOverlap(parent, newEntry.mbr)
+					std::all_of(
+							children.begin() + 1, children.end(),
+							[&](const E& entry) {
+								return children[0].mbr.overlapEnlargement(
+										entry.mbr, newEntry.mbr, &M::perimeter
+									) == 0.0;
+							}
+						)
 			) {
 				return children[0];
 			}
