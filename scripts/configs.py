@@ -4,9 +4,6 @@ from database import Database
 
 
 def create(db, index, data, definitions):
-    if get(db, index, data, definitions):
-        raise Exception("This config already exists")
-
     config_id = db.insert('config', index=index, data=data).lastrowid
     db.insertmany(
             'option',
@@ -141,7 +138,7 @@ def main():
 
     if args.create:
         data = args.config[1]
-        print("New config with id %d" % create(db, index, data, definitions))
+        print(create(db, index, data, definitions))
     elif index.isdecimal():
         if len(definitions):
             print("Warning: Unused arguments")
