@@ -89,7 +89,7 @@ class SplitSet
 					++splitPoint;
 
 					// Increment sort order?
-					if (splitPoint == entryView.size() - m) {
+					if (splitPoint == entryView.size() - m + 1) {
 						splitPoint = m;
 						++sortOrder;
 
