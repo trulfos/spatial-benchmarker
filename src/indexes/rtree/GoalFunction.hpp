@@ -29,10 +29,7 @@ class GoalFunction
 		/**
 		 * Evaluate the goal function for the given split.
 		 */
-		double operator()(
-				const Split<E>& split,
-			   	bool useVolume = true
-		) {
+		double operator()(const Split<E>& split, bool useVolume) {
 
 			// Sum up MBRs (again)
 			auto mbrs = split.getMbrs();

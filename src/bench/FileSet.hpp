@@ -16,7 +16,7 @@ class FileSet
 		using value_type = typename Iterator::value_type;
 		using iterator = Iterator;
 
-		FileSet(const std::string& filename)
+		explicit FileSet(const std::string& filename)
 			: file(filename, std::ifstream::in | std::ifstream::binary)
 		{
 			if (!file) {
