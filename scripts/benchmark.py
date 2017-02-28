@@ -23,6 +23,11 @@ def parse_arguments():
             help='Path to sqlite database file'
         )
 
+    parser.add_argument(
+            '--builddir', '-b', metavar='path', default='build',
+            help='Path to build dir'
+        )
+
     return parser.parse_args()
 
 
@@ -58,7 +63,7 @@ def detect_dimension(filename):
 def main():
     args = parse_arguments()
     db = Database(args.database)
-    build_dir = 'build'
+    build_dir = args.builddir
 
     # Prepare for out of source compilation
     subprocess.check_call(['mkdir', '-p', build_dir])
