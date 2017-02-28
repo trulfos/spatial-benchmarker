@@ -23,6 +23,10 @@ void ProgressLogger::set(unsigned long long p)
 			stream << "░";
 		}
 
+		if (count == LENGTH - 2) {
+			stream << '\n';
+		}
+
 		stream << std::flush;
 	}
 
