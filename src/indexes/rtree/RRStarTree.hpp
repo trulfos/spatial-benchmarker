@@ -86,16 +86,14 @@ class RRStarTree : public Rtree<RevisedNode<D, C, Entry>>
 		StatsCollector collectStatistics() const override
 		{
 			auto stats = Rtree<N>::collectStatistics();
-
 			stats["perimeter_splits"] = perimeterSplits;
-
 			return stats;
 		}
 
 
 	private:
 
-		unsigned perimeterSplits = 0;
+		unsigned long long perimeterSplits = 0;
 
 		/**
 		 * Find a suitable subtree for the entry.
