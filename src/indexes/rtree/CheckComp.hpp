@@ -25,7 +25,7 @@ class CheckComp
 				);
 		}
 
-		FIt operator()(unsigned t)
+		FIt operator()()
 		{
 			FIt r = implementation(first);
 
