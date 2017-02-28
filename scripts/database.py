@@ -19,6 +19,7 @@ class Database:
         # Check if database exists and create it if not
         exists = os.path.exists(filename)
         self.connection = sqlite3.connect(filename)
+        self.connection.row_factory = sqlite3.Row
 
         if not exists:
             self.create_database()
@@ -38,11 +39,12 @@ class Database:
                 """
                 create table `run` (
                     `run_id` integer primary key autoincrement,
-                    `config_id` integer not null,
+                    `benchmark_id` integer not null,
                     `timestamp` datetime default current_timestamp not null,
                     `commit` text not null,
 
-                    foreign key (`config_id`) references `config` (`id`)
+                    foreign key (`benchmark_id`)
+                        references `benchmark` (`benchmark_id`)
                 )
                 """,
                 """
@@ -52,18 +54,28 @@ class Database:
                     `value` text not null,
 
                     primary key (`config_id`, `name`),
-                    foreign key (`config_id`) references `config` (`id`)
+                    foreign key (`config_id`) references `config` (`config_id`)
+                )
+                """,
+                """
+                create table `benchmark` (
+                    `benchmark_id` integer primary key autoincrement,
+                    `config_id` integer not null,
+                    `dataset` text not null,
+
+                    foreign key (`config_id`) references `config` (`config_id`)
                 )
                 """,
                 """
                 create table `reporter` (
                     `reporter_id` integer primary key autoincrement,
-                    `config_id` integer not null,
+                    `benchmark_id` integer not null,
                     `name` text not null,
                     `arguments` text not null,
 
-                    unique (`config_id`, `name`, `arguments`),
-                    foreign key (`config_id`) references `config` (`id`)
+                    unique (`benchmark_id`, `name`, `arguments`),
+                    foreign key (`benchmark_id`)
+                        references `benchmark` (`benchmark_id`)
                 )
                 """,
                 """
@@ -73,7 +85,9 @@ class Database:
                     `name` text not null,
                     `value` real not null,
 
-                    foreign key (`run_id`) references `run` (`id`)
+                    foreign key (`run_id`) references `run` (`run_id`),
+                    foreign key (`reporter_id`)
+                        references `reporter` (`reporter_id`)
                 )
                 """
             ]
@@ -116,7 +130,7 @@ class Database:
 
     def get_by_id(self, table, id):
         return self.connection.execute(
-                'select * from `%s` where `id` = ?' % table,
+                'select * from `%s` where `%s_id` = ?' % (table, table),
                 [id]
             ).fetchone()
 

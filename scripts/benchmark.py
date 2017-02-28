@@ -60,7 +60,7 @@ def main():
     db = Database(args.database)
     build_dir = 'build'
 
-    for config_id in set(args.configs):
+    for benchmark_id in set(args.configs):
 
         # Prepare for out of source compilation
         subprocess.check_call(['mkdir', '-p', build_dir])
@@ -68,19 +68,22 @@ def main():
 
         # Gather information
         commit = get_commit()
-        config = configs.get_by_id(db, config_id)
+        benchmark = db.get_by_id('benchmark', benchmark_id)
 
-        if not config:
-            print('Error: Config %s does not exist' % config_id)
+        if not benchmark:
+            print('Error: Benchmark %s does not exist' % benchmark_id)
             continue
 
-        reporters = reps.get(db, config_id)
+        config_id = benchmark['config_id']
+        config = configs.get_by_id(db, config_id)
+        dataset = benchmark['dataset']
+        reporters = reps.get(db, benchmark_id)
 
         if not reporters:
-            print('No reporters to run for config %d' % config_id)
+            print('No reporters to run for benchmark %d' % benchmark_id)
             continue
 
-        dimension = detect_dimension(config['data'])
+        dimension = detect_dimension(dataset)
 
         # Build
         definitions = dict(config['definitions'], D=dimension)
@@ -91,9 +94,13 @@ def main():
                 [
                     './bench',
                     config['index'],
-                    '../' + config['data'],
-                ] + ['%(name)s:%(arguments)s' % r for r in reporters]
+                    '../' + dataset,
+                ] + ['%(name)s:../%(arguments)s' % r for r in reporters]
             ).decode('utf-8')
+
+        run_id = db.insert(
+                'run', config_id=config_id, commit=commit
+            ).lastrowid
 
         # Save results
         for result in zip(results.split('\n\n'), reporters):
@@ -101,10 +108,6 @@ def main():
                     result[0].split('\n'),
                     delimiter='\t'
                 )
-
-            run_id = db.insert(
-                    'run', config_id=config_id, commit=commit
-                ).lastrowid
 
             db.insertmany(
                     'result',
