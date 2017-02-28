@@ -14,8 +14,13 @@ def parse_arguments():
         )
 
     parser.add_argument(
-            'configs', nargs='+',
+            'benchmarks', nargs='*', default=[],
             help='Configurations to benchmark (ids)'
+        )
+
+    parser.add_argument(
+            '--index', '-i', metavar='index name',
+            help='Include all benchmarks for the given index'
         )
 
     parser.add_argument(
@@ -60,16 +65,33 @@ def detect_dimension(filename):
     return int(filename[i + 1:])
 
 
+def get_benchmark_ids(db, index):
+    benchmarks = db.connection.execute(
+            """
+            select `benchmark_id`
+            from `benchmark` inner join `config` using (`config_id`)
+            where `index` = ?
+            """,
+            [index]
+        ).fetchall()
+
+    return set(b['benchmark_id'] for b in benchmarks)
+
+
 def main():
     args = parse_arguments()
     db = Database(args.database)
+    benchmarks = set(args.benchmarks)
     build_dir = args.builddir
+
+    if (args.index):
+        benchmarks |= get_benchmark_ids(db, args.index)
 
     # Prepare for out of source compilation
     subprocess.check_call(['mkdir', '-p', build_dir])
     os.chdir(build_dir)
 
-    for benchmark_id in set(args.configs):
+    for benchmark_id in benchmarks:
 
         # Gather information
         commit = get_commit()
