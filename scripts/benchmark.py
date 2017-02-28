@@ -43,7 +43,7 @@ def run_make(options, index):
 def get_commit():
     return subprocess.check_output(
             ['git', 'rev-parse', 'HEAD']
-        )
+        ).strip()
 
 
 def detect_dimension(filename):
@@ -60,11 +60,11 @@ def main():
     db = Database(args.database)
     build_dir = 'build'
 
-    for benchmark_id in set(args.configs):
+    # Prepare for out of source compilation
+    subprocess.check_call(['mkdir', '-p', build_dir])
+    os.chdir(build_dir)
 
-        # Prepare for out of source compilation
-        subprocess.check_call(['mkdir', '-p', build_dir])
-        os.chdir(build_dir)
+    for benchmark_id in set(args.configs):
 
         # Gather information
         commit = get_commit()
@@ -99,7 +99,7 @@ def main():
             ).decode('utf-8')
 
         run_id = db.insert(
-                'run', config_id=config_id, commit=commit
+                'run', benchmark_id=benchmark_id, commit=commit
             ).lastrowid
 
         # Save results
