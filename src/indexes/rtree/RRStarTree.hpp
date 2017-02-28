@@ -263,13 +263,11 @@ class RRStarTree : public Rtree<RevisedNode<D, C, Entry>>
 					a.end(), b.end()
 				);
 
-			auto first = splits.begin();
-
 
 			// Restrict to single dimension for leafs
 			if (isLeaf) {
 				const Split<E>& split = *argmin(
-							first, splits.end(),
+							splits.begin(), splits.end(),
 							[](const Split<E>& split) {
 								return split.perimeter();
 							}
@@ -280,7 +278,7 @@ class RRStarTree : public Rtree<RevisedNode<D, C, Entry>>
 
 			// Can we use volume?
 			bool useVolume = std::all_of(
-					first, splits.end(),
+					splits.begin(), splits.end(),
 					[](const Split<E>& split) {
 						return split.hasVolume();
 					}
@@ -292,7 +290,7 @@ class RRStarTree : public Rtree<RevisedNode<D, C, Entry>>
 
 			// Determine best split
 			Split<E> split = *argmin(
-					first, splits.end(),
+					splits.begin(), splits.end(),
 					[&](const Split<E>& split) {
 
 						// Evaluate goal and weight functions
