@@ -137,6 +137,8 @@ class DerefIterator
 {
 	public:
 		using difference_type = typename std::iterator_traits<Iterator>::difference_type;
+		using value_type = decltype(*(typename std::iterator_traits<Iterator>::value_type()));
+		using reference = value_type&;
 
 		DerefIterator(const Iterator& iterator) : iterator(iterator)
 		{
@@ -158,10 +160,20 @@ class DerefIterator
 			return iterator - other.iterator;
 		}
 
-		decltype(*(typename Iterator::value_type()))& operator*()
+		reference operator[](difference_type n)
+		{
+			return *iterator[n];
+		}
+
+		reference operator*()
 		{
 			return **iterator;
 		};
+
+		bool operator<(const DerefIterator other) const
+		{
+			return iterator < other.iterator;
+		}
 
 		typename Iterator::value_type operator->()
 		{

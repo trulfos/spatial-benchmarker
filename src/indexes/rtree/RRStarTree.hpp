@@ -15,6 +15,7 @@
 #include "SplitSet.hpp"
 #include "CoveringSet.hpp"
 #include "ReferenceView.hpp"
+#include "CheckComp.hpp"
 
 namespace Rtree
 {
@@ -134,11 +135,11 @@ class RRStarTree : public Rtree<RevisedNode<D, C, Entry>>
 			}
 
 			// Determine threshold (optimization)
-			unsigned p = children.size();
+			auto p = children.begin() + 1;
 
-			for (unsigned i = p; i < children.size(); ++i) {
+			for (auto i = children.begin() + 1; i != children.end(); ++i) {
 				double deltaOvlp = children[0].mbr.overlapEnlargement(
-						children[p].mbr,
+						i->mbr,
 						newEntry.mbr,
 						&M::perimeter
 					);
@@ -148,100 +149,11 @@ class RRStarTree : public Rtree<RevisedNode<D, C, Entry>>
 				}
 			}
 
-			// Determine whether volume or perimeter should be used
-			bool useVolume = !std::any_of(
-					children.begin(), children.begin() + p,
-					[&](const E& e) {
-						return (e.mbr + newEntry.mbr).volume() == 0.0;
-					}
-				);
-
-			// Start depth-first traversal
-			struct StackFrame {
-				unsigned index;
-				unsigned j = 0;
-				StackFrame(unsigned i) : index(i) {};
-			};
-
-			std::set<unsigned> visited; // CAND
-			std::vector<double> overlaps (p, 0.0); // <delta>ovlp
-
-			std::stack<StackFrame> path;
-			path.emplace(0);
-			visited.emplace(0);
-
-
-			while (path.size()) {
-				unsigned current = path.top().index;
-				unsigned j = path.top().j++;
-
-				// Done with this node yet?
-				if (j >= p) {
-
-					// We may have found what we are looking for
-					if (overlaps[current] == 0.0) {
-						return children[current];
-					}
-
-					path.pop();
-					continue;
-				}
-
-				// Skip current node
-				if (j == current) {
-					continue;
-				}
-
-				// Calculate overlap enlargement
-				double overlap = children[current].mbr.overlapEnlargement(
-						children[j].mbr,
-						newEntry.mbr,
-						useVolume? &M::volume : &M::perimeter
-					);
-
-				overlaps[current] += overlap;
-
-				// Descend if overlapping and not visited
-				if (overlap != 0.0 && !visited.count(j)) {
-					path.emplace(j);
-					visited.emplace(j);
-				}
-
-			}
-
-			unsigned bestIndex = *argmin(
-						visited.begin(),
-						visited.end(),
-						[&](unsigned index) {
-							return overlaps[index];
-						}
-					);
-
-			return children[bestIndex];
-
-		};
-
-
-		/**
-		 * Calculate the perimeter overlap of an MBR with al the children of an
-		 * entry's node.
-		 *
-		 * @param parent Parent entry who's children will be used
-		 * @param mbr MBR to calculate overlap for
-		 *
-		 * @return Overlap of the MBR with the children
-		 */
-		double perimeterOverlap(E& parent, M mbr)
-		{
-			return std::accumulate(
-					parent.begin(),
-					parent.end(),
-					0.0f,
-					[&](const double& sum, const E& entry) {
-						return mbr.intersects(entry.mbr) ?
-							sum + mbr.intersection(entry.mbr).perimeter() : sum;
-					}
-				);
+			return *CheckComp<typename decltype(children)::iterator, E>(
+							children.begin(),
+							p,
+							newEntry
+						)();
 		};
 
 
