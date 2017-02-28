@@ -3,8 +3,8 @@ import argparse
 from database import Database
 
 
-def create(db, index, data, definitions):
-    config_id = db.insert('config', index=index, data=data).lastrowid
+def create(db, index, definitions):
+    config_id = db.insert('config', index=index).lastrowid
     db.insertmany(
             'option',
             ({'name': d[0], 'value': d[1], 'config_id': config_id}
@@ -137,8 +137,7 @@ def main():
     definitions = dict(d.split('=') for d in args.config[2:])
 
     if args.create:
-        data = args.config[1]
-        print(create(db, index, data, definitions))
+        print(create(db, index, definitions))
     elif index.isdecimal():
         if len(definitions):
             print("Warning: Unused arguments")
