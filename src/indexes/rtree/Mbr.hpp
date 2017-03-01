@@ -279,7 +279,7 @@ class Mbr
 				const Mbr& other,
 				const Mbr& n,
 				double (Mbr::*measure)() const
-			)
+			) const
 		{
 			Mbr enlarged = *this + n;
 

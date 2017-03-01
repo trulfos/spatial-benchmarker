@@ -102,6 +102,13 @@ add_executable(test_splitset
 	src/indexes/rtree/SplitSet.test.cpp
 )
 
+add_executable(test_checkcomp
+	src/common/Point.cpp
+	src/common/Box.cpp
+	src/common/DataObject.cpp
+	src/indexes/rtree/CheckComp.test.cpp
+)
+
 add_executable(test_combinationsview
 	src/indexes/rtree/CombinationsView.test.cpp
 )
@@ -115,6 +122,7 @@ foreach(name
 		weightingfunction
 		combinationsview
 		splitset
+		checkcomp
 	)
 	add_test(NAME ${name} COMMAND test_${name})
 	target_link_libraries(test_${name} criterion)

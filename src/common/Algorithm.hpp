@@ -16,7 +16,7 @@
  * compare.
  */
 template<class ForwardIt, class TransformFunc>
-ForwardIt  argmin(ForwardIt start, ForwardIt end, TransformFunc transform)
+ForwardIt argmin(ForwardIt start, ForwardIt end, TransformFunc transform)
 {
 	// No range deserves no answer
 	if (start == end) {
@@ -137,22 +137,33 @@ class DerefIterator
 {
 	public:
 		using difference_type = typename std::iterator_traits<Iterator>::difference_type;
-		using value_type = decltype(*(typename std::iterator_traits<Iterator>::value_type()));
+
+		using value_type = typename std::remove_reference<
+				decltype(
+						*(typename std::iterator_traits<Iterator>::value_type())
+					)
+			>::type;
+
 		using reference = value_type&;
 
 		DerefIterator(const Iterator& iterator) : iterator(iterator)
 		{
-		};
+		}
 
 		DerefIterator operator++()
 		{
 			++iterator;
 			return *this;
-		};
+		}
 
 		DerefIterator operator+(difference_type n)
 		{
 			return DerefIterator(iterator + n);
+		}
+
+		DerefIterator operator-(difference_type n)
+		{
+			return DerefIterator(iterator - n);
 		}
 
 		difference_type operator-(const DerefIterator other)
@@ -165,7 +176,7 @@ class DerefIterator
 			return *iterator[n];
 		}
 
-		reference operator*()
+		reference operator*() const
 		{
 			return **iterator;
 		};
