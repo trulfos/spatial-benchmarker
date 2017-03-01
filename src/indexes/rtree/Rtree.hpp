@@ -98,7 +98,8 @@ class Rtree : public ::SpatialIndex
 
 
 		/**
-		 * Check all MBRs are contained within their parents MBR.
+		 * Check all MBRs are contained within their parents MBR and that the
+		 * MBRs are as tight as possible.
 		 */
 		bool checkStructure() const override
 		{
@@ -107,8 +108,15 @@ class Rtree : public ::SpatialIndex
 			bool valid = true;
 
 			traverse([&](const E& entry, unsigned level) {
+				M mbr = entry.begin()->mbr;
+
 				for (const auto& e : entry) {
 					valid &= entry.mbr.contains(e.mbr);
+					mbr += e.mbr;
+				}
+
+				if (mbr != entry.mbr) {
+					throw std::runtime_error("MBR not tight");
 				}
 
 				return valid;

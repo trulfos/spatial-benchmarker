@@ -54,6 +54,18 @@ class Mbr
 			}
 		};
 
+
+		bool operator!=(const Mbr& other)
+		{
+			for (unsigned d = 0; d < D; ++d) {
+				if (top[d] != other.top[d] || bottom[d] != other.bottom[d]) {
+					return true;
+				}
+			}
+
+			return false;
+		}
+
 		/**
 		 * Adding two MBRs gives the MBR containing both.
 		 *
