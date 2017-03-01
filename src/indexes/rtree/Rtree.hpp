@@ -149,11 +149,6 @@ class Rtree : public ::SpatialIndex
 				return true;
 			});
 
-
-			for (unsigned i = 1; i <= height; ++i) {
-				stats["splits"] += stats["level_" + std::to_string(i)] - (height - (i - 1));
-			}
-
 			return stats;
 		};
 
