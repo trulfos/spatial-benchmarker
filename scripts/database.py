@@ -32,8 +32,7 @@ class Database:
                 """
                 create table `config` (
                     `config_id` integer primary key autoincrement,
-                    `index` text not null,
-                    `data` text not null
+                    `index` text not null
                 )
                 """,
                 """
@@ -133,6 +132,14 @@ class Database:
                 'select * from `%s` where `%s_id` = ?' % (table, table),
                 [id]
             ).fetchone()
+
+    def get_where(self, table, **kwargs):
+        where = ' and '.join('`%s` = :%s' % (k, k) for k in kwargs.keys())
+
+        return self.connection.execute(
+                'select * from `%s` where %s' % (table, where),
+                kwargs
+            ).fetchall()
 
     def get_all(self, table):
         return self.connection.execute(
