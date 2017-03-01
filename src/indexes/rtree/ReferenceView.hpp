@@ -19,6 +19,7 @@ class ReferenceView : private std::vector<E *>
 	public:
 		using value_type = E;
 		using iterator = DerefIterator<typename Base::iterator>;
+		using const_iterator = DerefIterator<typename Base::const_iterator>;
 
 		/**
 		 * Create a new view with the given range of entries.
@@ -28,6 +29,14 @@ class ReferenceView : private std::vector<E *>
 		 */
 		template<class FIt>
 		ReferenceView(FIt first, FIt last);
+
+
+		/**
+		 * Default constructor.
+		 *
+		 * Gives an empty view.
+		 */
+		ReferenceView();
 
 
 		/**
@@ -52,12 +61,14 @@ class ReferenceView : private std::vector<E *>
 		 * Start iteration through this views entries.
 		 */
 		iterator begin();
+		const_iterator begin() const;
 
 
 		/**
 		 * Iterator to past the end.
 		 */
 		iterator end();
+		const_iterator end() const;
 };
 
 
@@ -83,6 +94,13 @@ ReferenceView<E>::ReferenceView(FIt first, FIt last)
 			}
 		);
 }
+
+
+template<class E>
+ReferenceView<E>::ReferenceView()
+{
+}
+
 
 template<class E>
 template<class Compare>
@@ -110,6 +128,18 @@ typename ReferenceView<E>::iterator ReferenceView<E>::begin()
 
 template<class E>
 typename ReferenceView<E>::iterator ReferenceView<E>::end()
+{
+	return makeDerefIt(Base::end());
+}
+
+template<class E>
+typename ReferenceView<E>::const_iterator ReferenceView<E>::begin() const
+{
+	return makeDerefIt(Base::begin());
+}
+
+template<class E>
+typename ReferenceView<E>::const_iterator ReferenceView<E>::end() const
 {
 	return makeDerefIt(Base::end());
 }

@@ -4,6 +4,7 @@
 #include <iostream>
 #include <algorithm>
 #include <memory>
+#include "ReferenceView.hpp"
 
 /**
  * Represents a possible split of a set of entries used by the RR*-tree.
@@ -16,7 +17,7 @@ class Split
 	public:
 
 		Split(
-				const std::vector<E *>& entryView,
+				const ReferenceView<E>& entryView,
 				unsigned sort,
 				unsigned dimension,
 				unsigned splitPoint
@@ -53,17 +54,10 @@ class Split
 		{
 			auto middle = entryView.begin() + splitPoint;
 
-			std::vector<E>
-				low(
-						makeDerefIt(entryView.begin()),
-						makeDerefIt(middle)
-					),
-				high (
-						makeDerefIt(middle),
-						makeDerefIt(entryView.end())
-					);
-
-			return {{low, high}};
+			return {{
+					std::vector<E>(entryView.begin(), middle),
+					std::vector<E>(middle, entryView.end())
+				}};
 		}
 
 		unsigned getDimension() const
@@ -95,7 +89,7 @@ class Split
 	private:
 		unsigned sort, dimension, splitPoint;
 		std::array<M, 2> mbrs;
-		std::vector<E *> entryView;
+		ReferenceView<E> entryView;
 
 		/**
 		 * Sums up MBRs.
@@ -107,9 +101,9 @@ class Split
 
 			return std::accumulate(
 					first, last,
-					(*first)->mbr,
-					[](const M& sum, const E* e) {
-						return sum + e->mbr;
+					first->mbr,
+					[](const M& sum, const E& e) {
+						return sum + e.mbr;
 					}
 				);
 		}
