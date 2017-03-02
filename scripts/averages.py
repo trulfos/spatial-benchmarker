@@ -38,34 +38,42 @@ def main():
     # Calculate averages
     averages = db.connection.execute(
             """
-            select `index`, `dataset`, avg(`value`) `value`
-            from `latest_run`
-            inner join `result` using (`run_id`)
+            select `r1`.`index` `index`, `r1`.`D` `D`, avg(`value`) `value`
+            from (select distinct `D`, `index` from `latest_run`) `r1`
+            left outer join `latest_run` `r2`
+                on `r2`.`D` <= `r1`.`D`
+                and `r2`.`index` = `r1`.`index`
+            left outer join `result` using (`run_id`)
             where `name` = ?
-            group by `index` , `dataset`
+            group by `r1`.`index` , `r1`.`D`
             """,
             [args.metric]
         ).fetchall()
 
-    names = {}
+    dimensions = {}
     fields = set()
 
     for a in averages:
-        name = a['dataset']
+        dimension = a['D']
         index = a['index']
 
-        if name not in names:
-            names[name] = {'dataset': name}
+        if dimension not in dimensions:
+            dimensions[dimension] = {'dimension': dimension}
 
-        names[name][index] = '%.5e' % a['value']
+        dimensions[dimension][index] = '%.5e' % a['value']
         fields |= {index}
 
-    writer = csv.DictWriter(sys.stdout, fieldnames=['dataset'] + list(fields))
+    writer = csv.DictWriter(
+            sys.stdout,
+            delimiter='\t',
+            fieldnames=['dimension'] + sorted(list(fields))
+        )
+
     writer.writeheader()
     writer.writerows(
             sorted(
-                    names.values(),
-                    key=lambda x: (int(x['dataset'][-2:]), x['dataset'])
+                    dimensions.values(),
+                    key=lambda x: x['dimension']
                 )
         )
 
