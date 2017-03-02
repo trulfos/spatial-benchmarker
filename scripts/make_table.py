@@ -32,16 +32,7 @@ def main():
     # Identify relevant runs
     benchmark_runs = db.connection.execute(
             """
-            select `run`.*, `benchmark`.*
-            from `config`
-            inner join `benchmark` using (`config_id`)
-            inner join `run` using (`benchmark_id`)
-            where `config`.`index` = ?
-                and not exists (
-                    select * from `run` `r`
-                    where `r`.`timestamp` > `run`.`timestamp`
-                        and `r`.`benchmark_id` = `run`.`benchmark_id`
-                )
+            select * from `latest_run` where `index` = ?
             """,
             [args.index]
         ).fetchall()
@@ -50,7 +41,9 @@ def main():
 
     values = ['benchmark'] \
         + 3 * ['results', 'leafAcc'] \
-        + ['Leafs', 'Perim. splits']
+        + ['Leafs'] + (
+                ['Perimspls'] if args.index == 'rtree-rstar' else []
+            ) + ['commit', 'id']
 
     # TODO: Guarantee sort order?
     for run in benchmark_runs:
@@ -69,19 +62,32 @@ def main():
                 ))
 
             if reporter['name'] == 'stats':
-                values.extend([results['results'], results['leaf_accesses']])
+                values += [
+                        '%.2e' % results['results'],
+                        '%.2e' % results['leaf_accesses']
+                    ]
             else:
                 h = results['height']
-                values.extend([
-                    results['level_2'] / 1000,
-                    100*results['perimeter_splits'] / (results['nodes'] - h)
-                ])
+                values.append('%.2e' % (results['level_2'] / 1000))
+
+                if args.index == 'rtree-rstar':
+                    values.append(
+                            '%.2e' % (
+                                100*results['perimeter_splits'] /
+                                (results['nodes'] - h)
+                            )
+                        )
+
+        values += [
+                run['commit'].decode('utf-8')[:6],
+                '%d' % run['benchmark_id']
+            ]
 
     width = len(benchmark_runs) + 1
     height = len(values) // width
 
     for i in range(0, len(values) // width):
-        print('\t'.join(str(v) for v in values[i::height]))
+        print('\t'.join(v for v in values[i::height]))
 
 
 main()
