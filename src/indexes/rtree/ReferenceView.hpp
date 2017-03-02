@@ -40,6 +40,13 @@ class ReferenceView : private std::vector<E *>
 
 
 		/**
+		 * Add elements to this view.
+		 */
+		template<class FIt>
+		void insert(FIt first, FIt last);
+
+
+		/**
 		 * Sort the entries in this view using the given compare.
 		 */
 		template<class Compare>
@@ -86,6 +93,20 @@ template<class E>
 template<class FIt>
 ReferenceView<E>::ReferenceView(FIt first, FIt last)
 {
+	insert(first, last);
+}
+
+
+template<class E>
+ReferenceView<E>::ReferenceView()
+{
+}
+
+
+template<class E>
+template<class FIt>
+void ReferenceView<E>::insert(FIt first, FIt last)
+{
 	std::transform(
 			first, last,
 			std::back_inserter(*static_cast<Base *>(this)),
@@ -93,12 +114,6 @@ ReferenceView<E>::ReferenceView(FIt first, FIt last)
 				return &entry;
 			}
 		);
-}
-
-
-template<class E>
-ReferenceView<E>::ReferenceView()
-{
 }
 
 

@@ -109,6 +109,10 @@ add_executable(test_checkcomp
 	src/indexes/rtree/CheckComp.test.cpp
 )
 
+add_executable(test_referenceview
+	src/indexes/rtree/ReferenceView.test.cpp
+)
+
 add_executable(test_combinationsview
 	src/indexes/rtree/CombinationsView.test.cpp
 )
@@ -123,6 +127,7 @@ foreach(name
 		combinationsview
 		splitset
 		checkcomp
+		referenceview
 	)
 	add_test(NAME ${name} COMMAND test_${name})
 	target_link_libraries(test_${name} criterion)
