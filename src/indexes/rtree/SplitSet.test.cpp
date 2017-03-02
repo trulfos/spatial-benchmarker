@@ -32,7 +32,7 @@ std::array<std::array<unsigned, 5>, 4> orders = {{
 Test(SplitSet, basic)
 {
 	// Create the split set
-	SplitSet<E, 1> splits(
+	SplitSet<const E, 1> splits(
 			entries.begin(), entries.begin(),
 			entries.end(), entries.begin()
 		);
@@ -63,7 +63,7 @@ Test(SplitSet, basic)
 Test(SplitSet, ordering)
 {
 	// Create the split set
-	SplitSet<E, 1> splits(
+	SplitSet<const E, 1> splits(
 			entries.begin(), entries.begin(),
 			entries.end(), entries.begin()
 		);

@@ -22,14 +22,14 @@ class SplitSet
 		 * Iterator for iterating through a split set.
 		 */
 		class SplitIterator
-			: public std::iterator<std::forward_iterator_tag, value_type>
+			: public std::iterator<std::input_iterator_tag, value_type>
 		{
 			public:
 				/**
 				 * Create an iterator starting at the given dimension.
 				 */
 				SplitIterator(
-						const std::shared_ptr<std::vector<E>>& entries,
+						const ReferenceView<E> entryView,
 						unsigned dimension
 					);
 
@@ -96,7 +96,7 @@ class SplitSet
 
 	private:
 		unsigned dimension = D;
-		std::shared_ptr<std::vector<E>> entries;
+		ReferenceView<E> entryView;
 };
 
 
@@ -113,17 +113,9 @@ class SplitSet
 template<class E, unsigned m>
 template<class FIt>
 SplitSet<E, m>::SplitSet(FIt first, FIt first2, FIt last, FIt last2)
-	: SplitSet()
 {
-	entries->insert(entries->end(), first, last);
-	entries->insert(entries->end(), first2, last2);
-}
-
-
-template<class E, unsigned m>
-SplitSet<E, m>::SplitSet()
-{
-	entries = std::make_shared<std::vector<E>>();
+	entryView.insert(first, last);
+	entryView.insert(first2, last2);
 }
 
 
@@ -131,7 +123,7 @@ template<class E, unsigned m>
 typename SplitSet<E, m>::iterator SplitSet<E, m>::begin() const
 {
 	return iterator(
-			entries,
+			entryView,
 			dimension == D ? 0 : dimension
 		);
 }
@@ -141,7 +133,7 @@ template<class E, unsigned m>
 typename SplitSet<E, m>::iterator SplitSet<E, m>::end() const
 {
 	return iterator(
-			entries,
+			entryView,
 			dimension == D ? D : dimension + 1
 		);
 }
@@ -166,18 +158,16 @@ void SplitSet<E, m>::restrictTo(unsigned dimension)
 */
 template<class E, unsigned m>
 SplitSet<E, m>::SplitIterator::SplitIterator(
-		const std::shared_ptr<std::vector<E>>& entries,
+		const ReferenceView<E> entryView,
 		unsigned dimension
-	) : 
-		entryView(entries->begin(), entries->end()),
-		candidate(2 * dimension * (entries->size() - 2 * m + 1))
+	) : entryView(entryView),
+		candidate(2 * dimension * (entryView.size() - 2 * m + 1))
 {
-
 	sort();
 
 	// Create first split
 	split = std::make_shared<Split<E>>(
-			entryView,
+			this->entryView,
 			getSortOrder(),
 			getDimension(),
 			getSplitPoint()
@@ -277,6 +267,10 @@ template<class E, unsigned m>
 void SplitSet<E, m>::SplitIterator::sort()
 {
 	unsigned d = getDimension();
+
+	if (d >= D) {
+		return;
+	}
 
 	if (getSortOrder() == 0) {
 		entryView.sort([&](const E& a, const E& b) {

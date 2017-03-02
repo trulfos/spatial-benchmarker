@@ -1,7 +1,6 @@
 #pragma once
 #include <vector>
 #include <numeric>
-#include <iostream>
 #include <algorithm>
 #include <memory>
 #include "ReferenceView.hpp"
@@ -28,7 +27,6 @@ class Split
 			assert(splitPoint < entryView.size());
 
 			auto middle = entryView.begin() + splitPoint;
-
 			mbrs = {{
 					mbrSum(entryView.begin(), middle),
 					mbrSum(middle, entryView.end())
@@ -44,19 +42,23 @@ class Split
 		}
 
 
+		using rvec = std::vector<
+				typename std::remove_const<E>::type
+			>;
+
 		/**
 		 * Retrieve the entries contained in each part.
 		 *
 		 * TODO: Avoid copying the entrie view by forwarding this request to the
 		 * iterator itself (triggering a new sort or special copy operation).
 		 */
-		std::array<std::vector<E>, 2> getEntries() const
+		std::array<rvec, 2> getEntries() const
 		{
 			auto middle = entryView.begin() + splitPoint;
 
 			return {{
-					std::vector<E>(entryView.begin(), middle),
-					std::vector<E>(middle, entryView.end())
+					rvec(entryView.begin(), middle),
+					rvec(middle, entryView.end())
 				}};
 		}
 
