@@ -76,7 +76,7 @@ public:
 		double e = preScale * (i - preShift);
 		double r = scale * (exp(-e * e) - shift);
 
-		assert (r > 0.0);
+		assert (r >= 0.0);
 
 		return r;
 	}
