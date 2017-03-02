@@ -88,6 +88,8 @@ void RRStarTree<D, C, m>::insert(const DataObject& object)
 	//TODO: This is a hack
 	if (rootEntry.node->nEntries > 0) {
 		rootEntry.mbr = rootEntry.node->originalMbr();
+	} else {
+		rootEntry.mbr = M(object.getBox());
 	}
 
 	// Find leaf node
@@ -195,7 +197,7 @@ void RRStarTree<D, C, m>::redistribute(E& a, E& b, bool isLeaf)
 
 	// Restrict to single dimension for leafs
 	if (isLeaf) {
-		const Split<E>& split = *argmin(
+		const Split<E> split = *argmin(
 					splits.begin(), splits.end(),
 					[](const Split<E>& split) {
 						return split.perimeter();
