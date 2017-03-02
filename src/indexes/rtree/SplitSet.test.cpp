@@ -83,3 +83,37 @@ Test(SplitSet, ordering)
 		}
 	}
 }
+
+
+/**
+ * Test the restrictTo method.
+ */
+Test(SplitSet, restrictTo)
+{
+	// Create the split set
+	SplitSet<const E, 1> splits(
+			entries.begin(), entries.begin(),
+			entries.end(), entries.begin()
+		);
+
+	for (unsigned d = 0; d < 2; ++d) {
+		// Restrict!
+		splits.restrictTo(1 - d);
+
+		// Loop through all combinations
+		auto first = splits.begin();
+
+		for (unsigned s = 0; s < 2; ++s) {
+			for (unsigned p = 0; p < 4; ++p) {
+				cr_expect_eq(1 - d, first->getDimension());
+				cr_expect_eq(s, first->getSort());
+				cr_expect_eq(p + 1, first->getSplitPoint());
+				cr_expect(first != splits.end());
+
+				++first;
+			}
+		}
+
+		cr_expect(first == splits.end());
+	}
+}
