@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import asyncio
 import argparse
 import subprocess
 import csv
@@ -33,6 +34,11 @@ def parse_arguments():
             help='Path to build dir'
         )
 
+    parser.add_argument(
+            '--parallel', '-p', metavar='num', default=1, type=int,
+            help='Path to build dir'
+        )
+
     return parser.parse_args()
 
 
@@ -48,6 +54,39 @@ def run_make(options, index):
     subprocess.check_call(
             ['make', index]
         )
+
+
+def run_queued(futures, max_parallel=1):
+    """
+    Run a set of futures in parallel.
+    """
+    loop = asyncio.get_event_loop()
+    total = len(futures)
+    outstanding = 0
+
+    # Schedules next or stops loop if none left
+    def schedule_next(future=None):
+        nonlocal outstanding
+
+        if len(futures) > 0:
+            if future is None:
+                outstanding += 1
+
+            print("Starting task %d of %d" % (total - len(futures) + 1, total))
+
+            task = loop.create_task(futures.pop())
+            task.add_done_callback(schedule_next)
+        else:
+            outstanding -= 1
+
+            if outstanding == 0:
+                loop.stop()
+
+    # Schedule first set of tasks
+    for _ in range(0, min(max_parallel, len(futures))):
+        schedule_next()
+
+    loop.run_forever()
 
 
 def get_commit():
@@ -78,6 +117,70 @@ def get_benchmark_ids(db, index):
     return set(b['benchmark_id'] for b in benchmarks)
 
 
+async def run_benchmark(db, benchmark_id):
+    # Gather information
+    commit = get_commit()
+    benchmark = db.get_by_id('benchmark', benchmark_id)
+
+    if not benchmark:
+        print('Error: Benchmark %s does not exist' % benchmark_id)
+        return
+
+    config_id = benchmark['config_id']
+    config = configs.get_by_id(db, config_id)
+    dataset = benchmark['dataset']
+    reporters = reps.get(db, benchmark_id)
+
+    if not reporters:
+        print('No reporters to run for benchmark %d' % benchmark_id)
+        return
+
+    dimension = detect_dimension(dataset)
+    index = config['index']
+
+    # Build
+    definitions = dict(config['definitions'], D=dimension)
+    run_make(definitions, index)
+
+    # Copy lib to avoid overwriting before load
+    library = '%s_%d' % (index, config['id'])
+    os.rename('lib%s.so' % index, 'lib%s.so' % library)
+
+    # Run the benchmark (async)
+    process = await asyncio.create_subprocess_exec(
+            *(
+                    ['./bench', library, '../' + dataset] +
+                    ['%(name)s:../%(arguments)s' % r for r in reporters]
+                ),
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE
+        )
+
+    if await process.wait() != 0:
+        print("BENCHMARKER CRASHED!\nBenchmark: %s" % benchmark_id)
+
+    results = (await process.stdout.read()).decode('utf-8')
+
+    # Save results
+    run_id = db.insert(
+            'run', benchmark_id=benchmark_id, commit=commit
+        ).lastrowid
+
+    for result in zip(results.split('\n\n'), reporters):
+        results_reader = csv.DictReader(
+                result[0].split('\n'),
+                delimiter='\t'
+            )
+
+        db.insertmany(
+                'result',
+                (dict(r, run_id=run_id, reporter_id=result[1]['id'])
+                    for r in results_reader)
+            )
+
+    db.commit()
+
+
 def main():
     args = parse_arguments()
     db = Database(args.database)
@@ -91,58 +194,11 @@ def main():
     subprocess.check_call(['mkdir', '-p', build_dir])
     os.chdir(build_dir)
 
-    for benchmark_id in benchmarks:
-
-        # Gather information
-        commit = get_commit()
-        benchmark = db.get_by_id('benchmark', benchmark_id)
-
-        if not benchmark:
-            print('Error: Benchmark %s does not exist' % benchmark_id)
-            continue
-
-        config_id = benchmark['config_id']
-        config = configs.get_by_id(db, config_id)
-        dataset = benchmark['dataset']
-        reporters = reps.get(db, benchmark_id)
-
-        if not reporters:
-            print('No reporters to run for benchmark %d' % benchmark_id)
-            continue
-
-        dimension = detect_dimension(dataset)
-
-        # Build
-        definitions = dict(config['definitions'], D=dimension)
-        run_make(definitions, config['index'])
-
-        # Run the bencmark
-        results = subprocess.check_output(
-                [
-                    './bench',
-                    config['index'],
-                    '../' + dataset,
-                ] + ['%(name)s:../%(arguments)s' % r for r in reporters]
-            ).decode('utf-8')
-
-        run_id = db.insert(
-                'run', benchmark_id=benchmark_id, commit=commit
-            ).lastrowid
-
-        # Save results
-        for result in zip(results.split('\n\n'), reporters):
-            results_reader = csv.DictReader(
-                    result[0].split('\n'),
-                    delimiter='\t'
-                )
-
-            db.insertmany(
-                    'result',
-                    (dict(r, run_id=run_id, reporter_id=result[1]['id'])
-                        for r in results_reader)
-                )
-
-        db.commit()
+    # Run!
+    run_queued(
+            [run_benchmark(db, b) for b in benchmarks],
+            max_parallel=args.parallel
+        )
 
 
 main()
