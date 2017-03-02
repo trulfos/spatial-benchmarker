@@ -91,13 +91,13 @@ class Database:
                 """,
                 """
                 create view `latest_run` as
-                select * from run
-                inner join benchmark using (benchmark_id)
-                inner join config using (config_id)
+                select *, cast(substr(`dataset`, -2) as integer) `D` from `run`
+                inner join `benchmark` using (`benchmark_id`)
+                inner join `config` using (`config_id`)
                 where not exists (
-                    select * from run r
-                    where r.timestamp > run.timestamp
-                    and r.benchmark_id = run.benchmark_id
+                    select * from `run` `r`
+                    where `r`.`timestamp` > `run`.`timestamp`
+                    and `r`.`benchmark_id` = `run`.`benchmark_id`
                 )
                 """
             ]
