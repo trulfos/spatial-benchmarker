@@ -118,7 +118,7 @@ class QuadraticRtree : public Rtree<Node<D, C, Entry>>
 					combinations.begin(), combinations.end(),
 					[](std::pair<E&, E&> pair) {
 						M mbrA = pair.first.mbr;
-						M mbrB = pair.first.mbr;
+						M mbrB = pair.second.mbr;
 
 						return -(
 								(mbrA + mbrB).volume() - (
