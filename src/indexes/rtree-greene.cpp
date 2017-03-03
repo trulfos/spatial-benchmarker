@@ -1,6 +1,6 @@
 #include "interface.hpp"
 #include "configuration.hpp"
-#include "rtree/GreeneTree.hpp"
+#include "rtree/GreeneRtree.hpp"
 
 SpatialIndex * create(unsigned, unsigned long long)
 {

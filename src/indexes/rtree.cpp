@@ -1,6 +1,6 @@
 #include "interface.hpp"
 #include "configuration.hpp"
-#include "rtree/QuadraticTree.hpp"
+#include "rtree/QuadraticRtree.hpp"
 
 SpatialIndex * create(unsigned, unsigned long long)
 {
