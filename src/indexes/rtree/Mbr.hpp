@@ -298,6 +298,19 @@ class Mbr
 			return overlap;
 		}
 
+
+		/**
+		 * Calculates the wasted volume in the combined MBR if another MBR is
+		 * added to this.
+		 *
+		 * @param other Another MBR to add
+		 */
+		double waste(const Mbr& other) const
+		{
+			return (*this + other).volume() - (volume() + other.volume());
+		}
+
+
 	private:
 		Coordinate top[D];
 		Coordinate bottom[D];

@@ -199,3 +199,41 @@ Test(mbr, center)
 			"MBR should have center at y=3"
 		);
 }
+
+
+Test(mbr, waste)
+{
+	Mbr<2> a ({Point({1.0f, 3.0f}), Point({3.0f, 5.0f})}),
+		b ({Point({9.0f, 1.0f}), Point({10.0f, 2.0f})}),
+		c ({Point({3.0f, 3.0f}), Point({5.0f, 5.0f})});
+
+	cr_assert_float_eq(
+			a.waste(b),
+			31.0f,
+			EPSILON
+		);
+
+	cr_assert_float_eq(
+			a.waste(b),
+			b.waste(a),
+			EPSILON
+		);
+
+	cr_assert_float_eq(
+			a.waste(a),
+			-4.0f,
+			EPSILON
+		);
+
+	cr_assert_float_eq(
+			a.waste(c),
+			0.0f,
+			EPSILON
+		);
+
+	cr_assert_float_eq(
+			c.waste(b),
+			23.0f,
+			EPSILON
+		);
+}

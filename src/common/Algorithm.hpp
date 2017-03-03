@@ -4,8 +4,6 @@
 #include <type_traits>
 #include <tuple>
 
-#include <iostream>
-
 /**
  * Set of algorithm templates.
  */

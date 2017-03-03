@@ -5,7 +5,7 @@
 #include "Node.hpp"
 #include "Entry.hpp"
 #include "common/Algorithm.hpp"
-#include "CombinationsView.hpp"
+#include "QuadraticSeeds.hpp"
 #include <cmath>
 
 namespace Rtree
@@ -109,25 +109,9 @@ class QuadraticRtree : public Rtree<Node<D, C, Entry>>
 					b.begin(), b.end()
 				);
 
-			// Choose the two seeds by checking all combinations
-			auto combinations = makeCombinationsView(
-					entries.begin(), entries.end()
-				);
-
-			auto seeds = argmin(
-					combinations.begin(), combinations.end(),
-					[](std::pair<E&, E&> pair) {
-						M mbrA = pair.first.mbr;
-						M mbrB = pair.second.mbr;
-
-						return -(
-								(mbrA + mbrB).volume() - (
-										mbrA.volume() + mbrB.volume()
-									)
-							);
-					}
-				).getIterators();
-
+			// Generate seeds
+			using EIt = typename decltype(entries)::iterator;
+			QuadraticSeeds<EIt> seeds (entries.begin(), entries.end());
 
 			// Assign and remove seeds from entries
 			a = {*seeds.first};
@@ -156,7 +140,7 @@ class QuadraticRtree : public Rtree<Node<D, C, Entry>>
 					continue;
 				}
 
-				// Select the one waisting the most space
+				// Select the one waisting the most space if placed wrong
 				auto selected = argmin(
 						entry, entries.end(),
 						[&](const E& entry) {
@@ -167,6 +151,7 @@ class QuadraticRtree : public Rtree<Node<D, C, Entry>>
 						}
 					);
 
+				// "Remove" the entry from further consideration
 				std::iter_swap(entry, selected);
 
 				if (

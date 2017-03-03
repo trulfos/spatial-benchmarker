@@ -117,6 +117,13 @@ add_executable(test_combinationsview
 	src/indexes/rtree/CombinationsView.test.cpp
 )
 
+add_executable(test_quadraticseeds
+	src/common/Point.cpp
+	src/common/Box.cpp
+	src/common/DataObject.cpp
+	src/indexes/rtree/QuadraticSeeds.test.cpp
+)
+
 foreach(name
 		point
 		box
@@ -128,6 +135,7 @@ foreach(name
 		splitset
 		checkcomp
 		referenceview
+		quadraticseeds
 	)
 	add_test(NAME ${name} COMMAND test_${name})
 	target_link_libraries(test_${name} criterion)
