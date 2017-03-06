@@ -37,7 +37,7 @@ class SpatialIndex
 		 *
 		 * @return True if structure is valid.
 		 */
-		virtual bool checkStructure() const;
+		virtual void checkStructure() const;
 
 
 		/**

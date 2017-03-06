@@ -19,7 +19,7 @@ namespace Rtree
  * @tparam m Minimum node fill grade
  */
 template<unsigned D, unsigned C, unsigned m>
-class QuadraticRtree : public Rtree<Node<D, C, Entry>>
+class QuadraticRtree : public Rtree<Node<D, C, Entry>, m>
 {
 	public:
 
@@ -170,9 +170,6 @@ class QuadraticRtree : public Rtree<Node<D, C, Entry>>
 					a.add(*entry);
 				}
 			}
-
-			assert(a.node->nEntries >= m);
-			assert(b.node->nEntries >= m);
 		};
 };
 

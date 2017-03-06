@@ -5,6 +5,7 @@
 #include "common/Logger.hpp"
 #include "DynamicObject.hpp"
 #include "reporters/ProgressLogger.hpp"
+#include "InvalidStructureError.hpp"
 #include <iostream>
 #include <string>
 #include <tclap/CmdLine.h>
@@ -66,8 +67,11 @@ int main(int argc, char *argv[])
 		}
 
 		logger.endStart("Running index self check");
-		if (!index->checkStructure()) {
-			throw std::logic_error("Invalid index structure detected");
+		try {
+			index->checkStructure();
+		} catch (const InvalidStructureError& e) {
+			std::cerr << C::red("Invalid structure: ") << e.what() << std::endl;
+			return 1;
 		}
 
 		logger.end();

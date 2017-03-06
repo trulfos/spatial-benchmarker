@@ -173,12 +173,12 @@ class BaseEntry
 
 		const_iterator begin() const
 		{
-			return begin();
+			return node->begin();
 		};
 
 		const_iterator end() const
 		{
-			return end();
+			return node->end();
 		};
 
 };

@@ -2,6 +2,7 @@
 #include "Mbr.hpp"
 #include "common/Box.hpp"
 #include "common/Point.hpp"
+#include <iostream>
 
 using Rtree::Mbr;
 

@@ -1,6 +1,7 @@
 #pragma once
 #include "bench/LazyDataSet.hpp"
 #include "bench/SpatialIndex.hpp"
+#include "bench/InvalidStructureError.hpp"
 #include "KnnQueueEntry.hpp"
 #include "Mbr.hpp"
 #include <algorithm>
@@ -17,8 +18,9 @@ namespace Rtree
  * Does not consider disk pages, as this is memory resident anyway.
  *
  * @tparam N Node type
+ * @tparam m Minimum node children
  */
-template <class N>
+template <class N, unsigned m = 1>
 class Rtree : public ::SpatialIndex
 {
 	public:
@@ -98,31 +100,64 @@ class Rtree : public ::SpatialIndex
 
 
 		/**
-		 * Check all MBRs are contained within their parents MBR and that the
-		 * MBRs are as tight as possible.
+		 * Sanity checks on the structure of this R-tree.
+		 *
+		 * Currently checks the following:
+		 *  - All MBRs are contained within their parents MBR,
+		 *  - MBRs are as tight as possible and
+		 *  - the upper and lower number of children is respected
 		 */
-		bool checkStructure() const override
+		void checkStructure() const override
 		{
-			collectStatistics();
-			return true;
-			bool valid = true;
-
 			traverse([&](const E& entry, unsigned level) {
+				const unsigned& nEntries = entry.node->nEntries;
+
+				// These restrictions are not relevant for the root
+				if (level == 0) {
+					if (nEntries < 2) {
+						throw InvalidStructureError(
+								"The root node has less than 2 children"
+							);
+					}
+
+					return true;
+				}
+
+
+				// Check child count
+				if (nEntries > N::capacity) {
+					throw InvalidStructureError(
+							"Too many children of node"
+						);
+				}
+
+				if (nEntries < m) {
+					throw InvalidStructureError(
+							"Too few children of node"
+						);
+				}
+
+
+				// Check MBR containment
 				M mbr = entry.begin()->mbr;
 
 				for (const auto& e : entry) {
-					valid &= entry.mbr.contains(e.mbr);
+					if (!entry.mbr.contains(e.mbr)) {
+						throw InvalidStructureError(
+								"Node not contained within parent"
+							);
+					}
+
 					mbr += e.mbr;
 				}
 
 				if (mbr != entry.mbr) {
-					throw std::runtime_error("MBR not tight");
+					throw InvalidStructureError("MBR not tight");
 				}
 
-				return valid;
-			});
 
-			return valid;
+				return true;
+			});
 		}
 
 

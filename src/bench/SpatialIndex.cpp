@@ -13,10 +13,8 @@ void SpatialIndex::setBounds(const Box& bounds)
 	// NOOP
 }
 
-bool SpatialIndex::checkStructure() const
+void SpatialIndex::checkStructure() const
 {
-	// Return true by default to allow missing implementations
-	return true;
 }
 
 

@@ -23,7 +23,7 @@ namespace Rtree
  * @tparam m Minimum number of children in each node
  */
 template<unsigned D, unsigned C, unsigned m>
-class RRStarTree : public Rtree<RevisedNode<D, C, Entry>>
+class RRStarTree : public Rtree<RevisedNode<D, C, Entry>, m>
 {
 	public:
 
@@ -121,7 +121,7 @@ void RRStarTree<D, C, m>::insert(const DataObject& object)
 template<unsigned D, unsigned C, unsigned m>
 StatsCollector RRStarTree<D, C, m>::collectStatistics() const
 {
-	auto stats = Rtree<N>::collectStatistics();
+	auto stats = Rtree<N, m>::collectStatistics();
 	stats["perimeter_splits"] = perimeterSplits;
 	return stats;
 }
