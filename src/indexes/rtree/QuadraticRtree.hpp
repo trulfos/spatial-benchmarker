@@ -40,7 +40,7 @@ class QuadraticRtree : public Rtree<Node<D, C, Entry>, m>
 			std::vector<E *> path {&rootEntry};
 
 			// Find leaf node
-			for (unsigned i = 0; i < this->getHeight() - 1; i++) {
+			while (path.size() < this->getHeight()) {
 				E& e = leastVolumeEnlargement(*path.back(), entry);
 				e.mbr += entry.mbr;
 				path.push_back(&e);
@@ -80,8 +80,7 @@ class QuadraticRtree : public Rtree<Node<D, C, Entry>, m>
 		E& leastVolumeEnlargement(E& parent, const E& newEntry)
 		{
 			return *argmin(
-					parent.begin(),
-					parent.end(),
+					parent.begin(), parent.end(),
 					[&](const E& entry) {
 						return std::make_tuple(
 								entry.mbr.enlargement(newEntry.mbr),
@@ -129,13 +128,13 @@ class QuadraticRtree : public Rtree<Node<D, C, Entry>, m>
 			// Add entries
 			for (auto entry = entries.begin(); entry != entries.end(); ++entry) {
 
-				// Do we have to add all to one side?
-				if (a.node->nEntries >= C - m) {
+				// Do we have to add the remainding to one side?
+				if (a.node->nEntries >= entries.size() + 2 - m) {
 					b.add(*entry);
 					continue;
 				}
 
-				if (b.node->nEntries >= C - m) {
+				if (b.node->nEntries >= entries.size() + 2 - m) {
 					a.add(*entry);
 					continue;
 				}
