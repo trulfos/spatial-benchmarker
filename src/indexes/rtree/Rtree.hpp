@@ -31,10 +31,8 @@ class Rtree : public ::SpatialIndex
 		/**
 		 * Construct a new index from the given data set.
 		 */
-		Rtree()
+		Rtree() : height(0)
 		{
-			root = allocateNode();
-			height = 1;
 		};
 
 		virtual ~Rtree()
@@ -69,7 +67,7 @@ class Rtree : public ::SpatialIndex
 		 *
 		 * @return Pointer to root
 		 */
-		N * getRoot()
+		E& getRoot()
 		{
 			return root;
 		};
@@ -92,7 +90,7 @@ class Rtree : public ::SpatialIndex
 		/**
 		 * Add a new level by replacing the root.
 		 */
-		void addLevel(N * newRoot)
+		void addLevel(const E& newRoot)
 		{
 			root = newRoot;
 			height++;
@@ -110,33 +108,12 @@ class Rtree : public ::SpatialIndex
 		void checkStructure() const override
 		{
 			traverse([&](const E& entry, unsigned level) {
+				// Skip leafs
+				if (level == height) {
+					return false;
+				}
+
 				const unsigned& nEntries = entry.node->nEntries;
-
-				// These restrictions are not relevant for the root
-				if (level == 0) {
-					if (nEntries < 2) {
-						throw InvalidStructureError(
-								"The root node has less than 2 children"
-							);
-					}
-
-					return true;
-				}
-
-
-				// Check child count
-				if (nEntries > N::capacity) {
-					throw InvalidStructureError(
-							"Too many children of node"
-						);
-				}
-
-				if (nEntries < m) {
-					throw InvalidStructureError(
-							"Too few children of node"
-						);
-				}
-
 
 				// Check MBR containment
 				M mbr = entry.begin()->mbr;
@@ -144,7 +121,8 @@ class Rtree : public ::SpatialIndex
 				for (const auto& e : entry) {
 					if (!entry.mbr.contains(e.mbr)) {
 						throw InvalidStructureError(
-								"Node not contained within parent"
+								"Node not contained within parent at level " +
+								std::to_string(level)
 							);
 					}
 
@@ -155,6 +133,19 @@ class Rtree : public ::SpatialIndex
 					throw InvalidStructureError("MBR not tight");
 				}
 
+
+				// Check child count
+				if (nEntries > N::capacity) {
+					throw InvalidStructureError(
+							"Too many children of node"
+						);
+				}
+
+				if (nEntries < (level == 1 ? 2 : m)) {
+					throw InvalidStructureError(
+							"The root node has less than 2 children"
+						);
+				}
 
 				return true;
 			});
@@ -178,7 +169,12 @@ class Rtree : public ::SpatialIndex
 			stats["level_" + std::to_string(height)] = 1;
 
 			traverse([&](const E& entry, unsigned level) {
-				std::string key = "level_" + std::to_string(height - level - 1);
+				// Skip leafs
+				if (level == height) {
+					return false;
+				}
+
+				std::string key = "level_" + std::to_string(height - level);
 				stats[key] += entry.node->nEntries;
 				stats["nodes"]++;
 				return true;
@@ -205,15 +201,8 @@ class Rtree : public ::SpatialIndex
 		template<class F>
 		void traverse(F visitor) const
 		{
-			std::vector<std::pair<E *, unsigned>> path;
-			path.emplace_back(root->entries, root->nEntries);
-
-			E rootEntry (root, M());
-
-			// Call for root
-			if (!visitor(rootEntry, path.size() - 1)) {
-				return;
-			}
+			assert(height > 0);
+			std::vector<std::pair<const E *, unsigned>> path {{&root, 1}};
 
 			while (!path.empty()) {
 				auto& top = path.back();
@@ -224,46 +213,42 @@ class Rtree : public ::SpatialIndex
 				}
 
 				top.second -= 1;
-				E& entry = *(top.first++);
+				const E& entry = *(top.first++);
 
-				// Call visitor and push children
-				if (path.size() < height && visitor(entry, path.size() - 1)) {
+				// Call visitor
+				bool descend = visitor(entry, path.size());
+
+				// Push children (if they exist)
+				if (descend && path.size() < this->getHeight()) {
 					N * node = entry.node;
 					path.emplace_back(node->entries, node->nEntries);
 				}
 			}
 		}
 
+
 		/**
 		 * Range search with Guttman's algorithm.
 		 */
 		Results rangeSearch(const Box& box) const
 		{
+			assert(height > 0);
 			Results resultSet;
-			std::stack<std::pair<E *, unsigned>> path;
 
-			path.emplace(root->entries, root->nEntries);
-
-			while (!path.empty()) {
-				auto& top = path.top();
-
-				if (top.second == 0) {
-					path.pop();
-					continue;
-				}
-
-				top.second -= 1;
-				E& entry = *(top.first++);
-
-				if (entry.mbr.intersects(box)) {
-					if (path.size() == height) {
-						resultSet.push_back(entry.id);
-					} else {
-						N * node = entry.node;
-						path.emplace(node->entries, node->nEntries);
+			traverse([&](const E& entry, unsigned level) {
+					// Skip nodes not overlapping
+					if (!entry.mbr.intersects(box)) {
+						return false;
 					}
-				}
-			}
+
+					// Push result if leaf
+					if (level == height) {
+						resultSet.push_back(entry.id);
+						return false;
+					}
+
+					return true;
+				});
 
 			return resultSet;
 		};
@@ -275,47 +260,30 @@ class Rtree : public ::SpatialIndex
 		Results rangeSearch(const Box& box, StatsCollector& stats) const
 		{
 			Results resultSet;
-			std::stack<std::pair<E *, unsigned>> path;
 
-			path.emplace(root->entries, root->nEntries);
-
-			stats["iterations"] = 0;
-			stats["leaf_accesses"] = (height == 1 ? 1 : 0);
-			stats["node_accesses"] = 1;
-
-			while (!path.empty()) {
-				stats["iterations"]++;
-
-				auto& top = path.top();
-
-				if (top.second == 0) {
-					path.pop();
-					continue;
-				}
-
-
-				top.second -= 1;
-				E& entry = *(top.first++);
-
-				if (entry.mbr.intersects(box)) {
-					if (path.size() == height) {
-						resultSet.push_back(entry.id);
-					} else {
-						stats["node_accesses"]++;
-
-						if (path.size() == height - 1) {
-							stats["leaf_accesses"]++;
-						}
-
-						N * node = entry.node;
-						path.emplace(node->entries, node->nEntries);
+			traverse([&](const E& entry, unsigned level) {
+					// Skip nodes not overlapping
+					if (!entry.mbr.intersects(box)) {
+						return false;
 					}
-				}
 
-			}
+					// Count leaf accesses
+					if (level == height - 1) {
+						stats["leaf_accesses"]++;
+					}
+
+					// Push result if leaf
+					if (level == height) {
+						resultSet.push_back(entry.id);
+						return false;
+					}
+
+					// Count node accesses
+					stats["node_accesses"]++;
+					return true;
+				});
 
 			stats["results"] = resultSet.size();
-
 			return resultSet;
 		};
 
@@ -326,48 +294,14 @@ class Rtree : public ::SpatialIndex
 		 */
 		Results knnSearch(unsigned k, const Point& point) const
 		{
-			Results results;
-			M reference (point);
-			std::priority_queue<
-					KnnQueueEntry<N>,
-					std::vector<KnnQueueEntry<N>>,
-					std::greater<KnnQueueEntry<N>>
-				> queue;
-
-			queue.emplace(root, height, 0.0f);
-
-			while (!queue.empty() && results.size() < k) {
-				const auto& top = queue.top();
-
-				unsigned elevation = top.elevation;
-				N * node = top.node;
-				Id id = top.id;
-
-				queue.pop();
-
-				if (elevation == 0) {
-					results.push_back(id);
-				} else if (elevation == 1) {
-					for (auto& e : *node) {
-						queue.emplace(e.id, 0, e.mbr.distance2(reference));
-					}
-				} else {
-					unsigned el = elevation - 1;
-
-					for (auto& e : *node) {
-						queue.emplace(e.node, el, e.mbr.distance2(reference));
-					}
-				}
-			}
-
-			return results;
+			throw std::runtime_error("k-NN search not implemented");
 		};
 
 	private:
 
 		std::forward_list<N *> nodes;
 		unsigned height;
-		N * root;
+		E root;
 
 };
 

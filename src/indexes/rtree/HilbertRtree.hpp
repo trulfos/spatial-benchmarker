@@ -40,12 +40,26 @@ class HilbertRtree : public Rtree<Node<D, C, HilbertEntry>>
 		void insert(const DataObject& object) override
 		{
 			E entry (object, bounds);
-			E rootEntry (this->getRoot(), typename E::M());
-			std::vector<EIt> path {&rootEntry};
+
+			// No nodes - set entry as root
+			if (this->getHeight() == 0) {
+				this->addLevel(entry);
+				return;
+			}
+
+			// Single entry - add new root
+			if (this->getHeight() == 1) {
+				this->addLevel(
+						E(this->allocateNode(), {this->getRoot(), entry})
+					);
+				return;
+			}
+
+			std::vector<EIt> path {&this->getRoot()};
 
 
 			// Find leaf node
-			for (unsigned i = 0; i < this->getHeight() - 1; i++) {
+			for (unsigned i = 0; i < this->getHeight() - 2; i++) {
 				assert(std::is_sorted(
 						path.back()->begin(), path.back()->end(),
 						[](const E& a, const E& b) {
@@ -53,8 +67,8 @@ class HilbertRtree : public Rtree<Node<D, C, HilbertEntry>>
 						}
 					));
 
+				path.back()->include(entry);
 				E& e = chooseSubtree(*path.back(), entry);
-				e.include(entry);
 				path.push_back(&e);
 			}
 
@@ -68,11 +82,10 @@ class HilbertRtree : public Rtree<Node<D, C, HilbertEntry>>
 
 					// Split root
 					e = E(this->allocateNode(), {e});
-
 					E newRoot (this->allocateNode(), {**top, e});
 					redistribute(newRoot.begin(), newRoot.end());
 
-					this->addLevel(newRoot.node);
+					this->addLevel(newRoot);
 					return;
 
 				}
@@ -198,7 +211,7 @@ class HilbertRtree : public Rtree<Node<D, C, HilbertEntry>>
 
 
 		/**
-		 * Redistribute the children of the two entries between the entries.
+		 * Redistribute the children of the range of entries.
 		 *
 		 * @param start Iterator to first entry
 		 * @param end Iterator to last entry

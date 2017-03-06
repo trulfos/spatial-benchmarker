@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 #include <algorithm>
-#include "Rtree.hpp"
+#include "BasicRtree.hpp"
 #include "common/Algorithm.hpp"
 #include "Entry.hpp"
 #include "RevisedNode.hpp"
@@ -23,21 +23,13 @@ namespace Rtree
  * @tparam m Minimum number of children in each node
  */
 template<unsigned D, unsigned C, unsigned m>
-class RRStarTree : public Rtree<RevisedNode<D, C, Entry>, m>
+class RRStarTree : public BasicRtree<RevisedNode<D, C, Entry>, m>
 {
 	public:
 
 		using N = RevisedNode<D, C, Entry>;
 		using E = Entry<D, N>;
 		using M = typename E::M;
-
-		/**
-		 * Insert an entry in the tree.
-		 *
-		 * @param object DataObject to insert
-		 */
-		virtual void insert(const DataObject& object) override;
-
 
 		/**
 		 * Provide a couple of extra statistics.
@@ -55,7 +47,7 @@ class RRStarTree : public Rtree<RevisedNode<D, C, Entry>, m>
 		 * @param entry Entry to find location for
 		 * @param node Node in which the subtree should be
 		 */
-		E& chooseSubtree(E& parent, const E& newEntry);
+		E& chooseSubtree(E& parent, const E& newEntry) override;
 
 
 		/**
@@ -63,8 +55,9 @@ class RRStarTree : public Rtree<RevisedNode<D, C, Entry>, m>
 		 *
 		 * @param a The old entry (with children)
 		 * @param b The new entry (with the new child)
+		 * @param level Level of entries
 		 */
-		void redistribute(E& a, E& b, bool isLeaf = false);
+		void redistribute(E& a, E& b, unsigned level) override;
 };
 
 
@@ -77,46 +70,6 @@ class RRStarTree : public Rtree<RevisedNode<D, C, Entry>, m>
 |___|_| |_| |_| .__/|_|\___|_| |_| |_|\___|_| |_|\__\__,_|\__|_|\___/|_| |_|
               |_|                                                           
 */
-
-template<unsigned D, unsigned C, unsigned m>
-void RRStarTree<D, C, m>::insert(const DataObject& object)
-{
-	E entry (object);
-	E rootEntry (this->getRoot(), M());
-	std::vector<E *> path {&rootEntry};
-
-	//TODO: This is a hack
-	if (rootEntry.node->nEntries > 0) {
-		rootEntry.mbr = rootEntry.node->originalMbr();
-	} else {
-		rootEntry.mbr = M(object.getBox());
-	}
-
-	// Find leaf node
-	for (unsigned i = 0; i < this->getHeight() - 1; i++) {
-		E& e = chooseSubtree(*path.back(), entry);
-		e.mbr += entry.mbr;
-		path.push_back(&e);
-	}
-
-	// Split nodes bottom-up as long as necessary
-	auto top = path.rbegin();
-
-	while (top != path.rend() && (*(top))->node->isFull()) {
-		entry = E(this->allocateNode(), {entry});
-		redistribute(**top, entry, top == path.rbegin());
-		top++;
-	}
-
-	// Split root?
-	if (top == path.rend()) {
-		E newRoot (this->allocateNode(), {**path.begin(), entry});
-		this->addLevel(newRoot.node);
-	} else {
-		(*top)->add(entry);
-	}
-};
-
 
 template<unsigned D, unsigned C, unsigned m>
 StatsCollector RRStarTree<D, C, m>::collectStatistics() const
@@ -182,7 +135,7 @@ typename RRStarTree<D, C, m>::E& RRStarTree<D, C, m>::chooseSubtree(
 
 
 template<unsigned D, unsigned C, unsigned m>
-void RRStarTree<D, C, m>::redistribute(E& a, E& b, bool isLeaf)
+void RRStarTree<D, C, m>::redistribute(E& a, E& b, unsigned level)
 {
 	// Functions for evaluating splits
 	GoalFunction<E> wg (a.mbr + b.mbr);
@@ -196,7 +149,7 @@ void RRStarTree<D, C, m>::redistribute(E& a, E& b, bool isLeaf)
 
 
 	// Restrict to single dimension for leafs
-	if (isLeaf) {
+	if (level == this->getHeight() - 1) {
 		const Split<E> split = *argmin(
 					splits.begin(), splits.end(),
 					[](const Split<E>& split) {

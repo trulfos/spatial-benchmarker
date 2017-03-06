@@ -59,12 +59,25 @@ class RStarTree : public Rtree<Node<D, C, Entry>, m>
 		{
 			const unsigned& height = this->getHeight();
 
-			E rootEntry (this->getRoot(), M());
-			std::vector<E *> path {&rootEntry};
+			// No nodes - set entry as root
+			if (this->getHeight() == 0) {
+				this->addLevel(entry);
+				return;
+			}
+
+			// Single entry - add new root
+			if (this->getHeight() == 1) {
+				this->addLevel(
+						E(this->allocateNode(), {this->getRoot(), entry})
+					);
+				return;
+			}
+
+			std::vector<E *> path {&this->getRoot()};
 
 			// Find leaf node
-			for (unsigned i = 0; i < height - 1 - level; i++) {
-				E& e = chooseSubtree(*path.back(), entry, height - i);
+			for (unsigned i = 0; i < height - 2 - level; i++) {
+				E& e = chooseSubtree(*path.back(), entry, height - i - 1);
 				e.mbr += entry.mbr;
 				path.push_back(&e);
 			}
@@ -97,8 +110,9 @@ class RStarTree : public Rtree<Node<D, C, Entry>, m>
 
 			// Split root?
 			if (top == path.rend()) {
-				E newRoot (this->allocateNode(), {**path.begin(), e});
-				this->addLevel(newRoot.node);
+				this->addLevel(
+						E(this->allocateNode(), {**path.begin(), e})
+					);
 			} else {
 				(*top)->add(e);
 			}

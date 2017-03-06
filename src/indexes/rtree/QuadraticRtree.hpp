@@ -1,7 +1,7 @@
 #pragma once
 #include <cassert>
 #include <vector>
-#include "Rtree.hpp"
+#include "BasicRtree.hpp"
 #include "Node.hpp"
 #include "Entry.hpp"
 #include "common/Algorithm.hpp"
@@ -19,54 +19,11 @@ namespace Rtree
  * @tparam m Minimum node fill grade
  */
 template<unsigned D, unsigned C, unsigned m>
-class QuadraticRtree : public Rtree<Node<D, C, Entry>, m>
+class QuadraticRtree : public BasicRtree<Node<D, C, Entry>, m>
 {
-	public:
-
-		using N = Node<D, C, Entry>;
-		using E = typename N::Entry;
-		using M = typename E::M;
-
-
-		/**
-		 * Insert an entry in the tree.
-		 *
-		 * @param object DataObject to insert
-		 */
-		void insert(const DataObject& object) override
-		{
-			E entry (object);
-			E rootEntry (this->getRoot(), M());
-			std::vector<E *> path {&rootEntry};
-
-			// Find leaf node
-			while (path.size() < this->getHeight()) {
-				E& e = leastVolumeEnlargement(*path.back(), entry);
-				e.mbr += entry.mbr;
-				path.push_back(&e);
-			}
-
-			// Split nodes bottom-up as long as necessary
-			auto top = path.rbegin();
-
-			while (top != path.rend() && (*top)->node->isFull()) {
-				entry = E(this->allocateNode(), {entry});
-				redistribute(**top, entry);
-				++top;
-			}
-
-			// Split root?
-			if (top == path.rend()) {
-				E newRoot (this->allocateNode(), {**path.begin(), entry});
-				this->addLevel(newRoot.node);
-			} else {
-				(*top)->add(entry);
-			}
-		};
-
+	using E = typename Node<D, C, Entry>::Entry;
 
 	protected:
-
 
 		/**
 		 * Find the child requiring the least MBR enlargement to include the
@@ -76,8 +33,7 @@ class QuadraticRtree : public Rtree<Node<D, C, Entry>, m>
 		 * @param newEntry New entry to include
 		 * @return Entry requiring the least enlargement to include mbr
 		 */
-		template<class E>
-		E& leastVolumeEnlargement(E& parent, const E& newEntry)
+		E& chooseSubtree(E& parent, const E& newEntry) override
 		{
 			return *argmin(
 					parent.begin(), parent.end(),
@@ -98,8 +54,7 @@ class QuadraticRtree : public Rtree<Node<D, C, Entry>, m>
 		 * @param a The first entry (with children)
 		 * @param b The second entry (with children)
 		 */
-		template<class E>
-		void redistribute(E& a, E& b)
+		void redistribute(E& a, E& b, unsigned) override
 		{
 			// Contruct buffer with all entries
 			std::vector<E> entries (a.begin(), a.end());
