@@ -77,8 +77,8 @@ class RStarTree : public Rtree<Node<D, C, Entry>, m>
 
 			// Find leaf node
 			for (unsigned i = 0; i < height - 2 - level; i++) {
+				path.back()->mbr += entry.mbr;
 				E& e = chooseSubtree(*path.back(), entry, height - i - 1);
-				e.mbr += entry.mbr;
 				path.push_back(&e);
 			}
 
@@ -93,12 +93,13 @@ class RStarTree : public Rtree<Node<D, C, Entry>, m>
 					for (E& i : extractEntries(**top, e)) {
 						insert(i, top - path.rbegin(), true);
 					}
-					return;
-				}
 
-				// Adjust bounding rectangles upwards in the tree
-				for (auto n = top + 1; n != path.rend(); n++) {
-					(*n)->recalculateMbr();
+					// Adjust bounding rectangles upwards in the tree
+					for (auto n = top + 1; n != path.rend(); n++) {
+						(*n)->recalculateMbr();
+					}
+
+					return;
 				}
 
 				// Split node
