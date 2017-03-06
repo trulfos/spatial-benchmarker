@@ -20,8 +20,8 @@ def parse_arguments():
         )
 
     parser.add_argument(
-            '--index', '-i', metavar='index name',
-            help='Include all benchmarks for the given index'
+            '--index', '-i', metavar='index name', nargs='*', default=[],
+            help='Include all benchmarks for the given index(es)'
         )
 
     parser.add_argument(
@@ -194,8 +194,8 @@ def main():
     benchmarks = set(args.benchmarks)
     build_dir = args.builddir
 
-    if (args.index):
-        benchmarks |= get_benchmark_ids(db, args.index)
+    for index in args.index:
+        benchmarks |= get_benchmark_ids(db, index)
 
     # Prepare for out of source compilation
     subprocess.check_call(['mkdir', '-p', build_dir])
