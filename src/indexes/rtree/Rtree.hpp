@@ -260,6 +260,8 @@ class Rtree : public ::SpatialIndex
 		Results rangeSearch(const Box& box, StatsCollector& stats) const
 		{
 			Results resultSet;
+			stats["leaf_accesses"] = 0;
+			stats["node_accesses"] = 0;
 
 			traverse([&](const E& entry, unsigned level) {
 					// Skip nodes not overlapping
