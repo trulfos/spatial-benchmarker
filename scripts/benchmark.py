@@ -44,15 +44,18 @@ def parse_arguments():
 
 def run_make(options, index):
     subprocess.check_call(
-            ['cmake'] + ['-D%s=%s' % d for d in options.items()] + ['..']
+            ['cmake'] + ['-D%s=%s' % d for d in options.items()] + ['..'],
+            stdout=subprocess.DEVNULL
         )
 
     subprocess.check_call(
-            ['make', 'bench']
+            ['make', 'bench'],
+            stdout=subprocess.DEVNULL
         )
 
     subprocess.check_call(
-            ['make', index]
+            ['make', index],
+            stdout=subprocess.DEVNULL
         )
 
 
@@ -68,25 +71,27 @@ def run_queued(futures, max_parallel=1):
     def schedule_next(future=None):
         nonlocal outstanding
 
+        if future:
+            print("Task done.")
+            outstanding -= 1
+
         if len(futures) > 0:
-            if future is None:
-                outstanding += 1
+            outstanding += 1
 
             print("Starting task %d of %d" % (total - len(futures) + 1, total))
 
             task = loop.create_task(futures.pop())
             task.add_done_callback(schedule_next)
-        else:
-            outstanding -= 1
 
-            if outstanding == 0:
-                loop.stop()
+        if outstanding == 0:
+            loop.stop()
 
     # Schedule first set of tasks
     for _ in range(0, min(max_parallel, len(futures))):
         schedule_next()
 
     loop.run_forever()
+    loop.close()
 
 
 def get_commit():
@@ -117,7 +122,8 @@ def get_benchmark_ids(db, index):
     return set(b['benchmark_id'] for b in benchmarks)
 
 
-async def run_benchmark(db, benchmark_id):
+@asyncio.coroutine
+def run_benchmark(db, benchmark_id):
     # Gather information
     commit = get_commit()
     benchmark = db.get_by_id('benchmark', benchmark_id)
@@ -147,7 +153,7 @@ async def run_benchmark(db, benchmark_id):
     os.rename('lib%s.so' % index, 'lib%s.so' % library)
 
     # Run the benchmark (async)
-    process = await asyncio.create_subprocess_exec(
+    process = yield from asyncio.create_subprocess_exec(
             *(
                     ['./bench', library, '../' + dataset] +
                     ['%(name)s:../%(arguments)s' % r for r in reporters]
@@ -156,10 +162,11 @@ async def run_benchmark(db, benchmark_id):
             stderr=asyncio.subprocess.PIPE
         )
 
-    if await process.wait() != 0:
+    status_code = yield from process.wait()
+    if status_code != 0:
         print("BENCHMARKER CRASHED!\nBenchmark: %s" % benchmark_id)
 
-    results = (await process.stdout.read()).decode('utf-8')
+    results = (yield from process.stdout.read()).decode('utf-8')
 
     # Save results
     run_id = db.insert(
