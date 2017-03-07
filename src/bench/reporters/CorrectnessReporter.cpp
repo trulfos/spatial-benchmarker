@@ -1,5 +1,6 @@
 #include "CorrectnessReporter.hpp"
 #include "bench/Zipped.hpp"
+#include "ProgressLogger.hpp"
 #include <algorithm>
 
 CorrectnessReporter::CorrectnessReporter(
@@ -21,6 +22,8 @@ void CorrectnessReporter::run(
 		throw std::logic_error("Result and query set differ in size");
 	}
 
+	ProgressLogger progress (logStream, results.size());
+
 	unsigned i = 0;
 
 	for (auto testCase : zip(queries, results)) {
@@ -35,6 +38,7 @@ void CorrectnessReporter::run(
 		}
 
 		++i;
+		progress.increment();
 	}
 }
 
