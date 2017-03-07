@@ -84,7 +84,7 @@ std::shared_ptr<Reporter> ReporterArg::createReporter(
 
 	while (base != std::string::npos) {
 		splitPoint = value.find(':', base + 1);
-		arguments.push_back(value.substr(base + 1, splitPoint));
+		arguments.push_back(value.substr(base + 1, splitPoint - base - 1));
 		base = splitPoint;
 	}
 
