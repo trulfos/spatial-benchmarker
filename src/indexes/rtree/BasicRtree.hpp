@@ -22,53 +22,7 @@ class BasicRtree : public Rtree<N, m>
 		 *
 		 * @param object DataObject to insert
 		 */
-		void insert(const DataObject& object) override
-		{
-			E entry (object);
-
-			// No nodes - set entry as root
-			if (this->getHeight() == 0) {
-				this->addLevel(entry);
-				return;
-			}
-
-			// Single entry - add new root
-			if (this->getHeight() == 1) {
-				this->addLevel(
-						E(this->allocateNode(), {this->getRoot(), entry})
-					);
-				return;
-			}
-
-			// Dig down to destination leaf node
-			std::vector<E *> path {&this->getRoot()};
-
-			while (path.size() < this->getHeight() - 1) {
-				path.back()->mbr += entry.mbr;
-				path.push_back(
-						&chooseSubtree(*path.back(), entry)
-					);
-			}
-
-			// Split nodes bottom-up as long as necessary
-			auto top = path.rbegin();
-
-			while (top != path.rend() && (*top)->node->isFull()) {
-				entry = E(this->allocateNode(), {entry});
-				redistribute(**top, entry, top - path.rbegin());
-				++top;
-			}
-
-			// Split root?
-			if (top == path.rend()) {
-				this->addLevel(
-						E(this->allocateNode(), {this->getRoot(), entry})
-					);
-				return;
-			}
-
-			(*top)->add(entry);
-		};
+		void insert(const DataObject& object) override;
 
 	protected:
 
@@ -95,5 +49,64 @@ class BasicRtree : public Rtree<N, m>
 		virtual void redistribute(E& a, E& b, unsigned level) = 0;
 };
 
+
+/**
+
+ ___                 _                           _        _   _             
+|_ _|_ __ ___  _ __ | | ___ _ __ ___   ___ _ __ | |_ __ _| |_(_) ___  _ __  
+ | || '_ ` _ \| '_ \| |/ _ \ '_ ` _ \ / _ \ '_ \| __/ _` | __| |/ _ \| '_ \ 
+ | || | | | | | |_) | |  __/ | | | | |  __/ | | | || (_| | |_| | (_) | | | |
+|___|_| |_| |_| .__/|_|\___|_| |_| |_|\___|_| |_|\__\__,_|\__|_|\___/|_| |_|
+              |_|                                                           
+*/
+
+template<class N, unsigned m>
+void BasicRtree<N, m>::insert(const DataObject& object)
+{
+	E entry (object);
+
+	// No nodes - set entry as root
+	if (this->getHeight() == 0) {
+		this->addLevel(entry);
+		return;
+	}
+
+	// Single entry - add new root
+	if (this->getHeight() == 1) {
+		this->addLevel(
+				E(this->allocateNode(), {this->getRoot(), entry})
+			);
+		return;
+	}
+
+	// Dig down to destination leaf node
+	std::vector<E *> path {&this->getRoot()};
+
+	while (path.size() < this->getHeight() - 1) {
+		path.back()->mbr += entry.mbr;
+		path.push_back(
+				&chooseSubtree(*path.back(), entry)
+			);
+	}
+
+	// Split nodes bottom-up as long as necessary
+	auto top = path.rbegin();
+
+	while (top != path.rend() && (*top)->node->isFull()) {
+		entry = E(this->allocateNode(), {entry});
+		redistribute(**top, entry, top - path.rbegin());
+		++top;
+	}
+
+	// Split root?
+	if (top == path.rend()) {
+		this->addLevel(
+				E(this->allocateNode(), {this->getRoot(), entry})
+			);
+		return;
+	}
+
+	(*top)->add(entry);
+};
 
 }
