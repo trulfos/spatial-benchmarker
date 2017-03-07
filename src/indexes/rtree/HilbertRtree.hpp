@@ -4,7 +4,7 @@
 #include "Rtree.hpp"
 #include "Node.hpp"
 #include "HilbertEntry.hpp"
-#include "common/Algorithm.hpp"
+#include "Algorithm.hpp"
 
 namespace Rtree
 {

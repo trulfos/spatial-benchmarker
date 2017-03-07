@@ -2,7 +2,7 @@
 #include "Point.hpp"
 
 
-Test(point, difference)
+Test(Point, difference)
 {
 	Point a = {2.0f, 4.0f};
 	Point b = {100.0f, 200.0f};
@@ -23,7 +23,7 @@ Test(point, difference)
 }
 
 
-Test(point, multiplication)
+Test(Point, multiplication)
 {
 	Point a = {2.0f, 4.0f};
 	Point b = {100.0f, 200.0f};
@@ -44,7 +44,7 @@ Test(point, multiplication)
 }
 
 
-Test(point, squared)
+Test(Point, squared)
 {
 	Point a {2.0f, 5.0f};
 

@@ -1,5 +1,5 @@
 #pragma once
-#include "bench/SpatialIndex.hpp"
+#include "common/SpatialIndex.hpp"
 #include <ostream>
 
 /**

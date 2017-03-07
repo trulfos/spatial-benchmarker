@@ -2,7 +2,7 @@
 #include <set>
 #include <algorithm>
 #include <functional>
-#include "common/Algorithm.hpp"
+#include "Algorithm.hpp"
 
 /**
  * A set of entries covering a new entry (not part of the set).

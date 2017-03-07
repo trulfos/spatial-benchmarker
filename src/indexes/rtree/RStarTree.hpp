@@ -5,7 +5,7 @@
 #include <numeric>
 #include <cmath>
 #include "Rtree.hpp"
-#include "common/Algorithm.hpp"
+#include "Algorithm.hpp"
 #include "Node.hpp"
 #include "Entry.hpp"
 #include "CoveringSet.hpp"

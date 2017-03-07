@@ -3,7 +3,7 @@
 #include <vector>
 #include <set>
 #include <algorithm>
-#include "common/Algorithm.hpp"
+#include "Algorithm.hpp"
 
 /**
  * Implements the CheckComp function from the RR*-tree paper.

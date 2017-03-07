@@ -1,5 +1,5 @@
 #include "Logger.hpp"
-#include "common/Color.hpp"
+#include "Color.hpp"
 
 Logger::Logger(std::ostream& stream, const std::string& supertask)
 	: stream(stream)

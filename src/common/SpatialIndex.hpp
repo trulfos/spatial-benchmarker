@@ -1,8 +1,8 @@
 #pragma once
-#include "common/Query.hpp"
-#include "common/Results.hpp"
-#include "common/Box.hpp"
-#include "common/DataObject.hpp"
+#include "Query.hpp"
+#include "Results.hpp"
+#include "Box.hpp"
+#include "DataObject.hpp"
 #include "StatsCollector.hpp"
 
 /**

@@ -1,5 +1,5 @@
 #include <criterion/criterion.h>
-#include "common/Algorithm.hpp"
+#include "Algorithm.hpp"
 #include "CombinationsView.hpp"
 
 

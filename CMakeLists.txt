@@ -4,14 +4,13 @@ project("Spatial Indexing Framework")
 
 include_directories(src)
 
-set(optimized_flags -O3 -flto -fuse-linker-plugin -DNDEBUG)
+set(optimized_flags -O3 -flto -fuse-linker-plugin)
+set(CMAKE_EXE_LINKER_FLAGS "-O3 -flto -fuse-linker-plugin")
+set(CMAKE_MODULE_LINKER_FLAGS "-O3 -flto -fuse-linker-plugin")
 
 add_compile_options(
 	-Wall -g -std=c++11 -march=native -fvisibility=hidden
 )
-
-link_libraries(${name} -fvisibility=hidden -fopenmp optimized ${optimized_flags})
-
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
 	add_definitions(-D_GLIBCXX_DEBUG)
@@ -21,40 +20,45 @@ else()
 endif()
 
 add_library(reporters OBJECT
-	src/bench/reporters/QueryReporter.cpp
+	src/bench/reporters/CorrectnessReporter.cpp
+	src/bench/reporters/ResultSet.cpp
+	src/bench/reporters/AvgStatsReporter.cpp
 	src/bench/reporters/TotalRunTimeReporter.cpp
 	src/bench/reporters/StatsReporter.cpp
 	src/bench/reporters/RunTimeReporter.cpp
+	src/bench/reporters/StructReporter.cpp
 	src/bench/reporters/Reporter.cpp
 	src/bench/reporters/QueryRunTimeReporter.cpp
+	src/bench/reporters/QueryReporter.cpp
+	src/bench/reporters/FileHeader.cpp
 	src/bench/reporters/ProgressLogger.cpp
 	src/bench/reporters/ResultsReporter.cpp
-	src/bench/reporters/AvgStatsReporter.cpp
-	src/bench/reporters/CorrectnessReporter.cpp
-	src/bench/reporters/StructReporter.cpp
 )
+
+add_library(spatial OBJECT
+	src/common/RangeQuery.cpp
+	src/common/Box.cpp
+	src/common/DataObject.cpp
+	src/common/Query.cpp
+	src/common/SpatialIndex.cpp
+	src/common/KnnQuery.cpp
+	src/common/Point.cpp
+	src/common/Results.cpp
+)
+
+target_compile_options(spatial PRIVATE -fPIC)
 
 # Main executable
 add_executable(bench
 	src/bench/main.cpp
 	src/bench/ReporterArg.cpp
 	src/bench/QueryInputIterator.cpp
+	src/bench/Logger.cpp
 	src/bench/DataObjectInputIterator.cpp
 	src/bench/BoxInputIterator.cpp
 
 	$<TARGET_OBJECTS:reporters>
-
-	src/bench/SpatialIndex.cpp
-	src/common/Box.cpp
-	src/common/DataObject.cpp
-	src/common/FileHeader.cpp
-	src/common/KnnQuery.cpp
-	src/common/Logger.cpp
-	src/common/Point.cpp
-	src/common/Query.cpp
-	src/common/RangeQuery.cpp
-	src/common/Results.cpp
-	src/common/ResultSet.cpp
+	$<TARGET_OBJECTS:spatial>
 )
 
 target_link_libraries(bench m dl)
@@ -63,13 +67,12 @@ target_link_libraries(bench m dl)
 enable_testing()
 
 add_executable(test_point
-	src/common/Point.cpp
+	$<TARGET_OBJECTS:spatial>
 	src/common/Point.test.cpp
 )
 
 add_executable(test_box
-	src/common/Point.cpp
-	src/common/Box.cpp
+	$<TARGET_OBJECTS:spatial>
 	src/common/Box.test.cpp
 )
 
@@ -78,34 +81,27 @@ add_executable(test_knnqueueentry
 )
 
 add_executable(test_hilbertcurve
-	src/common/Point.cpp
-	src/common/Box.cpp
+	$<TARGET_OBJECTS:spatial>
 	src/indexes/rtree/HilbertCurve.test.cpp
 )
 
 add_executable(test_mbr
-	src/common/Point.cpp
-	src/common/Box.cpp
+	$<TARGET_OBJECTS:spatial>
 	src/indexes/rtree/Mbr.test.cpp
 )
 
 add_executable(test_weightingfunction
-	src/common/Point.cpp
-	src/common/Box.cpp
+	$<TARGET_OBJECTS:spatial>
 	src/indexes/rtree/WeightingFunction.test.cpp
 )
 
 add_executable(test_splitset
-	src/common/Point.cpp
-	src/common/Box.cpp
-	src/common/DataObject.cpp
+	$<TARGET_OBJECTS:spatial>
 	src/indexes/rtree/SplitSet.test.cpp
 )
 
 add_executable(test_checkcomp
-	src/common/Point.cpp
-	src/common/Box.cpp
-	src/common/DataObject.cpp
+	$<TARGET_OBJECTS:spatial>
 	src/indexes/rtree/CheckComp.test.cpp
 )
 
@@ -118,9 +114,7 @@ add_executable(test_combinationsview
 )
 
 add_executable(test_quadraticseeds
-	src/common/Point.cpp
-	src/common/Box.cpp
-	src/common/DataObject.cpp
+	$<TARGET_OBJECTS:spatial>
 	src/indexes/rtree/QuadraticSeeds.test.cpp
 )
 
@@ -143,22 +137,6 @@ foreach(name
 	# away the tests.
 endforeach()
 
-# Framework files for indexes
-add_library(common OBJECT
-	src/bench/BoxInputIterator.cpp
-	src/bench/DataObjectInputIterator.cpp
-
-	src/bench/SpatialIndex.cpp
-	src/common/Point.cpp
-	src/common/Box.cpp
-	src/common/DataObject.cpp
-	src/common/Query.cpp
-	src/common/KnnQuery.cpp
-	src/common/RangeQuery.cpp
-)
-
-target_compile_options(common PRIVATE -fPIC)
-
 
 # Add spatial indexes
 set(D 2 CACHE STRING "Dimensionality of compiled indexes")
@@ -177,7 +155,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 foreach(name rtree rtree-hilbert rtree-star rtree-rstar rtree-greene)
 	add_library(${name} MODULE EXCLUDE_FROM_ALL
 		src/indexes/${name}.cpp
-		$<TARGET_OBJECTS:common>
+		$<TARGET_OBJECTS:spatial>
 	)
 endforeach()
 
@@ -186,14 +164,14 @@ add_library(sequential MODULE EXCLUDE_FROM_ALL
 	src/indexes/sequential.cpp
 	src/indexes/scanning/Scanning.cpp
 	src/indexes/scanning/Sequential.cpp
-	$<TARGET_OBJECTS:common>
+	$<TARGET_OBJECTS:spatial>
 )
 
 add_library(parallel MODULE EXCLUDE_FROM_ALL
 	src/indexes/parallel.cpp
 	src/indexes/scanning/Scanning.cpp
 	src/indexes/scanning/Parallel.cpp
-	$<TARGET_OBJECTS:common>
+	$<TARGET_OBJECTS:spatial>
 )
 
 target_link_libraries(parallel -fopenmp)
@@ -204,6 +182,9 @@ foreach(name naive vectorized)
 	add_library(${name} MODULE EXCLUDE_FROM_ALL
 		src/indexes/${name}.cpp
 		src/indexes/${name}/SpatialIndex.cpp
-		$<TARGET_OBJECTS:common>
+		$<TARGET_OBJECTS:spatial>
 	)
 endforeach()
+
+target_link_libraries(vectorized -fopenmp)
+target_compile_options(vectorized PRIVATE -fopenmp)

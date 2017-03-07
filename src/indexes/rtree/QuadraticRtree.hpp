@@ -4,9 +4,10 @@
 #include "BasicRtree.hpp"
 #include "Node.hpp"
 #include "Entry.hpp"
-#include "common/Algorithm.hpp"
+#include "Algorithm.hpp"
 #include "QuadraticSeeds.hpp"
 #include <cmath>
+#include <iostream>
 
 namespace Rtree
 {
@@ -54,7 +55,7 @@ class QuadraticRtree : public BasicRtree<Node<D, C, Entry>, m>
 		 * @param a The first entry (with children)
 		 * @param b The second entry (with children)
 		 */
-		void redistribute(E& a, E& b, unsigned) override
+		void redistribute(E& a, E& b, unsigned level) override
 		{
 			// Contruct buffer with all entries
 			std::vector<E> entries (a.begin(), a.end());
@@ -63,9 +64,17 @@ class QuadraticRtree : public BasicRtree<Node<D, C, Entry>, m>
 					b.begin(), b.end()
 				);
 
+
 			// Generate seeds
 			using EIt = typename decltype(entries)::iterator;
 			QuadraticSeeds<EIt> seeds (entries.begin(), entries.end());
+
+
+			/*
+			if (seeds.second == entries.end() - 1) {
+				std::cout << seeds.first->mbr.waste(seeds.second->mbr) << std::endl;
+			}
+			*/
 
 			// Assign and remove seeds from entries
 			a = {*seeds.first};
@@ -73,10 +82,8 @@ class QuadraticRtree : public BasicRtree<Node<D, C, Entry>, m>
 
 			assert(seeds.first < seeds.second);
 
-			if (seeds.first != entries.end() - 2) {
-				std::iter_swap(seeds.second, entries.end() - 1);
-				std::iter_swap(seeds.first, entries.end() - 2);
-			}
+			std::iter_swap(seeds.second, entries.end() - 1);
+			std::iter_swap(seeds.first, entries.end() - 2);
 
 			entries.resize(entries.size() - 2);
 

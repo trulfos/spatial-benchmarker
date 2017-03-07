@@ -1,6 +1,6 @@
 #pragma once
 #include "bench/LazyDataSet.hpp"
-#include "bench/SpatialIndex.hpp"
+#include "common/SpatialIndex.hpp"
 #include "bench/InvalidStructureError.hpp"
 #include "KnnQueueEntry.hpp"
 #include "Mbr.hpp"

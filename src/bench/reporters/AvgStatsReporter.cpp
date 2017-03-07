@@ -1,5 +1,5 @@
 #include "AvgStatsReporter.hpp"
-#include "bench/StatsCollector.hpp"
+#include "common/StatsCollector.hpp"
 #include "ProgressLogger.hpp"
 
 void AvgStatsReporter::run(

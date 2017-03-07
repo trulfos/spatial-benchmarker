@@ -1,5 +1,5 @@
 #pragma once
-#include "common/ResultSet.hpp"
+#include "ResultSet.hpp"
 #include "QueryReporter.hpp"
 
 /**

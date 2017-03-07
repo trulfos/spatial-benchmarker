@@ -1,7 +1,7 @@
 #pragma once
 #include "common/Coordinate.hpp"
 #include "common/DataObject.hpp"
-#include "bench/SpatialIndex.hpp"
+#include "common/SpatialIndex.hpp"
 
 namespace Vectorized
 {

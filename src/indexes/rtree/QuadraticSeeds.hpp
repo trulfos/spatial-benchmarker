@@ -1,7 +1,7 @@
 #pragma once
 #include <iterator>
 #include <utility>
-#include "common/Algorithm.hpp"
+#include "Algorithm.hpp"
 #include "CombinationsView.hpp"
 
 namespace Rtree

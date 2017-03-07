@@ -1,7 +1,6 @@
 #pragma once
 #include <ostream>
 #include <string>
-#include "Color.hpp"
 
 /**
  * Simple class to log progress while doing calculations.

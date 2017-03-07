@@ -2,7 +2,7 @@
 #include <vector>
 #include <algorithm>
 #include "BasicRtree.hpp"
-#include "common/Algorithm.hpp"
+#include "Algorithm.hpp"
 #include "Entry.hpp"
 #include "RevisedNode.hpp"
 #include "WeightingFunction.hpp"
