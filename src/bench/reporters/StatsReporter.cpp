@@ -9,7 +9,6 @@ void StatsReporter::run(
 {
 	auto queries = getQuerySet();
 	ProgressLogger progress(logStream, queries.getSize());
-	unsigned i = 0;
 
 	for (auto query : queries) {
 
@@ -22,7 +21,6 @@ void StatsReporter::run(
 			addEntry(stat.first, stat.second);
 		}
 
-		++i;
 		progress.increment();
 	}
 }
