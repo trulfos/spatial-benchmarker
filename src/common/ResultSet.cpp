@@ -10,9 +10,11 @@ std::istream& operator>>(std::istream& stream, ResultSet& resultSet)
 
 	stream >> dimension >> nResults;
 
-	resultSet.resize(nResults);
-	for (unsigned i = 0; i < nResults; ++i) {
-		stream >> resultSet[i];
+	if (stream) {
+		resultSet.resize(nResults);
+		for (unsigned i = 0; i < nResults && stream; ++i) {
+			stream >> resultSet[i];
+		}
 	}
 
 	return stream;
