@@ -21,9 +21,9 @@ namespace Rtree
 template<unsigned D, unsigned C, unsigned m>
 class QuadraticRtree : public BasicRtree<Node<D, C, Entry>, m>
 {
-	using E = typename Node<D, C, Entry>::Entry;
-
 	protected:
+		using E = typename Node<D, C, Entry>::Entry;
+
 
 		/**
 		 * Find the child requiring the least MBR enlargement to include the

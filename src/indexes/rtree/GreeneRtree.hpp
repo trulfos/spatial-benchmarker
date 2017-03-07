@@ -20,14 +20,14 @@ template<unsigned D, unsigned C, unsigned m>
 class GreeneRtree : public QuadraticRtree<D, C, m> //TODO: Not logical inheritance
 {
 	protected:
+		using E = typename QuadraticRtree<D, C, m>::E;
 		/**
 		 * Redistribute the children of the two entries between the entries.
 		 *
 		 * @param a The first entry (with children)
 		 * @param b The second entry (with children)
 		 */
-		template<class E>
-		static void redistribute(E& a, E& b)
+		void redistribute(E& a, E& b, unsigned) override
 		{
 			// Contruct buffer with all entries
 			std::vector<E> entries (
