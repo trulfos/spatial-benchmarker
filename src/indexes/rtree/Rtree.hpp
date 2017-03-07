@@ -113,8 +113,6 @@ class Rtree : public ::SpatialIndex
 					return false;
 				}
 
-				const unsigned& nEntries = entry.node->nEntries;
-
 				// Check MBR containment
 				M mbr = entry.begin()->mbr;
 
@@ -135,6 +133,8 @@ class Rtree : public ::SpatialIndex
 
 
 				// Check child count
+				const unsigned& nEntries = entry.node->nEntries;
+
 				if (nEntries > N::capacity) {
 					throw InvalidStructureError(
 							"Too many children of node"
@@ -143,7 +143,7 @@ class Rtree : public ::SpatialIndex
 
 				if (nEntries < (level == 1 ? 2 : m)) {
 					throw InvalidStructureError(
-							"The root node has less than 2 children"
+							"Too few children at level " + std::to_string(level)
 						);
 				}
 
