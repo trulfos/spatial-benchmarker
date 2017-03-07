@@ -4,6 +4,7 @@
 #include "common/Coordinate.hpp"
 #include "common/Point.hpp"
 
+
 namespace Rtree
 {
 
@@ -55,7 +56,7 @@ class Mbr
 		};
 
 
-		bool operator!=(const Mbr& other)
+		bool operator!=(const Mbr& other) const
 		{
 			for (unsigned d = 0; d < D; ++d) {
 				if (top[d] != other.top[d] || bottom[d] != other.bottom[d]) {
@@ -64,6 +65,12 @@ class Mbr
 			}
 
 			return false;
+		}
+
+
+		bool operator==(const Mbr& other) const
+		{
+			return !(*this != other);
 		}
 
 		/**
@@ -316,4 +323,14 @@ class Mbr
 		Coordinate bottom[D];
 };
 
+}
+
+
+template<unsigned D>
+std::ostream& operator<<(std::ostream& stream, const Rtree::Mbr<D>& mbr)
+{
+	for (unsigned d = 0; d < D; d++) {
+		stream << mbr.getBottom()[d] << " " << mbr.getTop()[d] << '\n';
+	}
+	return stream;
 }
