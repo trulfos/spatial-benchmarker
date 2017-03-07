@@ -66,7 +66,7 @@ def main():
                         '%.2e' % results['results'],
                         '%.2e' % results['leaf_accesses']
                     ]
-            else:
+            elif reporter['name'] == 'struct':
                 h = results['height']
                 values.append('%.2e' % (results['level_2'] / 1000))
 
@@ -77,6 +77,9 @@ def main():
                                 (results['nodes'] - h)
                             )
                         )
+            elif reporter['name'] == 'correctness' and len(results):
+                print('Incorrect results detected! Go hunt more bugs.')
+                exit(1)
 
         values += [
                 run['commit'].decode('utf-8')[:6],
