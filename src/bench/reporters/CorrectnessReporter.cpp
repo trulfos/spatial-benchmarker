@@ -40,7 +40,7 @@ void CorrectnessReporter::run(
 
 void CorrectnessReporter::generate(std::ostream& stream) const
 {
-	stream << "index\tincorrect\n";
+	stream << "name\tvalue\n";
 
 	for (unsigned c : incorrect) {
 		stream << c << "\t1\n";
