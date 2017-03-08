@@ -70,12 +70,6 @@ class QuadraticRtree : public BasicRtree<Node<D, C, Entry>, m>
 			QuadraticSeeds<EIt> seeds (entries.begin(), entries.end());
 
 
-			/*
-			if (seeds.second == entries.end() - 1) {
-				std::cout << seeds.first->mbr.waste(seeds.second->mbr) << std::endl;
-			}
-			*/
-
 			// Assign and remove seeds from entries
 			a = {*seeds.first};
 			b = {*seeds.second};
@@ -115,6 +109,7 @@ class QuadraticRtree : public BasicRtree<Node<D, C, Entry>, m>
 				// "Remove" the entry from further consideration
 				std::iter_swap(entry, selected);
 
+				// Add entry to correct node
 				if (
 						std::make_tuple(
 								a.mbr.enlargement(entry->mbr),

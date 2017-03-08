@@ -83,7 +83,7 @@ CheckComp<FIt>::CheckComp(FIt first, FIt last, const E& newEntry)
 	p = first + 1;
 
 	for (auto i = first + 1; i != last - 1; ++i) {
-		double deltaOvlp = first->mbr.overlapEnlargement(
+		double deltaOvlp = first->mbr.deltaOverlap(
 				i->mbr,
 				newEntry.mbr,
 				&M::perimeter
@@ -108,7 +108,7 @@ FIt CheckComp<FIt>::operator()(FIt t)
 		}
 
 		// Calculate overlap enlargement
-		double overlap = t->mbr.overlapEnlargement(
+		double overlap = t->mbr.deltaOverlap(
 				j->mbr,
 				newEntry.mbr,
 				useVolume? &M::volume : &M::perimeter

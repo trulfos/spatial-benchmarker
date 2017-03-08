@@ -90,19 +90,17 @@ typename RRStarTree<D, C, m>::E& RRStarTree<D, C, m>::chooseSubtree(
 	CoveringSet<E> covering (parent.begin(), parent.end(), newEntry);
 
 	if (!covering.empty()) {
-		if (!covering.allHasVolume()) {
-			return covering.getMinPerimeter();
-		}
-
-		return covering.getMinVolume();
+		return covering.minBy(
+				covering.allHasVolume() ? &M::volume : &M::perimeter
+			);
 	}
 
 	// Create a sorted view of the children (by delta perimeter)
 	ReferenceView<E> children (parent.begin(), parent.end());
 
 	children.sort([&](const E& a, const E& b) {
-			return (a.mbr + newEntry.mbr).perimeter() - a.mbr.perimeter()
-				< (b.mbr + newEntry.mbr).perimeter() - b.mbr.perimeter();
+			return a.mbr.delta(&M::perimeter, newEntry.mbr)
+				< b.mbr.delta(&M::perimeter, newEntry.mbr);
 		});
 
 
@@ -111,7 +109,7 @@ typename RRStarTree<D, C, m>::E& RRStarTree<D, C, m>::chooseSubtree(
 			std::all_of(
 					children.begin() + 1, children.end(),
 					[&](const E& entry) {
-						return children[0].mbr.overlapEnlargement(
+						return children[0].mbr.deltaOverlap(
 								entry.mbr, newEntry.mbr, &M::perimeter
 							) == 0.0;
 					}

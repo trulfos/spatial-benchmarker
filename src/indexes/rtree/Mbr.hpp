@@ -275,6 +275,38 @@ class Mbr
 
 
 		/**
+		 * Calculates the delta of some function when including the given MBR.
+		 *
+		 * This follows the definition by Becmann and Seeger (2009).
+		 *
+		 * @param measure Function to calculate the delta for
+		 * @param other MBR to include
+		 * @return The difference in the function value with/without ot other
+		 */
+		double delta(double (Mbr::*measure)() const, const Mbr& other) const
+		{
+			return ((*this + other).*measure)() - (this->*measure)();
+		}
+
+
+		/**
+		 * Calculates the overlap of this MBR with another.
+		 *
+		 * @param other Other MBR
+		 * @param measure Measurement for overlap
+		 * @return Overlap as calculated by measure
+		 */
+		double overlap(double (Mbr::*measure)() const, const Mbr& other) const
+		{
+			if (!this->intersects(other)) {
+				return 0.0;
+			}
+
+			return (this->intersection(other).*measure)();
+		}
+
+
+		/**
 		 * Calculate the enlargement of the overlap between this and another MBR
 		 * if a new MBR is added to this.
 		 *
@@ -282,13 +314,13 @@ class Mbr
 		 * @param n MBR to add
 		 * @param measure Member function to use for evaluating overlap
 		 */
-		double overlapEnlargement(
+		double deltaOverlap(
 				const Mbr& other,
-				const Mbr& n,
+				const Mbr& omega,
 				double (Mbr::*measure)() const
 			) const
 		{
-			Mbr enlarged = *this + n;
+			Mbr enlarged = *this + omega;
 
 			// They may not overlap at all
 			if (!enlarged.intersects(other)) {

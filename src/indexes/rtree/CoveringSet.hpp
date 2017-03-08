@@ -48,31 +48,15 @@ class CoveringSet : std::set<E *>
 					);
 		}
 
-
-		/**
-		 * Get the element in this set with minimal perimeter
-		 */
-		E& getMinPerimeter()
+		E& minBy(double (E::M::*measure)() const)
 		{
-			return minEntry([](E * e) { return e->mbr.perimeter(); });
-		}
-
-
-		/**
-		 * Get the element in this set with minimal volume.
-		 */
-		E& getMinVolume()
-		{
-			return minEntry([](E * e) { return e->mbr.volume(); });
-		}
-
-
-	private:
-
-		template<class F>
-		E& minEntry(F eval)
-		{
-			return **argmin(this->begin(), this->end(), eval);
+			return **argmin(
+					this->begin(),
+					this->end(),
+					[&](const E * entry) {
+						return (entry->mbr.*measure)();
+					}
+				);
 		}
 
 };

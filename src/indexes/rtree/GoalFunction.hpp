@@ -35,18 +35,16 @@ class GoalFunction
 			auto mbrs = split.getMbrs();
 
 			// Return overlap (if any)
-			if (mbrs[0].intersects(mbrs[1])) {
-				const M intersection = mbrs[0].intersection(mbrs[1]);
+			double overlap = mbrs[0].overlap(
+					useVolume ? &M::volume : &M::perimeter,
+					mbrs[1]
+				);
 
-				double overlap = useVolume ?
-					intersection.volume() : intersection.perimeter();
-
-				if (overlap != 0.0) {
-					return overlap;
-				}
+			if (overlap != 0.0) {
+				return overlap;
 			}
 
-			// Otherwise, use (negative) perimeter
+			// Otherwise, use (shifted) perimeter
 			return split.perimeter() - maxPerimeter;
 		}
 
