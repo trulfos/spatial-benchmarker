@@ -82,7 +82,7 @@ CheckComp<FIt>::CheckComp(FIt first, FIt last, const E& newEntry)
 	// Determine threshold p (optimization)
 	p = first + 1;
 
-	for (auto i = first + 1; i != last - 1; ++i) {
+	for (auto i = p; i != last; ++i) {
 		double deltaOvlp = first->mbr.deltaOverlap(
 				i->mbr,
 				newEntry.mbr,
