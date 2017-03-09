@@ -54,14 +54,4 @@ class DataObject
 	private:
 		Id id = 0;
 		Box box;
-
-		/**
-		 * Custom read from istreams.
-		 */
-		friend std::istream& operator>>(std::istream&, DataObject&);
-
-		/**
-		 * Custom print to ostreams
-		 */
-		friend std::ostream& operator<<(std::ostream&, const DataObject&);
 };

@@ -91,18 +91,6 @@ bool Box::intersects(const Box& other) const
 }
 
 
-float Box::getVolume() const
-{
-	float v = 0.0f;
-
-	for (unsigned i = 0; i < getDimension(); i++) {
-		v *= points[1][i] - points[0][i];
-	}
-
-	return v;
-}
-
-
 void Box::include(const Box& other)
 {
 	for (unsigned i = 0; i < getDimension(); ++i) {
@@ -110,19 +98,3 @@ void Box::include(const Box& other)
 			points[1][i] = std::max(points[1][i], other.points[1][i]);
 	}
 }
-
-std::istream& operator>>(
-		std::istream& stream,
-		Box& box
-) {
-	//TODO
-	throw std::logic_error("Not implemented :-(");
-};
-
-std::ostream& operator<<(
-		std::ostream& stream,
-		const Box& box
-) {
-	//TODO
-	throw std::logic_error("Not implemented :-(");
-};

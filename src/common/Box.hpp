@@ -56,12 +56,6 @@ class Box
 
 
 		/**
-		 * Get the volume of this axis aligned box.
-		 */
-		float getVolume() const;
-
-
-		/**
 		 * Include the other box in this. The resulting box is the bounding box
 		 * of both boxes.
 		 */
@@ -71,6 +65,3 @@ class Box
 	private:
 		Point points[2];
 };
-
-std::istream& operator>>(std::istream& stream, Box& box);
-std::ostream& operator<<(std::ostream& stream, const Box& box);
