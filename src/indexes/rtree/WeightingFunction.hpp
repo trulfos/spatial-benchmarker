@@ -32,8 +32,9 @@ public:
 	 *
 	 * @param E Parent to base calculations on
 	 */
-	WeightingFunction(const E& parent) : parent(parent)
+	WeightingFunction(const E& parent) : parent(parent), dimension(1)
 	{
+		original = parent.node->originalMbr();
 		setDimension(0);
 	}
 
@@ -47,10 +48,14 @@ public:
 	{
 		assert(d < E::dimension);
 
+		// Skip if correct dimension is already set
+		if (dimension == d) {
+			return;
+		}
+
 		dimension = d;
 
 		const Mbr & current = parent.mbr;
-		const Mbr original = parent.node->originalMbr();
 		const double width = current.getTop()[d] - current.getBottom()[d];
 
 		// Recalculate cached values
@@ -83,7 +88,7 @@ public:
 
 private:
 	const E& parent;
-	Mbr orginial;
+	Mbr original;
 
 	// Used to cache the below result
 	unsigned dimension = 0;
