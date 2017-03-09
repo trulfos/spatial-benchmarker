@@ -47,6 +47,15 @@ class BasicRtree : public Rtree<N, m>
 		 * @param level Level of the given entries
 		 */
 		virtual void redistribute(E& a, E& b, unsigned level) = 0;
+
+	private:
+
+		/**
+		 * Split the root and include the given entry in the new root node.
+		 *
+		 * @param entry Entry to include in new root
+		 */
+		void splitRoot(const E& entry);
 };
 
 
@@ -67,16 +76,12 @@ void BasicRtree<N, m>::insert(const DataObject& object)
 
 	// No nodes - set entry as root
 	if (this->getHeight() == 0) {
-		this->addLevel(entry);
-		return;
+		return this->addLevel(entry);
 	}
 
 	// Single entry - add new root
 	if (this->getHeight() == 1) {
-		this->addLevel(
-				E(this->allocateNode(), {this->getRoot(), entry})
-			);
-		return;
+		return splitRoot(entry);
 	}
 
 	// Dig down to destination leaf node
@@ -100,13 +105,19 @@ void BasicRtree<N, m>::insert(const DataObject& object)
 
 	// Split root?
 	if (top == path.rend()) {
-		this->addLevel(
-				E(this->allocateNode(), {this->getRoot(), entry})
-			);
-		return;
+		return splitRoot(entry);
 	}
 
 	(*top)->add(entry);
 };
+
+
+template<class N, unsigned m>
+void BasicRtree<N, m>::splitRoot(const E& entry)
+{
+	this->addLevel(
+			E(this->allocateNode(), {this->getRoot(), entry})
+		);
+}
 
 }
