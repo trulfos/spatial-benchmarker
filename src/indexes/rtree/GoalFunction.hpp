@@ -22,7 +22,7 @@ class GoalFunction
 		 *
 		 * @param mbr MBR of all entries considered
 		 */
-		GoalFunction(const M& mbr)
+		explicit GoalFunction(const M& mbr)
 		{
 			double minProjection = min_value(
 					makeRangeIt(0u), makeRangeIt(E::dimension),
@@ -54,6 +54,11 @@ class GoalFunction
 			// Otherwise, use (shifted) perimeter
 			assert(split.perimeter() <= maxPerimeter);
 			return split.perimeter() - maxPerimeter;
+		}
+
+		double getMaxPerimeter()
+		{
+			return maxPerimeter;
 		}
 
 	private:

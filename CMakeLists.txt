@@ -95,6 +95,11 @@ add_executable(test_weightingfunction
 	src/indexes/rtree/WeightingFunction.test.cpp
 )
 
+add_executable(test_goalfunction
+	$<TARGET_OBJECTS:spatial>
+	src/indexes/rtree/GoalFunction.test.cpp
+)
+
 add_executable(test_splitset
 	$<TARGET_OBJECTS:spatial>
 	src/indexes/rtree/SplitSet.test.cpp
@@ -125,6 +130,7 @@ foreach(name
 		hilbertcurve
 		mbr
 		weightingfunction
+		goalfunction
 		combinationsview
 		splitset
 		checkcomp

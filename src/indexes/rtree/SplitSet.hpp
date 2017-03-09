@@ -61,6 +61,9 @@ class SplitSet
 
 		using iterator = SplitIterator;
 
+		template<class FIt>
+		SplitSet(FIt first, FIt last);
+
 		/**
 		 * Construct a set of splits from the entries in two ranges.
 		 */
@@ -109,6 +112,14 @@ class SplitSet
 |___|_| |_| |_| .__/|_|\___|_| |_| |_|\___|_| |_|\__\__,_|\__|_|\___/|_| |_|
               |_|                                                           
 */
+
+template<class E, unsigned m>
+template<class FIt>
+SplitSet<E, m>::SplitSet(FIt first, FIt last)
+{
+	entryView.insert(first, last);
+}
+
 
 template<class E, unsigned m>
 template<class FIt>
