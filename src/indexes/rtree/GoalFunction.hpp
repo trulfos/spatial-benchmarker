@@ -1,6 +1,7 @@
 #pragma once
 #include <numeric>
 #include "Split.hpp"
+#include "Algorithm.hpp"
 
 namespace Rtree
 {
@@ -21,17 +22,22 @@ class GoalFunction
 		 *
 		 * @param mbr MBR of all entries considered
 		 */
-		GoalFunction(M mbr)
+		GoalFunction(const M& mbr)
 		{
-			maxPerimeter = 2 * mbr.perimeter();
+			double minProjection = min_value(
+					makeRangeIt(0u), makeRangeIt(E::dimension),
+					[&](unsigned d) {
+						return mbr.getTop()[d] - mbr.getBottom()[d];
+					}
+				);
+
+			maxPerimeter = 2 * mbr.perimeter() - minProjection;
 		}
 
 		/**
 		 * Evaluate the goal function for the given split.
 		 */
 		double operator()(const Split<E>& split, bool useVolume) {
-
-			// Sum up MBRs (again)
 			auto mbrs = split.getMbrs();
 
 			// Return overlap (if any)
@@ -41,10 +47,12 @@ class GoalFunction
 				);
 
 			if (overlap != 0.0) {
+				assert(overlap > 0.0);
 				return overlap;
 			}
 
 			// Otherwise, use (shifted) perimeter
+			assert(split.perimeter() <= maxPerimeter);
 			return split.perimeter() - maxPerimeter;
 		}
 
