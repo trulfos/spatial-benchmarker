@@ -3,7 +3,7 @@
 #include <algorithm>
 #include "BasicRtree.hpp"
 #include "Algorithm.hpp"
-#include "Entry.hpp"
+#include "RevisedEntry.hpp"
 #include "RevisedNode.hpp"
 #include "WeightingFunction.hpp"
 #include "GoalFunction.hpp"
@@ -23,12 +23,12 @@ namespace Rtree
  * @tparam m Minimum number of children in each node
  */
 template<unsigned D, unsigned C, unsigned m>
-class RRStarTree : public BasicRtree<RevisedNode<D, C, Entry>, m>
+class RRStarTree : public BasicRtree<RevisedNode<D, C, RevisedEntry>, m>
 {
 	public:
 
-		using N = RevisedNode<D, C, Entry>;
-		using E = Entry<D, N>;
+		using N = RevisedNode<D, C, RevisedEntry>;
+		using E = RevisedEntry<D, N>;
 		using M = typename E::M;
 
 		/**
@@ -122,7 +122,7 @@ typename RRStarTree<D, C, m>::E& RRStarTree<D, C, m>::chooseSubtree(
 
 	// Construct and run CheckComp
 	using EIt = typename decltype(children)::iterator;
-	CheckComp<EIt> checkComp(children.begin(), children.end(), newEntry);
+	CheckComp<EIt> checkComp (children.begin(), children.end(), newEntry);
 
 	auto result = checkComp(children.begin());
 
@@ -194,10 +194,6 @@ void RRStarTree<D, C, m>::redistribute(E& a, E& b, unsigned level)
 	auto partitions = split.getEntries();
 	a.assign(partitions[0].begin(), partitions[0].end());
 	b.assign(partitions[1].begin(), partitions[1].end());
-
-	// Update center positions
-	a.node->captureMbr();
-	b.node->captureMbr();
 }
 
 }

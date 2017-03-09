@@ -10,6 +10,9 @@ namespace Rtree
 
 /**
  * Specialized node for the revised R*-tree.
+ *
+ * The only difference from a regular node is that the node also contains the
+ * MBR of the node from the initial entries.
  */
 template <unsigned D, unsigned C, template<unsigned, class> class Entry>
 class RevisedNode : public BaseNode<D, C, RevisedNode<D, C, Entry>, Entry>
