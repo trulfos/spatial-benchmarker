@@ -120,6 +120,37 @@ RangeIterator<T> makeRangeIt(T value)
 };
 
 
+template<typename T>
+class Range
+{
+	public:
+		using iterator = RangeIterator<T>;
+
+		Range(T first, T last) : first(first), last(last)
+		{
+		}
+
+		iterator begin()
+		{
+			return iterator(first);
+		}
+
+		iterator end()
+		{
+			return iterator(last);
+		}
+
+	private:
+		T first, last;
+};
+
+
+template<typename T>
+Range<T> makeRange(T first, T last)
+{
+	return Range<T>(first, last);
+}
+
 /**
  * Dereferencing iterator wrapper.
  *

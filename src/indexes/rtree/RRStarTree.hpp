@@ -149,15 +149,26 @@ void RRStarTree<D, C, m>::redistribute(E& a, E& b, unsigned level)
 
 
 	// Restrict to single dimension for leafs
-	if (level == this->getHeight() - 1) {
-		const Split<E> split = *argmin(
-					splits.begin(), splits.end(),
-					[](const Split<E>& split) {
-						return split.perimeter();
-					}
-				);
+	if (level == 0) {
+		auto dimensions = makeRange(0u, D);
 
-		splits.restrictTo(split.getDimension());
+		unsigned dimension = *argmin(
+				dimensions.begin(), dimensions.end(),
+				[&](unsigned d) {
+
+					splits.restrictTo(d);
+
+					return std::accumulate(
+							splits.begin(), splits.end(),
+							0.0,
+							[](double sum, const Split<E>& split) {
+								return sum + split.perimeter();
+							}
+						);
+				}
+			);
+
+		splits.restrictTo(dimension);
 	}
 
 	// Can we use volume?
