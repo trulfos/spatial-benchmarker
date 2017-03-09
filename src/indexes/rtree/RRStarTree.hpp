@@ -40,6 +40,7 @@ class RRStarTree : public BasicRtree<RevisedNode<D, C, Entry>, m>
 	private:
 
 		unsigned long long perimeterSplits = 0;
+		unsigned long long negativeGoals = 0;
 
 		/**
 		 * Find a suitable subtree for the entry.
@@ -76,6 +77,7 @@ StatsCollector RRStarTree<D, C, m>::collectStatistics() const
 {
 	auto stats = Rtree<N, m>::collectStatistics();
 	stats["perimeter_splits"] = perimeterSplits;
+	stats["negative_goals"] = negativeGoals;
 	return stats;
 }
 
@@ -183,6 +185,10 @@ void RRStarTree<D, C, m>::redistribute(E& a, E& b, unsigned level)
 				return g < 0.0 ? g * f : g / f;
 			}
 		);
+
+	if (wg(split, useVolume) < 0.0) {
+		negativeGoals++;
+	}
 
 	// Distribute entries
 	auto partitions = split.getEntries();
