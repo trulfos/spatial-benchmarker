@@ -110,16 +110,6 @@ class Mbr
 			return v;
 		};
 
-		/**
-		 * Calculate volume enlargement necessary to add the given MBR.
-		 *
-		 * @param Other MBR to include
-		 * @return Necessary enlargement
-		 */
-		double enlargement(const Mbr& other) const
-		{
-			return (*this + other).volume() - volume();
-		};
 
 		/**
 		 * Check whether this Mbr intersects another.

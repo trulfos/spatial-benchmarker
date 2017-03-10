@@ -40,6 +40,7 @@ class RRStarTree : public BasicRtree<RevisedNode<D, C, RevisedEntry>, m>
 
 	private:
 
+		// Keep track of some extra statistics
 		unsigned long long perimeterSplits = 0;
 		unsigned long long negativeGoals = 0;
 

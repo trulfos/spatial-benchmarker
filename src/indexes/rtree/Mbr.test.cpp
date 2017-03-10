@@ -240,31 +240,87 @@ Test(mbr, waste)
 }
 
 
-Test(mbr, enlargement)
+Test(mbr, delta)
 {
 	Mbr<2> a ({Point({1.0f, 1.0f}), Point({3.0f, 3.0f})}),
 		b ({Point({4.0f, 1.0f}), Point({5.0f, 2.0f})});
 
 	cr_expect_float_eq(
-			a.enlargement(b),
+			a.delta(&Mbr<2>::volume, b),
 			4.0,
 			EPSILON
 		);
 
 	cr_expect_float_eq(
-			b.enlargement(a),
+			b.delta(&Mbr<2>::volume, a),
 			7.0,
 			EPSILON
 		);
 
 	cr_expect_float_eq(
-			b.enlargement(b),
+			b.delta(&Mbr<2>::volume, b),
 			0.0,
 			EPSILON
 		);
 
 	cr_expect_float_eq(
-			a.enlargement(a),
+			a.delta(&Mbr<2>::volume, a),
+			0.0,
+			EPSILON
+		);
+}
+
+
+Test(mbr, deltaOverlap)
+{
+	Mbr<2> a ({Point {0.0f, 0.0f}, Point {2.0f, 3.0f}}),
+		b ({Point {3.0f, 1.0f}, Point {5.0f, 3.0f}}),
+		c ({Point {3.0, 1.0}, Point {4.0, 2.0}});
+
+
+	// Initially not overlapping
+	cr_expect_float_eq(
+			a.deltaOverlap(b, c, &Mbr<2>::volume),
+			2.0,
+			EPSILON
+		);
+
+	cr_expect_float_eq(
+			a.deltaOverlap(b, c, &Mbr<2>::perimeter),
+			3.0,
+			EPSILON
+		);
+
+	// Delta overlap of a with itself
+	cr_expect_float_eq(
+			a.deltaOverlap(a, c, &Mbr<2>::volume),
+			0.0,
+			EPSILON
+		);
+
+	// Delta overlap - the other way
+	cr_expect_float_eq(
+			a.deltaOverlap(c, b, &Mbr<2>::volume),
+			1.0,
+			EPSILON
+		);
+
+	// Already overlapping
+	cr_expect_float_eq(
+			(a + c).deltaOverlap(b, b, &Mbr<2>::volume),
+			2.0,
+			EPSILON
+		);
+
+	// No change in size
+	cr_expect_float_eq(
+			b.deltaOverlap(a, c, &Mbr<2>::volume),
+			0.0,
+			EPSILON
+		);
+
+	cr_expect_float_eq(
+			b.deltaOverlap(a, c, &Mbr<2>::perimeter),
 			0.0,
 			EPSILON
 		);

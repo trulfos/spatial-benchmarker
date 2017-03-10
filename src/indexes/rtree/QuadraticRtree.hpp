@@ -24,6 +24,7 @@ class QuadraticRtree : public BasicRtree<Node<D, C, Entry>, m>
 {
 	protected:
 		using E = typename Node<D, C, Entry>::Entry;
+		using M = typename E::M;
 
 
 		/**
@@ -40,7 +41,7 @@ class QuadraticRtree : public BasicRtree<Node<D, C, Entry>, m>
 					parent.begin(), parent.end(),
 					[&](const E& entry) {
 						return std::make_tuple(
-								entry.mbr.enlargement(newEntry.mbr),
+								entry.mbr.delta(&M::volume, newEntry.mbr),
 								entry.mbr.volume()
 							);
 					}
@@ -100,8 +101,8 @@ class QuadraticRtree : public BasicRtree<Node<D, C, Entry>, m>
 						entry, entries.end(),
 						[&](const E& entry) {
 							return -std::fabs(
-									a.mbr.enlargement(entry.mbr)
-									- b.mbr.enlargement(entry.mbr)
+									a.mbr.delta(&M::volume, entry.mbr)
+									- b.mbr.delta(&M::volume, entry.mbr)
 								);
 						}
 					);
@@ -112,11 +113,11 @@ class QuadraticRtree : public BasicRtree<Node<D, C, Entry>, m>
 				// Add entry to correct node
 				if (
 						std::make_tuple(
-								a.mbr.enlargement(entry->mbr),
+								a.mbr.delta(&M::volume, entry->mbr),
 								a.mbr.volume(),
 								a.node->nEntries
 							) > std::make_tuple(
-								b.mbr.enlargement(entry->mbr),
+								b.mbr.delta(&M::volume, entry->mbr),
 								b.mbr.volume(),
 								b.node->nEntries
 							)

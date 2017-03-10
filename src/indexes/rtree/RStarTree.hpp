@@ -203,7 +203,7 @@ class RStarTree : public Rtree<Node<D, C, Entry>, m>
 					parent.begin(),
 					parent.end(),
 					[&](const E& entry) {
-						return entry.mbr.enlargement(newEntry.mbr);
+						return entry.mbr.delta(&M::volume, newEntry.mbr);
 					}
 				);
 		}
@@ -248,7 +248,7 @@ class RStarTree : public Rtree<Node<D, C, Entry>, m>
 						// Resolve ties using volume enlargement
 						return std::make_tuple(
 								o,
-								entry.mbr.enlargement(newEntry.mbr)
+								entry.mbr.delta(&M::volume, newEntry.mbr)
 							);
 					}
 				);
