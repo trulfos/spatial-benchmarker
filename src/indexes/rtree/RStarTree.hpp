@@ -179,7 +179,7 @@ class RStarTree : public Rtree<Node<D, C, Entry>, m>
 			CoveringSet<E> covering (parent.begin(), parent.end(), newEntry);
 
 			if (!covering.empty()) {
-				return covering.getMinVolume();
+				return covering.minBy(&M::volume);
 			}
 
 			if (elevation != 2) {
