@@ -47,7 +47,7 @@ class RevisedNode : public BaseNode<D, C, RevisedNode<D, C, Entry>, Entry>
 		}
 
 	private:
-		unsigned centerEntries = 1;
+		unsigned centerEntries = 0;
 };
 
 }
