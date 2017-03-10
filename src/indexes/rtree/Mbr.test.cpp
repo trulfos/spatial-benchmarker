@@ -238,3 +238,34 @@ Test(mbr, waste)
 			EPSILON
 		);
 }
+
+
+Test(mbr, enlargement)
+{
+	Mbr<2> a ({Point({1.0f, 1.0f}), Point({3.0f, 3.0f})}),
+		b ({Point({4.0f, 1.0f}), Point({5.0f, 2.0f})});
+
+	cr_expect_float_eq(
+			a.enlargement(b),
+			4.0,
+			EPSILON
+		);
+
+	cr_expect_float_eq(
+			b.enlargement(a),
+			7.0,
+			EPSILON
+		);
+
+	cr_expect_float_eq(
+			b.enlargement(b),
+			0.0,
+			EPSILON
+		);
+
+	cr_expect_float_eq(
+			a.enlargement(a),
+			0.0,
+			EPSILON
+		);
+}
