@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <algorithm>
+#include "Range.hpp"
 #include "BasicRtree.hpp"
 #include "Algorithm.hpp"
 #include "RevisedEntry.hpp"
@@ -150,14 +151,13 @@ void RRStarTree<D, C, m>::redistribute(E& a, E& b, unsigned level)
 
 	// Restrict to single dimension for leafs
 	if (level == 0) {
-		auto dimensions = makeRange(0u, D);
 
 		unsigned dimension = *argmin(
-				dimensions.begin(), dimensions.end(),
+				makeRangeIt(0u), makeRangeIt(D),
 				[&](unsigned d) {
-
 					splits.restrictTo(d);
 
+					// Calculate the sum of all perimeters
 					return std::accumulate(
 							splits.begin(), splits.end(),
 							0.0,

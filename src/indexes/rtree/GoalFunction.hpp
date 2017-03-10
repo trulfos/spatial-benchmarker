@@ -1,7 +1,7 @@
 #pragma once
 #include <numeric>
 #include "Split.hpp"
-#include "Algorithm.hpp"
+#include "Range.hpp"
 
 namespace Rtree
 {
