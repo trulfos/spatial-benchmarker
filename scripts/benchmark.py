@@ -4,6 +4,7 @@ import argparse
 import subprocess
 import csv
 import os
+import sys
 from database import Database
 import configs
 import reporters as reps
@@ -37,6 +38,11 @@ def parse_arguments():
     parser.add_argument(
             '--parallel', '-p', metavar='num', default=1, type=int,
             help='Path to build dir'
+        )
+
+    parser.add_argument(
+            '--dry', '-n', action='store_true',
+            help='Print results instead of storing them to the database'
         )
 
     return parser.parse_args()
@@ -123,7 +129,7 @@ def get_benchmark_ids(db, index):
 
 
 @asyncio.coroutine
-def run_benchmark(db, benchmark_id):
+def run_benchmark(db, benchmark_id, use_stdout, dry):
     # Gather information
     commit = get_commit()
     benchmark = db.get_by_id('benchmark', benchmark_id)
@@ -145,6 +151,7 @@ def run_benchmark(db, benchmark_id):
     index = config['index']
 
     # Build
+    print("Compiling for config %d..." % config_id)
     definitions = dict(config['definitions'], D=dimension)
     run_make(definitions, index)
 
@@ -158,13 +165,16 @@ def run_benchmark(db, benchmark_id):
                     ['./bench', library, '../' + dataset] +
                     ['%(name)s:../%(arguments)s' % r for r in reporters]
                 ),
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE
+            stdout=sys.stdout if dry else asyncio.subprocess.PIPE,
+            stderr=sys.stdout if use_stdout else asyncio.subprocess.DEVNULL
         )
 
     status_code = yield from process.wait()
     if status_code != 0:
         print("BENCHMARKER CRASHED!\nBenchmark: %s" % benchmark_id)
+
+    if dry:
+        return
 
     results = (yield from process.stdout.read()).decode('utf-8')
 
@@ -201,9 +211,16 @@ def main():
     subprocess.check_call(['mkdir', '-p', build_dir])
     os.chdir(build_dir)
 
+    use_stdout = args.parallel == 1
+
+    if not use_stdout:
+        print(
+                "\nNote: Parallel runs requested => no progress bars.\n"
+            )
+
     # Run!
     run_queued(
-            [run_benchmark(db, b) for b in benchmarks],
+            [run_benchmark(db, b, use_stdout, args.dry) for b in benchmarks],
             max_parallel=args.parallel
         )
 
