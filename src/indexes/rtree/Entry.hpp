@@ -135,26 +135,6 @@ class BaseEntry
 
 
 		/**
-		 * Calculates the overlap of this entry with other entries as defined by
-		 * Beckmann et al. for the R*-tree.
-		 *
-		 * @param first Forward iterator to first element
-		 * @param last End forward iterator
-		 */
-		template<class FI>
-		float overlap(FI first, FI last) const
-		{
-			float result = 0.0f;
-
-			for (;first != last; ++first) {
-				result += mbr.intersection(first->mbr).volume();
-			}
-
-			return result;
-		}
-
-
-		/**
 		 * Return first entry in this entry's node.
 		 */
 		iterator begin()
