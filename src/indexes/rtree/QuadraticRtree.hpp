@@ -85,15 +85,15 @@ class QuadraticRtree : public BasicRtree<Node<D, C, Entry>, m>
 			// Add entries
 			for (auto entry = entries.begin(); entry != entries.end(); ++entry) {
 
-				// Do we have to add the remainding to one side?
-				if (a.node->nEntries >= entries.size() + 2 - m) {
-					b.add(*entry);
-					continue;
+				// Do we have to add the remaining to one side?
+				if (a.node->size() == entries.size() + 2 - m) {
+					b.add(entry, entries.end());
+					break;
 				}
 
-				if (b.node->nEntries >= entries.size() + 2 - m) {
-					a.add(*entry);
-					continue;
+				if (b.node->size() == entries.size() + 2 - m) {
+					a.add(entry, entries.end());
+					break;
 				}
 
 				// Select the one waisting the most space if placed wrong
@@ -115,11 +115,11 @@ class QuadraticRtree : public BasicRtree<Node<D, C, Entry>, m>
 						std::make_tuple(
 								a.mbr.delta(&M::volume, entry->mbr),
 								a.mbr.volume(),
-								a.node->nEntries
+								a.node->size()
 							) > std::make_tuple(
 								b.mbr.delta(&M::volume, entry->mbr),
 								b.mbr.volume(),
-								b.node->nEntries
+								b.node->size()
 							)
 				) {
 					b.add(*entry);

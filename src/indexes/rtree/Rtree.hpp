@@ -133,15 +133,15 @@ class Rtree : public ::SpatialIndex
 
 
 				// Check child count
-				const unsigned& nEntries = entry.node->nEntries;
+				const unsigned& size = entry.node->size();
 
-				if (nEntries > N::capacity) {
+				if (size > N::capacity) {
 					throw InvalidStructureError(
 							"Too many children of node"
 						);
 				}
 
-				if (nEntries < (level == 1 ? 2 : m)) {
+				if (size < (level == 1 ? 2 : m)) {
 					throw InvalidStructureError(
 							"Too few children at level " + std::to_string(level)
 						);
@@ -175,7 +175,7 @@ class Rtree : public ::SpatialIndex
 				}
 
 				std::string key = "level_" + std::to_string(height - level);
-				stats[key] += entry.node->nEntries;
+				stats[key] += entry.node->size();
 				stats["nodes"]++;
 				return true;
 			});
@@ -221,7 +221,7 @@ class Rtree : public ::SpatialIndex
 				// Push children (if they exist)
 				if (descend && path.size() < this->getHeight()) {
 					N * node = entry.node;
-					path.emplace_back(node->entries, node->nEntries);
+					path.emplace_back(node->entries, node->size());
 				}
 			}
 		}

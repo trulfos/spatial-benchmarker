@@ -1,6 +1,7 @@
 #pragma once
 #include "common/DataObject.hpp"
 #include "Mbr.hpp"
+#include <algorithm>
 
 namespace Rtree
 {
@@ -84,6 +85,24 @@ class BaseEntry
 
 
 		/**
+		 * Add range of entries entries.
+		 *
+		 * @param first Iterator to first
+		 * @param last Iterator past the end
+		 */
+		template<class FIt>
+		void add(FIt first, FIt last)
+		{
+			std::for_each(
+					first, last,
+					[&](const E& entry) {
+						add(entry);
+					}
+				);
+		}
+
+
+		/**
 		 * Remove all entries and add from the given iterators. This also fixes
 		 * the MBR.
 		 *
@@ -100,7 +119,7 @@ class BaseEntry
 			}
 
 			mbr = start->mbr;
-			node->nEntries = 0;
+			node->reset();
 
 			for (;start != end; ++start) {
 				static_cast<E *>(this)->add(*start);
@@ -124,7 +143,7 @@ class BaseEntry
 		 */
 		void recalculateMbr()
 		{
-			assert(node->nEntries > 0);
+			assert(node->size() > 0);
 
 			mbr = node->entries[0].mbr;
 

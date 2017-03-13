@@ -21,14 +21,13 @@ class RevisedNode : public BaseNode<D, C, RevisedNode<D, C, Entry>, Entry>
 		using E = Entry<D, RevisedNode>;
 		using M = typename E::M;
 
-
 		/**
 		 * Set the number of entries making up the original MBR to the current
 		 * number of entries in the node.
 		 */
 		void captureMbr()
 		{
-			centerEntries = this->nEntries;
+			centerEntries = this->size();
 		}
 
 
@@ -38,6 +37,7 @@ class RevisedNode : public BaseNode<D, C, RevisedNode<D, C, Entry>, Entry>
 		M originalMbr()
 		{
 			assert(centerEntries > 0);
+			assert(centerEntries <= this->size());
 
 			return std::accumulate(
 					this->entries, this->entries + centerEntries,

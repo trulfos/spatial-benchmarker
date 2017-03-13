@@ -23,9 +23,7 @@ public:
 
 	using Entry = E<D, N>;
 
-
-	//TODO: Encapsulate these
-	short unsigned nEntries = 0;
+	//TODO: Encapsulate this?
 	Entry entries[C];
 
 	/**
@@ -36,7 +34,16 @@ public:
 	bool isFull()
 	{
 		return nEntries == C;
-	};
+	}
+
+
+	/**
+	 * Find the number of entries currently present in this node.
+	 */
+	unsigned size() const
+	{
+		return nEntries;
+	}
 
 
 	/**
@@ -53,7 +60,16 @@ public:
 		}
 
 		entries[nEntries++] = entry;
-	};
+	}
+
+
+	/**
+	 * Sets the number of entries in this node to 0.
+	 */
+	void reset()
+	{
+		nEntries = 0;
+	}
 
 
 	/**
@@ -62,7 +78,7 @@ public:
 	Entry * begin()
 	{
 		return entries;
-	};
+	}
 
 	/**
 	 * Return the entry past the last entry in this node.
@@ -70,7 +86,11 @@ public:
 	Entry * end()
 	{
 		return entries + nEntries;
-	};
+	}
+
+private:
+	short unsigned nEntries = 0;
+
 };
 
 template<unsigned D, unsigned C, template<unsigned, class> class Entry>
