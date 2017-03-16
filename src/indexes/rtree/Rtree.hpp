@@ -262,6 +262,7 @@ class Rtree : public ::SpatialIndex
 			Results resultSet;
 			stats["leaf_accesses"] = 0;
 			stats["node_accesses"] = 0;
+			stats["contained"] = 0;
 
 			traverse([&](const E& entry, unsigned level) {
 					// Skip nodes not overlapping
@@ -278,6 +279,10 @@ class Rtree : public ::SpatialIndex
 					if (level == height) {
 						resultSet.push_back(entry.id);
 						return false;
+					}
+
+					if (M(box).contains(entry.mbr)) {
+						stats["contained"]++;
 					}
 
 					// Count node accesses
