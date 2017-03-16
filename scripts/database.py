@@ -90,6 +90,22 @@ class Database:
                 )
                 """,
                 """
+                create table `suite` (
+                    `suite_id` integer primary key autoincrement,
+                    `name` text not null
+                )
+                """,
+                """
+                create table `suite_benchmark` (
+                    `suite_id` integer not null,
+                    `benchmark_id` integer not null,
+
+                    foreign key (`suite_id`) references `suite` (`suite_id`),
+                    foreign key (`benchmark_id`)
+                        references `benchmark` (`benchmark_id`)
+                )
+                """,
+                """
                 create view `latest_run` as
                 select *, cast(substr(`dataset`, -2) as integer) `D` from `run`
                 inner join `benchmark` using (`benchmark_id`)

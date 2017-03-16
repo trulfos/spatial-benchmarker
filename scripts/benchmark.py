@@ -26,6 +26,11 @@ def parse_arguments():
         )
 
     parser.add_argument(
+            '--suite', '-s', metavar='suite id', nargs='*', default=[],
+            help='Include all benchmarks for the given suite(s)'
+        )
+
+    parser.add_argument(
             '--database', '-d', metavar='filename', default='results',
             help='Path to sqlite database file'
         )
@@ -204,8 +209,15 @@ def main():
     benchmarks = set(args.benchmarks)
     build_dir = args.builddir
 
+    # Collect additional benchmark ids
     for index in args.index:
         benchmarks |= get_benchmark_ids(db, index)
+
+    for suite_id in args.suite:
+        benchmarks |= set(
+                sb['benchmark_id'] for sb in
+                db.get_where('suite_benchmark', suite_id=suite_id)
+            )
 
     # Prepare for out of source compilation
     subprocess.check_call(['mkdir', '-p', build_dir])
