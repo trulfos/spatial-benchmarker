@@ -202,17 +202,18 @@ class Rtree : public ::SpatialIndex
 		void traverse(F visitor) const
 		{
 			assert(height > 0);
-			std::vector<std::pair<const E *, unsigned>> path {{&root, 1}};
+			using EIt = typename E::const_iterator;
+
+			std::vector<std::pair<EIt, EIt>> path {{&root, &root + 1}};
 
 			while (!path.empty()) {
 				auto& top = path.back();
 
-				if (top.second == 0) {
+				if (top.first == top.second) {
 					path.pop_back();
 					continue;
 				}
 
-				top.second -= 1;
 				const E& entry = *(top.first++);
 
 				// Call visitor
@@ -220,8 +221,7 @@ class Rtree : public ::SpatialIndex
 
 				// Push children (if they exist)
 				if (descend && path.size() < this->getHeight()) {
-					N * node = entry.node;
-					path.emplace_back(node->entries, node->size());
+					path.emplace_back(entry.begin(), entry.end());
 				}
 			}
 		}
