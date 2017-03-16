@@ -263,8 +263,24 @@ class Rtree : public ::SpatialIndex
 			stats["leaf_accesses"] = 0;
 			stats["node_accesses"] = 0;
 			stats["contained"] = 0;
+			stats["cut"] = 0;
+
+			stats["skipped"] = 0;
+			unsigned lastLevel = 0;
+			bool descended = false;
 
 			traverse([&](const E& entry, unsigned level) {
+					// Detect skipped nodes
+					if (level > lastLevel) {
+						descended = false;
+					} else 	if (level < lastLevel && !descended) {
+						descended = true;
+						stats["skipped"]++;
+					}
+
+					descended |= (level == height);
+					lastLevel = level;
+
 					// Skip nodes not overlapping
 					if (!entry.mbr.intersects(box)) {
 						return false;
@@ -281,14 +297,23 @@ class Rtree : public ::SpatialIndex
 						return false;
 					}
 
-					if (M(box).contains(entry.mbr)) {
+					// Check containment
+					M qMbr (box);
+					if (qMbr.contains(entry.mbr)) {
 						stats["contained"]++;
+					} else if (qMbr.intersectionComplexity(entry.mbr) == 1) {
+						stats["cut"]++;
 					}
 
 					// Count node accesses
 					stats["node_accesses"]++;
 					return true;
 				});
+
+			// Never reached the bottom after last descend?
+			if (!descended) {
+				stats["skipped"]++;
+			}
 
 			stats["results"] = resultSet.size();
 			return resultSet;

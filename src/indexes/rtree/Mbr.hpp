@@ -169,6 +169,28 @@ class Mbr
 
 
 		/**
+		 * Calculates the intersection complexity.
+		 *
+		 * The intersection complexity is the number of dimensions in which this
+		 * MBR cuts the other.
+		 *
+		 * @return Intersection complexity in the range [0, D]
+		 */
+		unsigned intersectionComplexity(const Mbr& other) const
+		{
+			unsigned complexity = 0;
+
+			for (unsigned d = 0; d < D; d++) {
+				if (top[d] < other.top[d] || bottom[d] > other.bottom[d]) {
+					complexity++;
+				}
+			}
+
+			return complexity;
+		}
+
+
+		/**
 		 * Calculate the distance between two MBRs to the power of 2.
 		 *
 		 * @param other Other MBR
