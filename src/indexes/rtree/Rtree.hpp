@@ -263,6 +263,7 @@ class Rtree : public ::SpatialIndex
 			stats["leaf_accesses"] = 0;
 			stats["node_accesses"] = 0;
 			stats["contained"] = 0;
+			stats["includes"] = 0;
 			stats["cut"] = 0;
 
 			stats["skipped"] = 0;
@@ -301,7 +302,13 @@ class Rtree : public ::SpatialIndex
 					M qMbr (box);
 					if (qMbr.contains(entry.mbr)) {
 						stats["contained"]++;
-					} else if (qMbr.intersectionComplexity(entry.mbr) == 1) {
+					}
+
+					if (entry.mbr.contains(qMbr)) {
+						stats["includes"]++;
+					}
+
+					if (qMbr.intersectionComplexity(entry.mbr) == 1) {
 						stats["cut"]++;
 					}
 
