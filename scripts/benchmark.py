@@ -10,6 +10,9 @@ import configs
 import reporters as reps
 
 
+made_configs = set()
+
+
 def parse_arguments():
     parser = argparse.ArgumentParser(
             description='Run benchmarker and insert results in SQLite file'
@@ -154,15 +157,20 @@ def run_benchmark(db, benchmark_id, use_stdout, dry):
 
     dimension = detect_dimension(dataset)
     index = config['index']
+    library = '%s_%d' % (index, config_id)
 
     # Build
-    print("Compiling for config %d..." % config_id)
-    definitions = dict(config['definitions'], D=dimension)
-    run_make(definitions, index)
+    if config_id not in made_configs:
+        print("Compiling for config %d..." % config_id)
+        definitions = dict(config['definitions'], D=dimension)
 
-    # Copy lib to avoid overwriting before load
-    library = '%s_%d' % (index, config['id'])
-    os.rename('lib%s.so' % index, 'lib%s.so' % library)
+        run_make(definitions, index)
+
+        # Copy lib to avoid overwriting before load
+        os.rename('lib%s.so' % index, 'lib%s.so' % library)
+
+        print("Config %d compiled" % config_id)
+        made_configs.add(config_id)
 
     # Run the benchmark (async)
     process = yield from asyncio.create_subprocess_exec(
