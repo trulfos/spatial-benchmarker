@@ -286,21 +286,21 @@ void SplitSet<E, m>::SplitIterator::sort()
 	if (getSortOrder() == 0) {
 		entryView.sort([&](const E& a, const E& b) {
 				return std::tie(
-						a.mbr.getTop()[d],
-						a.mbr.getBottom()[d]
+						a.getMbr().getTop()[d],
+						a.getMbr().getBottom()[d]
 					) < std::tie(
-							b.mbr.getTop()[d],
-							b.mbr.getBottom()[d]
+							b.getMbr().getTop()[d],
+							b.getMbr().getBottom()[d]
 						);
 			});
 	} else {
 		entryView.sort([&](const E& a, const E& b) {
 				return std::tie(
-						a.mbr.getBottom()[d],
-						a.mbr.getTop()[d]
+						a.getMbr().getBottom()[d],
+						a.getMbr().getTop()[d]
 					) < std::tie(
-							b.mbr.getBottom()[d],
-							b.mbr.getTop()[d]
+							b.getMbr().getBottom()[d],
+							b.getMbr().getTop()[d]
 						);
 			});
 	}

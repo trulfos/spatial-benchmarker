@@ -88,7 +88,7 @@ void BasicRtree<N, m>::insert(const DataObject& object)
 	std::vector<E *> path {&this->getRoot()};
 
 	while (path.size() < this->getHeight() - 1) {
-		path.back()->mbr += entry.mbr;
+		path.back()->getMbr() += entry.getMbr();
 		path.push_back(
 				&chooseSubtree(*path.back(), entry)
 			);
@@ -97,7 +97,7 @@ void BasicRtree<N, m>::insert(const DataObject& object)
 	// Split nodes bottom-up as long as necessary
 	auto top = path.rbegin();
 
-	while (top != path.rend() && (*top)->node->isFull()) {
+	while (top != path.rend() && (*top)->getNode()->isFull()) {
 		entry = E(this->allocateNode(), {entry});
 		redistribute(**top, entry, top - path.rbegin());
 		++top;

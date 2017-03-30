@@ -34,15 +34,15 @@ class RevisedNode : public BaseNode<D, C, RevisedNode<D, C, Entry>, Entry>
 		/**
 		 * Calculate the original MBR.
 		 */
-		M originalMbr()
+		M originalMbr() const
 		{
 			assert(centerEntries > 0);
 			assert(centerEntries <= this->size());
 
 			return std::accumulate(
 					this->entries, this->entries + centerEntries,
-					this->entries[0].mbr,
-					[](const M& s, const E& e) { return s + e.mbr; }
+					this->entries[0].getMbr(),
+					[](const M& s, const E& e) { return s + e.getMbr(); }
 				);
 		}
 

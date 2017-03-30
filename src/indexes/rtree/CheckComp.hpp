@@ -75,7 +75,7 @@ CheckComp<FIt>::CheckComp(FIt first, FIt last, const E& newEntry)
 	useVolume = std::all_of(
 			first, last,
 			[&](const E& e) {
-				return (e.mbr + newEntry.mbr).volume() != 0.0;
+				return (e.getMbr() + newEntry.getMbr()).volume() != 0.0;
 			}
 		);
 
@@ -83,9 +83,9 @@ CheckComp<FIt>::CheckComp(FIt first, FIt last, const E& newEntry)
 	p = first + 1;
 
 	for (auto i = p; i != last; ++i) {
-		double deltaOvlp = first->mbr.deltaOverlap(
-				i->mbr,
-				newEntry.mbr,
+		double deltaOvlp = first->getMbr().deltaOverlap(
+				i->getMbr(),
+				newEntry.getMbr(),
 				&M::perimeter
 			);
 
@@ -108,9 +108,9 @@ FIt CheckComp<FIt>::operator()(FIt t)
 		}
 
 		// Calculate overlap enlargement
-		double overlap = t->mbr.deltaOverlap(
-				j->mbr,
-				newEntry.mbr,
+		double overlap = t->getMbr().deltaOverlap(
+				j->getMbr(),
+				newEntry.getMbr(),
 				useVolume? &M::volume : &M::perimeter
 			);
 

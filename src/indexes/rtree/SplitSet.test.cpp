@@ -75,7 +75,7 @@ Test(SplitSet, ordering)
 		for (auto part : parts) {
 			for (auto entry : part) {
 				cr_expect_eq(
-						entry.id,
+						entry.getId(),
 						orders[2 * s.getDimension() + s.getSort()][i]
 					);
 				i++;

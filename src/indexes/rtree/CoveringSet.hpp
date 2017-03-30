@@ -19,7 +19,7 @@ class CoveringSet : std::set<E *>
 		CoveringSet(FIt first, FIt last, const E& entry)
 		{
 			while (first != last) {
-				if (first->mbr.contains(entry.mbr)) {
+				if (first->getMbr().contains(entry.getMbr())) {
 					this->insert(&*first);
 				}
 
@@ -43,7 +43,7 @@ class CoveringSet : std::set<E *>
 						this->begin(),
 						this->end(),
 						[](const E * const & entry) {
-							return entry->mbr.volume() != 0.0;
+							return entry->getMbr().volume() != 0.0;
 						}
 					);
 		}
@@ -54,7 +54,7 @@ class CoveringSet : std::set<E *>
 					this->begin(),
 					this->end(),
 					[&](const E * entry) {
-						return (entry->mbr.*measure)();
+						return (entry->getMbr().*measure)();
 					}
 				);
 		}

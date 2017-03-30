@@ -48,13 +48,13 @@ Test(QuadraticSeeds, permutations)
 	std::vector<E> permutation (entries.begin(), entries.end());
 
 	auto byId = [](const E& a, const E& b) {
-			return a.id < b.id;
+			return a.getId() < b.getId();
 		};
 
 	while (std::next_permutation(permutation.begin(), permutation.end(), byId)) {
 		QuadraticSeeds<It> seeds (entries.begin(), entries.end());
 
-		cr_assert_eq(seeds.first->id, 1);
-		cr_assert_eq(seeds.second->id, 4);
+		cr_assert_eq(seeds.first->getId(), 1);
+		cr_assert_eq(seeds.second->getId(), 4);
 	}
 }

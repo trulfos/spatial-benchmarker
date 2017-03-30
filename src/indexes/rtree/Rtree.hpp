@@ -238,26 +238,26 @@ void Rtree<N, m>::checkStructure() const
 		}
 
 		// Check MBR containment
-		M mbr = entry.begin()->mbr;
+		M mbr = entry.begin()->getMbr();
 
 		for (const auto& e : entry) {
-			if (!entry.mbr.contains(e.mbr)) {
+			if (!entry.getMbr().contains(e.getMbr())) {
 				throw InvalidStructureError(
 						"Node not contained within parent at level " +
 						std::to_string(level)
 					);
 			}
 
-			mbr += e.mbr;
+			mbr += e.getMbr();
 		}
 
-		if (mbr != entry.mbr) {
+		if (mbr != entry.getMbr()) {
 			throw InvalidStructureError("MBR not tight");
 		}
 
 
 		// Check child count
-		const unsigned& size = entry.node->size();
+		const unsigned& size = entry.getNode()->size();
 
 		if (size > N::capacity) {
 			throw InvalidStructureError(
@@ -300,7 +300,7 @@ StatsCollector Rtree<N, m>::collectStatistics() const
 		}
 
 		std::string key = "level_" + std::to_string(height - level);
-		stats[key] += entry.node->size();
+		stats[key] += entry.getNode()->size();
 		stats["nodes"]++;
 		return true;
 	});
@@ -350,13 +350,13 @@ Results Rtree<N, m>::rangeSearch(const Box& box) const
 
 	traverse([&](const E& entry, unsigned level) {
 			// Skip nodes not overlapping
-			if (!entry.mbr.intersects(box)) {
+			if (!entry.getMbr().intersects(box)) {
 				return false;
 			}
 
 			// Push result if leaf
 			if (level == height) {
-				resultSet.push_back(entry.id);
+				resultSet.push_back(entry.getId());
 				return false;
 			}
 
@@ -398,7 +398,7 @@ Results Rtree<N, m>::rangeSearch(const Box& box, StatsCollector& stats) const
 			lastLevel = level;
 
 			// Skip nodes not overlapping
-			if (!entry.mbr.intersects(box)) {
+			if (!entry.getMbr().intersects(box)) {
 				return false;
 			}
 
@@ -409,7 +409,7 @@ Results Rtree<N, m>::rangeSearch(const Box& box, StatsCollector& stats) const
 
 			// Push result if leaf
 			if (level == height) {
-				resultSet.push_back(entry.id);
+				resultSet.push_back(entry.getId());
 				return false;
 			}
 
@@ -417,26 +417,26 @@ Results Rtree<N, m>::rangeSearch(const Box& box, StatsCollector& stats) const
 			M qMbr (box);
 
 			for (unsigned d = 0; d < E::dimension; ++d) {
-				if (qMbr.getTop()[d] >= entry.mbr.getTop()[d]) {
+				if (qMbr.getTop()[d] >= entry.getMbr().getTop()[d]) {
 					stats["unnecessary_comparisons"]++;
 				}
 
-				if (qMbr.getBottom()[d] <= entry.mbr.getBottom()[d]) {
+				if (qMbr.getBottom()[d] <= entry.getMbr().getBottom()[d]) {
 					stats["unnecessary_comparisons"]++;
 				}
 
 
 			}
 
-			if (qMbr.contains(entry.mbr)) {
+			if (qMbr.contains(entry.getMbr())) {
 				stats["contained"]++;
 			}
 
-			if (entry.mbr.contains(qMbr)) {
+			if (entry.getMbr().contains(qMbr)) {
 				stats["includes"]++;
 			}
 
-			if (qMbr.intersectionComplexity(entry.mbr) == 1) {
+			if (qMbr.intersectionComplexity(entry.getMbr()) == 1) {
 				stats["cut"]++;
 			}
 

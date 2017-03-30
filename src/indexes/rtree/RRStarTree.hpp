@@ -103,8 +103,8 @@ typename RRStarTree<D, C, m>::E& RRStarTree<D, C, m>::chooseSubtree(
 	ReferenceView<E> children (parent.begin(), parent.end());
 
 	children.sort([&](const E& a, const E& b) {
-			return a.mbr.delta(&M::perimeter, newEntry.mbr)
-				< b.mbr.delta(&M::perimeter, newEntry.mbr);
+			return a.getMbr().delta(&M::perimeter, newEntry.getMbr())
+				< b.getMbr().delta(&M::perimeter, newEntry.getMbr());
 		});
 
 
@@ -113,8 +113,8 @@ typename RRStarTree<D, C, m>::E& RRStarTree<D, C, m>::chooseSubtree(
 			std::all_of(
 					children.begin() + 1, children.end(),
 					[&](const E& entry) {
-						return children[0].mbr.deltaOverlap(
-								entry.mbr, newEntry.mbr, &M::perimeter
+						return children[0].getMbr().deltaOverlap(
+								entry.getMbr(), newEntry.getMbr(), &M::perimeter
 							) == 0.0;
 					}
 				)
@@ -140,7 +140,7 @@ template<unsigned D, unsigned C, unsigned m>
 void RRStarTree<D, C, m>::redistribute(E& a, E& b, unsigned level)
 {
 	// Functions for evaluating splits
-	GoalFunction<E> wg (a.mbr + b.mbr);
+	GoalFunction<E> wg (a.getMbr() + b.getMbr());
 	WeightingFunction<E, m> wf (a);
 
 	// Construct set of possible splits

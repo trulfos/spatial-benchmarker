@@ -36,13 +36,11 @@ Test(WeightingFunction, paper_test_case)
 	using N = RevisedNode<D, M, Entry>;
 	using E = Entry<D, N>;
 
-	E parent;
+	E parent (new N(), {E(DataObject {1, Box(Point(3, 0.0), Point(3, 0.0))})});
 	E child;
-	parent.node = new N();
 
-	parent.add(E(nullptr, Box(Point(3, 0.0), Point(3, 0.0))));
-	parent.node->captureMbr();
-	parent.mbr = Box(Point {-0.5, -0.25, 0.0}, Point {0.5, 0.75, 1.0});
+	parent.getNode()->captureMbr();
+	parent.getMbr() = Box(Point {-0.5, -0.25, 0.0}, Point {0.5, 0.75, 1.0});
 
 	WeightingFunction<E, m> wf (parent);
 
@@ -67,5 +65,5 @@ Test(WeightingFunction, paper_test_case)
 		wf
 	);
 
-	delete parent.node;
+	delete parent.getNode();
 }

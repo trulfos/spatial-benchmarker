@@ -31,14 +31,12 @@ class GreeneRtree : public QuadraticRtree<D, C, m> //TODO: Not logical inheritan
 		{
 			// Contruct buffer with all entries
 			std::vector<E> entries (
-					a.node->begin(),
-					a.node->end()
+					a.begin(), a.end()
 				);
 
 			entries.insert(
 					entries.end(),
-					b.node->begin(),
-					b.node->end()
+					b.begin(), b.end()
 				);
 
 
@@ -49,7 +47,7 @@ class GreeneRtree : public QuadraticRtree<D, C, m> //TODO: Not logical inheritan
 			for (auto i = entries.begin(); i != entries.end(); ++i) {
 				for (auto j = i + 1; j != entries.end(); ++j) {
 
-					float dist = i->mbr.distance2(j->mbr);
+					float dist = i->getMbr().distance2(j->getMbr());
 
 					if (maxDist < dist) {
 						seeds[0] = i;
@@ -62,14 +60,16 @@ class GreeneRtree : public QuadraticRtree<D, C, m> //TODO: Not logical inheritan
 			assert(maxDist >= 0.0f);
 
 			// Determine split dimension
-			auto enclosing = a.mbr + b.mbr;
+			auto enclosing = a.getMbr() + b.getMbr();
 			float maxSeparation = -1.0f;
 			unsigned splitDimension = E::dimension;
 
 			for (unsigned d = 0; d < E::dimension; ++d) {
 
 				// Separation, normalized by enclosing size
-				float separation = seeds[0]->mbr.distanceAlong(d, seeds[1]->mbr)
+				float separation = seeds[0]
+					->getMbr()
+					.distanceAlong(d, seeds[1]->getMbr())
 						/ (enclosing.getTop()[d] - enclosing.getBottom()[d]);
 
 				if (maxSeparation < separation) {
@@ -87,8 +87,8 @@ class GreeneRtree : public QuadraticRtree<D, C, m> //TODO: Not logical inheritan
 					entries.begin(),
 					entries.end(),
 					[&](const E& a, const E& b) {
-						return a.mbr.getBottom()[splitDimension]
-							< b.mbr.getBottom()[splitDimension];
+						return a.getMbr().getBottom()[splitDimension]
+							< b.getMbr().getBottom()[splitDimension];
 					}
 				);
 

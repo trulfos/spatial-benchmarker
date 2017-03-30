@@ -103,9 +103,9 @@ class Split
 
 			return std::accumulate(
 					first, last,
-					first->mbr,
+					first->getMbr(),
 					[](const M& sum, const E& e) {
-						return sum + e.mbr;
+						return sum + e.getMbr();
 					}
 				);
 		}

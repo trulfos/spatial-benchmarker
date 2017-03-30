@@ -76,7 +76,7 @@ class HilbertRtree : public Rtree<Node<D, C, HilbertEntry>>
 			E e = entry;
 			auto top = path.rbegin();
 
-			while (top != path.rend() && (*top)->node->isFull()) {
+			while (top != path.rend() && (*top)->getNode()->isFull()) {
 
 				if (top + 1 == path.rend()) {
 
@@ -113,7 +113,7 @@ class HilbertRtree : public Rtree<Node<D, C, HilbertEntry>>
 				EIt newDest = argmin(
 						start, end,
 						[&](const E& entry) {
-							if (entry.node->isFull()) {
+							if (entry.getNode()->isFull()) {
 								return std::numeric_limits<unsigned>::max();
 							}
 
@@ -127,7 +127,7 @@ class HilbertRtree : public Rtree<Node<D, C, HilbertEntry>>
 				assert(newDest >= start && newDest < end);
 
 				// Insert and redistribute?
-				if (!newDest->node->isFull()) {
+				if (!newDest->getNode()->isFull()) {
 					newDest->add(e);
 
 					if (newDest < destination) {

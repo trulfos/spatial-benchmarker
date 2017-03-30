@@ -38,7 +38,7 @@ QuadraticSeeds<FIt>::QuadraticSeeds(FIt first, FIt last)
 	auto bestCombination = argmin(
 			combinations.begin(), combinations.end(),
 			[](std::pair<const E&, const E&> pair) {
-				return -pair.first.mbr.waste(pair.second.mbr);
+				return -pair.first.getMbr().waste(pair.second.getMbr());
 			}
 		);
 

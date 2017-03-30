@@ -41,8 +41,8 @@ class QuadraticRtree : public BasicRtree<Node<D, C, Entry>, m>
 					parent.begin(), parent.end(),
 					[&](const E& entry) {
 						return std::make_tuple(
-								entry.mbr.delta(&M::volume, newEntry.mbr),
-								entry.mbr.volume()
+								entry.getMbr().delta(&M::volume, newEntry.getMbr()),
+								entry.getMbr().volume()
 							);
 					}
 				);
@@ -86,12 +86,12 @@ class QuadraticRtree : public BasicRtree<Node<D, C, Entry>, m>
 			for (auto entry = entries.begin(); entry != entries.end(); ++entry) {
 
 				// Do we have to add the remaining to one side?
-				if (a.node->size() == entries.size() + 2 - m) {
+				if (a.getNode()->size() == entries.size() + 2 - m) {
 					b.add(entry, entries.end());
 					break;
 				}
 
-				if (b.node->size() == entries.size() + 2 - m) {
+				if (b.getNode()->size() == entries.size() + 2 - m) {
 					a.add(entry, entries.end());
 					break;
 				}
@@ -101,8 +101,8 @@ class QuadraticRtree : public BasicRtree<Node<D, C, Entry>, m>
 						entry, entries.end(),
 						[&](const E& entry) {
 							return -std::fabs(
-									a.mbr.delta(&M::volume, entry.mbr)
-									- b.mbr.delta(&M::volume, entry.mbr)
+									a.getMbr().delta(&M::volume, entry.getMbr())
+									- b.getMbr().delta(&M::volume, entry.getMbr())
 								);
 						}
 					);
@@ -113,13 +113,13 @@ class QuadraticRtree : public BasicRtree<Node<D, C, Entry>, m>
 				// Add entry to correct node
 				if (
 						std::make_tuple(
-								a.mbr.delta(&M::volume, entry->mbr),
-								a.mbr.volume(),
-								a.node->size()
+								a.getMbr().delta(&M::volume, entry->getMbr()),
+								a.getMbr().volume(),
+								a.getNode()->size()
 							) > std::make_tuple(
-								b.mbr.delta(&M::volume, entry->mbr),
-								b.mbr.volume(),
-								b.node->size()
+								b.getMbr().delta(&M::volume, entry->getMbr()),
+								b.getMbr().volume(),
+								b.getNode()->size()
 							)
 				) {
 					b.add(*entry);

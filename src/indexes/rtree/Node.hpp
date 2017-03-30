@@ -31,7 +31,7 @@ public:
 	 *
 	 * @return True if full
 	 */
-	bool isFull()
+	bool isFull() const
 	{
 		return nEntries == C;
 	}

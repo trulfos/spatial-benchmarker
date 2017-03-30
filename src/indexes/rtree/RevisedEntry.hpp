@@ -32,7 +32,7 @@ class RevisedEntry : public BaseEntry<D, N, RevisedEntry>
 		RevisedEntry(N * node, std::initializer_list<E> entries)
 			: Base(node, entries)
 		{
-			this->node->captureMbr();
+			this->getNode()->captureMbr();
 		}
 
 
@@ -47,7 +47,7 @@ class RevisedEntry : public BaseEntry<D, N, RevisedEntry>
 		void assign(ForwardIterator start, ForwardIterator end)
 		{
 			Base::assign(start, end);
-			this->node->captureMbr();
+			this->getNode()->captureMbr();
 		};
 
 
@@ -58,7 +58,7 @@ class RevisedEntry : public BaseEntry<D, N, RevisedEntry>
 		E& operator=(std::initializer_list<E> entries)
 		{
 			Base::operator=(entries);
-			this->node->captureMbr();
+			this->getNode()->captureMbr();
 		};
 
 };

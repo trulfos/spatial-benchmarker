@@ -77,7 +77,7 @@ class RStarTree : public Rtree<Node<D, C, Entry>, m>
 
 			// Find leaf node
 			for (unsigned i = 0; i < height - 2 - level; i++) {
-				path.back()->mbr += entry.mbr;
+				path.back()->getMbr() += entry.getMbr();
 				E& e = chooseSubtree(*path.back(), entry, height - i - 1);
 				path.push_back(&e);
 			}
@@ -86,7 +86,7 @@ class RStarTree : public Rtree<Node<D, C, Entry>, m>
 			E e = entry;
 			auto top = path.rbegin();
 
-			while (top != path.rend() && (*top)->node->isFull()) {
+			while (top != path.rend() && (*top)->getNode()->isFull()) {
 
 				// Reinsert entries
 				if (!split) {
@@ -144,8 +144,8 @@ class RStarTree : public Rtree<Node<D, C, Entry>, m>
 					entries.begin(),
 					entries.end(),
 					[&](const E& a, const E& b) {
-						return (a.mbr.center() - parent.mbr.center()).squared()
-							< (b.mbr.center() - parent.mbr.center()).squared();
+						return (a.getMbr().center() - parent.getMbr().center()).squared()
+							< (b.getMbr().center() - parent.getMbr().center()).squared();
 					}
 				);
 
@@ -203,7 +203,7 @@ class RStarTree : public Rtree<Node<D, C, Entry>, m>
 					parent.begin(),
 					parent.end(),
 					[&](const E& entry) {
-						return entry.mbr.delta(&M::volume, newEntry.mbr);
+						return entry.getMbr().delta(&M::volume, newEntry.getMbr());
 					}
 				);
 		}
@@ -221,7 +221,7 @@ class RStarTree : public Rtree<Node<D, C, Entry>, m>
 			std::sort(
 					parent.begin(), parent.end(),
 					[](const E& a, const E&b) {
-						return a.mbr.volume() < b.mbr.volume();
+						return a.getMbr().volume() < b.getMbr().volume();
 					}
 				);
 
@@ -229,8 +229,8 @@ class RStarTree : public Rtree<Node<D, C, Entry>, m>
 			auto noEnlargementEntry = std::find_if(
 					parent.begin(), parent.end(),
 					[&](const E& e) {
-						return overlap(parent, e.mbr + newEntry.mbr)
-								== overlap(parent, e.mbr);
+						return overlap(parent, e.getMbr() + newEntry.getMbr())
+								== overlap(parent, e.getMbr());
 					}
 				);
 
@@ -242,13 +242,13 @@ class RStarTree : public Rtree<Node<D, C, Entry>, m>
 					parent.begin(), parent.end(),
 					[&](const E& entry) {
 						// Calculate overlap enlargement
-						double o = overlap(parent, entry.mbr + newEntry.mbr)
-							- overlap(parent, entry.mbr);
+						double o = overlap(parent, entry.getMbr() + newEntry.getMbr())
+							- overlap(parent, entry.getMbr());
 
 						// Resolve ties using volume enlargement
 						return std::make_tuple(
 								o,
-								entry.mbr.delta(&M::volume, newEntry.mbr)
+								entry.getMbr().delta(&M::volume, newEntry.getMbr())
 							);
 					}
 				);
@@ -271,8 +271,8 @@ class RStarTree : public Rtree<Node<D, C, Entry>, m>
 					parent.end(),
 					0.0f,
 					[&](const double& sum, const E& entry) {
-						return mbr.intersects(entry.mbr) ?
-							sum + mbr.intersection(entry.mbr).volume() : sum;
+						return mbr.intersects(entry.getMbr()) ?
+							sum + mbr.intersection(entry.getMbr()).volume() : sum;
 					}
 				);
 		};
@@ -311,14 +311,14 @@ class RStarTree : public Rtree<Node<D, C, Entry>, m>
 						entries.end(),
 						[&](const E& a, const E& b) {
 
-							auto diff = a.mbr.getBottom()[d]
-								- b.mbr.getBottom()[d];
+							auto diff = a.getMbr().getBottom()[d]
+								- b.getMbr().getBottom()[d];
 
 							if (diff == 0.0f) {
 								return diff < 0.0f;
 							}
 
-							return a.mbr.getTop()[d] < b.mbr.getTop()[d];
+							return a.getMbr().getTop()[d] < b.getMbr().getTop()[d];
 						}
 					);
 
@@ -329,15 +329,15 @@ class RStarTree : public Rtree<Node<D, C, Entry>, m>
 				for (unsigned s = m; s < entries.size() - m; ++s) {
 
 					// Generate MBRs for the two groups
-					auto mbrA = entries.front().mbr;
-					auto mbrB = entries.back().mbr;
+					auto mbrA = entries.front().getMbr();
+					auto mbrB = entries.back().getMbr();
 
 					for (unsigned i = 1; i < s; ++i) {
-						mbrA += entries[i].mbr;
+						mbrA += entries[i].getMbr();
 					}
 
 					for (unsigned i = s; i < entries.size() - 1; ++i) {
-						mbrB += entries[i].mbr;
+						mbrB += entries[i].getMbr();
 					}
 
 					// Calculate perimeter (for dimension selection)
@@ -377,15 +377,15 @@ class RStarTree : public Rtree<Node<D, C, Entry>, m>
 					entries.end(),
 					[&](const E& a, const E& b) {
 
-						auto diff = a.mbr.getBottom()[bestDimension]
-							- b.mbr.getBottom()[bestDimension];
+						auto diff = a.getMbr().getBottom()[bestDimension]
+							- b.getMbr().getBottom()[bestDimension];
 
 						if (diff == 0.0f) {
 							return diff < 0.0f;
 						}
 
-						return a.mbr.getTop()[bestDimension]
-							< b.mbr.getTop()[bestDimension];
+						return a.getMbr().getTop()[bestDimension]
+							< b.getMbr().getTop()[bestDimension];
 					}
 				);
 

@@ -80,9 +80,9 @@ Test(GoalFunction, simple)
 	GoalFunction<E> gf (
 			std::accumulate(
 					entries.begin(), entries.end(),
-					entries[0].mbr,
+					entries[0].getMbr(),
 					[](const M& sum, const E& entry) {
-						return sum + entry.mbr;
+						return sum + entry.getMbr();
 					}
 				)
 		);

@@ -34,7 +34,7 @@ public:
 	 */
 	WeightingFunction(const E& parent) : parent(parent), dimension(1)
 	{
-		original = parent.node->originalMbr();
+		original = parent.getNode()->originalMbr();
 		setDimension(0);
 	}
 
@@ -55,7 +55,7 @@ public:
 
 		dimension = d;
 
-		const Mbr & current = parent.mbr;
+		const Mbr & current = parent.getMbr();
 		const double width = current.getTop()[d] - current.getBottom()[d];
 
 		// Recalculate cached values

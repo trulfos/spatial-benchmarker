@@ -41,7 +41,7 @@ Test(CheckComp, example_from_paper)
 			entries.end()
 		);
 
-	cr_expect_eq(checkComp.minOverlap().id, 3);
+	cr_expect_eq(checkComp.minOverlap().getId(), 3);
 	cr_expect_eq(checkComp.getP() - entries.begin(), 4);
 
 	cr_expect_eq(

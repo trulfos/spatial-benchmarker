@@ -29,13 +29,6 @@ class BaseEntry
 
 		static constexpr unsigned dimension = D;
 
-		union {
-			Id id;
-			N * node;
-		};
-
-		M mbr;
-
 		/**
 		 * Default constructor.
 		 */
@@ -65,10 +58,53 @@ class BaseEntry
 		 * Create a new entry from the given object.
 		 */
 		BaseEntry(const DataObject& object)
+			: id(object.getId()), mbr(object.getBox())
 		{
-			id = object.getId();
-			mbr = object.getBox();
 		};
+
+
+		/**
+		 * Retrieve the MBR of this entry.
+		 *
+		 * @return MBR of this entry.
+		 */
+		const M& getMbr() const
+		{
+			return mbr;
+		}
+
+		M& getMbr()
+		{
+			return mbr;
+		}
+
+
+		/**
+		 * Retrieve the ID of this entry.
+		 */
+		const Id& getId() const
+		{
+			return id;
+		}
+
+		Id& getId()
+		{
+			return id;
+		}
+
+
+		/**
+		 * Retrieve the node of this entry
+		 */
+		const Node * getNode() const
+		{
+			return node;
+		}
+
+		Node * getNode()
+		{
+			return node;
+		}
 
 		
 		/**
@@ -179,6 +215,15 @@ class BaseEntry
 		{
 			return node->end();
 		};
+
+
+	private:
+		union {
+			Id id;
+			N * node;
+		};
+
+		M mbr;
 
 };
 

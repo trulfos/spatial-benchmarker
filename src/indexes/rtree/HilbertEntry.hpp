@@ -60,7 +60,7 @@ class HilbertEntry : public BaseEntry<D, N, HilbertEntry>
 		HilbertEntry(const DataObject& object, const Box& bounds)
 			: Entry(object)
 		{
-			hilbertValue = HC::map(this->mbr.center(), bounds);
+			hilbertValue = HC::map(this->getMbr().center(), bounds);
 		};
 
 
@@ -97,7 +97,7 @@ class HilbertEntry : public BaseEntry<D, N, HilbertEntry>
 		 */
 		void include(const HilbertEntry& entry)
 		{
-			this->mbr += entry.mbr;
+			this->getMbr() += entry.getMbr();
 			hilbertValue = std::max(hilbertValue, entry.hilbertValue);
 		}
 
