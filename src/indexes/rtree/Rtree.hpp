@@ -265,6 +265,7 @@ class Rtree : public ::SpatialIndex
 			stats["contained"] = 0;
 			stats["includes"] = 0;
 			stats["cut"] = 0;
+			stats["unnecessary_comparisons"] = 0;
 
 			stats["skipped"] = 0;
 			unsigned lastLevel = 0;
@@ -298,8 +299,21 @@ class Rtree : public ::SpatialIndex
 						return false;
 					}
 
-					// Check containment
+					// Count skippable checks
 					M qMbr (box);
+
+					for (unsigned d = 0; d < E::dimension; ++d) {
+						if (qMbr.getTop()[d] >= entry.mbr.getTop()[d]) {
+							stats["unnecessary_comparisons"]++;
+						}
+
+						if (qMbr.getBottom()[d] <= entry.mbr.getBottom()[d]) {
+							stats["unnecessary_comparisons"]++;
+						}
+
+
+					}
+
 					if (qMbr.contains(entry.mbr)) {
 						stats["contained"]++;
 					}
