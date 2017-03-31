@@ -34,7 +34,7 @@ public:
 	 */
 	WeightingFunction(const E& parent) : parent(parent), dimension(1)
 	{
-		original = parent.getNode()->originalMbr();
+		original = parent.getPlugin().originalMbr(parent);
 		setDimension(0);
 	}
 

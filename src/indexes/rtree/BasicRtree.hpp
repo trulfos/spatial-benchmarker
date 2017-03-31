@@ -14,7 +14,7 @@ namespace Rtree
 template<class N, unsigned m>
 class BasicRtree : public Rtree<N, m>
 {
-	using E = typename N::Entry;
+	using E = typename N::E;
 
 	public:
 		/**

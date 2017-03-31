@@ -11,7 +11,6 @@
 
 namespace Rtree
 {
-
 /**
  * R-tree with quadratic split as suggested by Guttman.
  *
@@ -20,10 +19,10 @@ namespace Rtree
  * @tparam m Minimum node fill grade
  */
 template<unsigned D, unsigned C, unsigned m>
-class QuadraticRtree : public BasicRtree<Node<D, C, Entry>, m>
+class QuadraticRtree : public BasicRtree<Node<D, C>, m>
 {
 	protected:
-		using E = typename Node<D, C, Entry>::Entry;
+		using E = typename Node<D, C>::E;
 		using M = typename E::M;
 
 

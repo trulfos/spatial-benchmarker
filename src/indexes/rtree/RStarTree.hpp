@@ -23,14 +23,14 @@ namespace Rtree
  * @tparam p Number of entries to reinsert (on first overflow)
  */
 template<unsigned D, unsigned C, unsigned m, unsigned p>
-class RStarTree : public Rtree<Node<D, C, Entry>, m>
+class RStarTree : public Rtree<Node<D, C>, m>
 {
 	static_assert(p < C, "p must be less than the node capacity C");
 	static_assert(2 * m <= C, "Min node fill level must be below capacity / 2");
 
 	public:
-		using N = Node<D, C, Entry>;
-		using E = typename N::Entry;
+		using N = Node<D, C>;
+		using E = typename N::E;
 		using M = typename E::M;
 
 
@@ -96,7 +96,7 @@ class RStarTree : public Rtree<Node<D, C, Entry>, m>
 
 					// Adjust bounding rectangles upwards in the tree
 					for (auto n = top + 1; n != path.rend(); n++) {
-						(*n)->recalculateMbr();
+						(*n)->recalculate();
 					}
 
 					return;

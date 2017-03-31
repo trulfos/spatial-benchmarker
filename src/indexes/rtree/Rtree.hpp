@@ -24,7 +24,7 @@ template <class N, unsigned m = 1>
 class Rtree : public ::SpatialIndex
 {
 	public:
-		using E = typename N::Entry;
+		using E = typename N::E;
 		using M = typename E::M;
 		using Id = DataObject::Id;
 

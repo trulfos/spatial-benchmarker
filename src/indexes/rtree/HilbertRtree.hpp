@@ -3,7 +3,7 @@
 #include <vector>
 #include "Rtree.hpp"
 #include "Node.hpp"
-#include "HilbertEntry.hpp"
+#include "HilbertEntryPlugin.hpp"
 #include "Algorithm.hpp"
 
 namespace Rtree
@@ -18,12 +18,12 @@ namespace Rtree
  * @tparam s Node split strategy s:(s+1)
  */
 template<unsigned D, unsigned C, unsigned s>
-class HilbertRtree : public Rtree<Node<D, C, HilbertEntry>>
+class HilbertRtree : public Rtree<Node<D, C, HilbertEntryPlugin>>
 {
 	public:
 
-		using N = Node<D, C, HilbertEntry>;
-		using E = typename N::Entry;
+		using N = Node<D, C, HilbertEntryPlugin>;
+		using E = typename N::E;
 		using EIt = typename E::iterator;
 
 
@@ -63,7 +63,7 @@ class HilbertRtree : public Rtree<Node<D, C, HilbertEntry>>
 				assert(std::is_sorted(
 						path.back()->begin(), path.back()->end(),
 						[](const E& a, const E& b) {
-							return a.getHilbertValue() < b.getHilbertValue();
+							return a.getPlugin().getHilbertValue() < b.getPlugin().getHilbertValue();
 						}
 					));
 
@@ -169,9 +169,9 @@ class HilbertRtree : public Rtree<Node<D, C, HilbertEntry>>
 			// Binary search through the children
 			auto it = std::upper_bound(
 					parent.begin(), parent.end(),
-					entry.getHilbertValue(),
+					entry.getPlugin().getHilbertValue(),
 					[](const std::uint64_t hv, const E& e) {
-						return hv < e.getHilbertValue();
+						return hv < e.getPlugin().getHilbertValue();
 					}
 				);
 
@@ -235,7 +235,7 @@ class HilbertRtree : public Rtree<Node<D, C, HilbertEntry>>
 			std::sort(
 					entries.begin(), entries.end(),
 					[](const E& a, const E& b) {
-						return a.getHilbertValue() < b.getHilbertValue();
+						return a.getPlugin().getHilbertValue() < b.getPlugin().getHilbertValue();
 					}
 				);
 

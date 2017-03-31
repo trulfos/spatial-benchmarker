@@ -1,7 +1,8 @@
 #include <criterion/criterion.h>
 #include "WeightingFunction.hpp"
-#include "RevisedNode.hpp"
+#include "Node.hpp"
 #include "Entry.hpp"
+#include "CapturingEntryPlugin.hpp"
 #include "common/Point.hpp"
 #include "common/Box.hpp"
 
@@ -33,13 +34,15 @@ void checkAll(const std::array<double, 11>& correct, unsigned d, WF& wf)
  */
 Test(WeightingFunction, paper_test_case)
 {
-	using N = RevisedNode<D, M, Entry>;
-	using E = Entry<D, N>;
+	using N = Node<D, M, CapturingEntryPlugin>;
+	using E = typename N::E;
 
-	E parent (new N(), {E(DataObject {1, Box(Point(3, 0.0), Point(3, 0.0))})});
+	E parent (
+			new N(),
+			{E(DataObject{1, Box(Point(3, 0.0), Point(3, 0.0))})}
+		);
 	E child;
 
-	parent.getNode()->captureMbr();
 	parent.getMbr() = Box(Point {-0.5, -0.25, 0.0}, Point {0.5, 0.75, 1.0});
 
 	WeightingFunction<E, m> wf (parent);

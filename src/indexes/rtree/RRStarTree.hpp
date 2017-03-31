@@ -4,14 +4,14 @@
 #include "Range.hpp"
 #include "BasicRtree.hpp"
 #include "Algorithm.hpp"
-#include "RevisedEntry.hpp"
-#include "RevisedNode.hpp"
+#include "CapturingEntryPlugin.hpp"
 #include "WeightingFunction.hpp"
 #include "GoalFunction.hpp"
 #include "SplitSet.hpp"
 #include "CoveringSet.hpp"
 #include "ReferenceView.hpp"
 #include "CheckComp.hpp"
+#include "Node.hpp"
 
 namespace Rtree
 {
@@ -24,12 +24,12 @@ namespace Rtree
  * @tparam m Minimum number of children in each node
  */
 template<unsigned D, unsigned C, unsigned m>
-class RRStarTree : public BasicRtree<RevisedNode<D, C, RevisedEntry>, m>
+class RRStarTree : public BasicRtree<Node<D, C, CapturingEntryPlugin>, m>
 {
 	public:
 
-		using N = RevisedNode<D, C, RevisedEntry>;
-		using E = RevisedEntry<D, N>;
+		using N = Node<D, C, CapturingEntryPlugin>;
+		using E = typename N::E;
 		using M = typename E::M;
 
 		/**

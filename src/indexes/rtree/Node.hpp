@@ -1,30 +1,39 @@
 #pragma once
 #include <limits>
 #include <stdexcept>
+#include "Entry.hpp"
 
 namespace Rtree
 {
 
 /**
  * Basic R-tree node.
- * This is basically a container for entries.
+ *
+ * This is basically a container for entries. Extra data may be stored in a node
+ * using the additional type parameter.
  *
  * @tparam D Dimension
  * @tparam C Node capacity
- * @tparam N Node type
- * @tparam E Entry type
+ * @tparam P Entry plugin
  */
-template <unsigned D, unsigned C, class N, template<unsigned, class> class E>
-class BaseNode
+template <
+		unsigned D,
+		unsigned C,
+		template<class> class P = EntryPlugin
+	>
+class Node
 {
 public:
 	static constexpr unsigned capacity = C;
 	static constexpr unsigned dimension = D;
 
-	using Entry = E<D, N>;
+	using E = Entry<D, Node, P>;
 
-	//TODO: Encapsulate this?
-	Entry entries[C];
+	using iterator = E *;
+	using const_iterator = const E *;
+
+	// Additional data field
+	typename E::Plugin::NodeData data;
 
 	/**
 	 * Check if this node is full.
@@ -51,7 +60,7 @@ public:
 	 *
 	 * @return True if successful (not full)
 	 */
-	void add(const Entry& entry)
+	void add(const E& entry)
 	{
 		if (nEntries >= C) {
 			throw std::out_of_range(
@@ -75,7 +84,7 @@ public:
 	/**
 	 * Return first entry in this node.
 	 */
-	Entry * begin()
+	E * begin()
 	{
 		return entries;
 	}
@@ -83,19 +92,16 @@ public:
 	/**
 	 * Return the entry past the last entry in this node.
 	 */
-	Entry * end()
+	E * end()
 	{
 		return entries + nEntries;
 	}
 
 private:
 	short unsigned nEntries = 0;
+	E entries[C];
 
-};
 
-template<unsigned D, unsigned C, template<unsigned, class> class Entry>
-class Node : public BaseNode<D, C, Node<D, C, Entry>, Entry>
-{
 };
 
 }

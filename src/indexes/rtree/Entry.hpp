@@ -1,6 +1,7 @@
 #pragma once
 #include "common/DataObject.hpp"
 #include "Mbr.hpp"
+#include "EntryPlugin.hpp"
 #include <algorithm>
 
 namespace Rtree
@@ -13,33 +14,33 @@ namespace Rtree
  * to the node itself. The MBR is separated from the node to avoid loading the
  * an entire node when only the MBRs should be scanned.
  *
+ * @tparam D Dimension
  * @tparam N Node type
+ * @tparam An entry plugin
  */
-template<unsigned D, class N, template<unsigned, class> class Entry>
-class BaseEntry
+template<
+		unsigned D,
+		class N,
+		template<class> class P = EntryPlugin
+	>
+class Entry
 {
 	public:
 		using Id = DataObject::Id;
 		using M = Mbr<D>;
 		using Node = N;
-		using E = Entry<D, N>;
+		using Plugin = P<Entry>;
 
-		using iterator = E *;
-		using const_iterator = const E *;
+		using iterator = Entry *;
+		using const_iterator = const Entry *;
 
 		static constexpr unsigned dimension = D;
 
 		/**
 		 * Default constructor.
 		 */
-		BaseEntry() = default;
+		Entry() = default;
 
-		/**
-		 * Create a new entry from a node.
-		 */
-		BaseEntry(N * node, M mbr) : node(node), mbr(mbr)
-		{
-		};
 
 		/**
 		 * Create a new entry and initialize MBR and node with the given
@@ -48,17 +49,29 @@ class BaseEntry
 		 * @param node Pointer to initial node
 		 * @param entries Initial entries
 		 */
-		BaseEntry(N * node, std::initializer_list<E> entries)
+		Entry(N * node, std::initializer_list<Entry> entries)
 			: node(node)
 		{
 			assign(entries.begin(), entries.end());
 		}
 
+
 		/**
-		 * Create a new entry from the given object.
+		 * Create a new entry from the given object, optionally passing a set of
+		 * arguments to the plugin.
 		 */
-		BaseEntry(const DataObject& object)
-			: id(object.getId()), mbr(object.getBox())
+		template<class ...Args>
+		Entry(const DataObject& object, Args ...args)
+			: id(object.getId())
+			, mbr(object.getBox())
+			, plugin(*this, object, std::forward<Args...>(args...))
+		{
+		};
+
+		Entry(const DataObject& object)
+			: id(object.getId())
+			, mbr(object.getBox())
+			, plugin(*this, object)
 		{
 		};
 
@@ -113,11 +126,28 @@ class BaseEntry
 		 *
 		 * @param entry Entry to add
 		 */
-		void add(const E& entry)
+		void add(const Entry& entry)
 		{
+			// Add and update MBR
 			node->add(entry);
 			mbr += entry.mbr;
+
+			// Inform plugin
+			plugin.include(*this, entry);
 		};
+
+
+		/**
+		 * Inculdes the given entry in this entry without adding it to the node.
+		 *
+		 * This typically updates the MBR and plugin. Useful when adjusting MBRs
+		 * in the tree during insertion.
+		 */
+		void include(const Entry& entry)
+		{
+			mbr += entry.mbr;
+			plugin.include(*this, entry);
+		}
 
 
 		/**
@@ -131,7 +161,7 @@ class BaseEntry
 		{
 			std::for_each(
 					first, last,
-					[&](const E& entry) {
+					[&](const Entry& entry) {
 						add(entry);
 					}
 				);
@@ -154,12 +184,17 @@ class BaseEntry
 					);
 			}
 
+			// Reset fields
 			mbr = start->mbr;
 			node->reset();
 
+			// Add entries
 			for (;start != end; ++start) {
-				static_cast<E *>(this)->add(*start);
+				add(*start);
 			}
+
+			// Create new plugin
+			plugin = Plugin(*this);
 		};
 
 
@@ -167,23 +202,27 @@ class BaseEntry
 		 * Remove all entries and add the given initializer list. This also
 		 * fixes the MBR.
 		 */
-		E& operator=(std::initializer_list<E> entries)
+		Entry& operator=(std::initializer_list<Entry> entries)
 		{
 			assign(entries.begin(), entries.end());
-			return static_cast<E&>(*this);
+			return *this;
 		};
 
 
 		/**
-		 * Recalculates the MBR of this entry using the MBRs of its children.
+		 * Recalculates aggergate data for this entry.
+		 *
+		 * This mainly constists of the entry MBR, but may also include plugin
+		 * information.
 		 */
-		void recalculateMbr()
+		void recalculate()
 		{
 			assert(node->size() > 0);
 
-			mbr = node->entries[0].mbr;
+			mbr = node->begin()[0].mbr;
+			plugin = Plugin();
 
-			for (const E& e : *this) {
+			for (const Entry& e : *this) {
 				mbr += e.mbr;
 			}
 		}
@@ -216,23 +255,22 @@ class BaseEntry
 			return node->end();
 		};
 
+		/**
+		 * Access the plugin of this node.
+		 */
+		const Plugin& getPlugin() const
+		{
+			return plugin;
+		}
 
 	private:
 		union {
 			Id id;
 			N * node;
 		};
-
 		M mbr;
+		Plugin plugin;
 
-};
-
-template<unsigned D, class N>
-class Entry : public BaseEntry<D, N, Entry>
-{
-	public:
-		using BaseEntry<D, N, Entry>::BaseEntry;
-		using BaseEntry<D, N, Entry>::operator=;
 };
 
 }
