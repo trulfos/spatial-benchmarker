@@ -1,6 +1,8 @@
 #include <criterion/criterion.h>
 #include "Point.hpp"
 
+using namespace Spatial;
+
 
 Test(Point, difference)
 {

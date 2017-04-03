@@ -1,6 +1,9 @@
 #include "Logger.hpp"
 #include "Color.hpp"
 
+namespace Bench
+{
+
 Logger::Logger(std::ostream& stream, const std::string& supertask)
 	: stream(stream)
 {
@@ -43,4 +46,6 @@ void Logger::endStart(const std::string& task)
 {
 	end();
 	start(task);
+}
+
 }

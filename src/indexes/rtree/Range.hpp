@@ -1,6 +1,9 @@
 #pragma once
 #include <iterator>
 
+namespace Rtree
+{
+
 
 /**
  * Simple wrapper allowing the use of integers (and other similar datatypes) as
@@ -108,4 +111,6 @@ template<typename T>
 typename Range<T>::iterator Range<T>::end() const
 {
 	return iterator(last);
+}
+
 }

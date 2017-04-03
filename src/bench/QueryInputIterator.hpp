@@ -3,6 +3,11 @@
 #include "spatial/Query.hpp"
 #include "spatial/RangeQuery.hpp"
 
+using namespace Spatial;
+
+namespace Bench
+{
+
 /**
  * Reads queries from input stream assuming a binary encoding.
  *
@@ -38,3 +43,5 @@ class QueryInputIterator : public BoxInputIterator
 
 		void extract();
 };
+
+}

@@ -1,5 +1,8 @@
 #include "Box.hpp"
 
+namespace Spatial
+{
+
 Box::Box(const Point& a, const Point& b)
 	: points({a, b})
 {
@@ -97,4 +100,6 @@ void Box::include(const Box& other)
 			points[0][i] = std::min(points[0][i], other.points[0][i]);
 			points[1][i] = std::max(points[1][i], other.points[1][i]);
 	}
+}
+
 }

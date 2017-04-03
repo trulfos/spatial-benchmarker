@@ -3,6 +3,9 @@
 #include <iostream>
 #include <iterator>
 
+namespace Bench
+{
+
 std::istream& operator>>(std::istream& stream, ResultSet& resultSet)
 {
 	unsigned dimension;
@@ -13,7 +16,7 @@ std::istream& operator>>(std::istream& stream, ResultSet& resultSet)
 	if (stream) {
 		resultSet.resize(nResults);
 		for (unsigned i = 0; i < nResults && stream; ++i) {
-			stream >> resultSet[i];
+			Spatial::operator>>(stream, resultSet[i]);
 		}
 	}
 
@@ -25,8 +28,10 @@ std::ostream& operator<<(std::ostream& stream, const ResultSet& resultSet)
 	stream << FileHeader(0, resultSet.size()) << "\n";
 
 	for (auto& r : resultSet) {
-		std::cout << r << "\n";
+		Spatial::operator<<(std::cout, r);
 	}
 
 	return stream;
+}
+
 }

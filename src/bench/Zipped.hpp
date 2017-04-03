@@ -1,6 +1,9 @@
 #pragma once
 #include <iterator>
 
+namespace Bench
+{
+
 /**
  * Zips two containers. Useful when iterating through two containers
  * simultaneously. Using the convenience function defined below, this makes the
@@ -85,4 +88,6 @@ template <typename A, typename B>
 Zipped<A, B> zip(A& a, B& b)
 {
 	return Zipped<A, B>(a, b);
+}
+
 }

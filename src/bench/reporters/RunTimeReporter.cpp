@@ -1,5 +1,8 @@
 #include "RunTimeReporter.hpp"
 
+namespace Bench
+{
+
 RunTimeReporter::RunTimeReporter()
 {
 	if (
@@ -31,4 +34,6 @@ void RunTimeReporter::clearCache()
 	}
 
 	delete[] buffer;
+}
+
 }

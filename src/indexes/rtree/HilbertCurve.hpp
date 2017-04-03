@@ -9,6 +9,8 @@
 #include "spatial/Point.hpp"
 #include "spatial/Box.hpp"
 
+using namespace Spatial;
+
 namespace Rtree
 {
 

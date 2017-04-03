@@ -3,6 +3,9 @@
 #include "QueryReporter.hpp"
 #include <vector>
 
+namespace Bench
+{
+
 /**
  * Reports the results of a run.
  */
@@ -22,3 +25,5 @@ class ResultsReporter : public QueryReporter
 		ResultSet resultSet;
 		std::string reference;
 };
+
+}

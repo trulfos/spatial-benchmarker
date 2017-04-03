@@ -2,6 +2,9 @@
 #include "MetricReporter.hpp"
 #include "bench/LazyQuerySet.hpp"
 
+namespace Bench
+{
+
 /**
  * This (base) reporter allows loading queries from file.
  */
@@ -26,3 +29,5 @@ class QueryReporter : public MetricReporter<double>
 
 		std::string path;
 };
+
+}

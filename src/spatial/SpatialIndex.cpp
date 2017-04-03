@@ -1,8 +1,10 @@
 #include "SpatialIndex.hpp"
-
 #include "KnnQuery.hpp"
 #include "RangeQuery.hpp"
 #include <stdexcept>
+
+namespace Spatial
+{
 
 SpatialIndex::~SpatialIndex()
 {
@@ -75,4 +77,6 @@ Results SpatialIndex::knnSearch(
 	) const
 {
 	throw std::runtime_error("k-NN search instrumentation not implemented");
+}
+
 }

@@ -3,6 +3,8 @@
 #include "Point.hpp"
 #include <utility>
 
+namespace Spatial {
+
 /**
  * Axis aligned rectangle, defined by two points in space.
  */
@@ -65,3 +67,5 @@ class Box
 	private:
 		Point points[2];
 };
+
+}

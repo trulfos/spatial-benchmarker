@@ -1,6 +1,8 @@
 #pragma once
 #include "spatial/SpatialIndex.hpp"
 
+using namespace Spatial;
+
 /**
  * Create a new index and return a pointer to it.
  *

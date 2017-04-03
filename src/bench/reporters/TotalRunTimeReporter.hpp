@@ -2,6 +2,9 @@
 #include "RunTimeReporter.hpp"
 #include "QueryReporter.hpp"
 
+namespace Bench
+{
+
 /**
  * This reporter loads all queries to memory and executes them all while
  * recording the time. To avoid caching problems, the queries are randomly
@@ -24,3 +27,5 @@ class TotalRunTimeReporter : public QueryReporter, private RunTimeReporter
 		static constexpr unsigned RUNS = 10;
 
 };
+
+}

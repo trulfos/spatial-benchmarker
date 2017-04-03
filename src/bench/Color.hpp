@@ -1,6 +1,9 @@
 #pragma once
 #include <string>
 
+namespace Bench
+{
+
 /**
  * Simple namespace with color constants.
  */
@@ -32,4 +35,6 @@ namespace C {
 	{
 		return "\033[1;1m" + string + "\033[0m";
 	}
+}
+
 }

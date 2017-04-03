@@ -1,6 +1,8 @@
 #pragma once
-
 #include "Query.hpp"
+
+namespace Spatial
+{
 
 class KnnQuery : public Query
 {
@@ -14,3 +16,5 @@ class KnnQuery : public Query
 };
 
 std::ostream& operator<<(std::ostream& stream, const KnnQuery& query);
+
+}

@@ -3,6 +3,9 @@
 #include <algorithm>
 #include <limits>
 
+namespace Bench
+{
+
 void QueryRunTimeReporter::run(
 		const SpatialIndex& index,
 		std::ostream& logStream
@@ -55,4 +58,6 @@ void QueryRunTimeReporter::run(
 		// Update progress bar
 		progress.increment();
 	}
+}
+
 }

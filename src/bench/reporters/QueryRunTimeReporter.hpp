@@ -2,6 +2,9 @@
 #include "RunTimeReporter.hpp"
 #include "QueryReporter.hpp"
 
+namespace Bench
+{
+
 /**
  * Reports the run time of each query.
  */
@@ -24,3 +27,5 @@ class QueryRunTimeReporter : public QueryReporter, private RunTimeReporter
 		static const unsigned MAX_RUNS = 10;
 		static const unsigned long MIN_TOTAL_TIME = 5 * 1e6; // µs
 };
+
+}

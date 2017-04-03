@@ -3,6 +3,9 @@
 #include <chrono>
 #include <vector>
 
+namespace Bench
+{
+
 /**
  * Reports the run time of each query.
  */
@@ -33,3 +36,5 @@ class RunTimeReporter
 		 */
 		void clearCache();
 };
+
+}

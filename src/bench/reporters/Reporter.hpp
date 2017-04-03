@@ -2,6 +2,11 @@
 #include "spatial/SpatialIndex.hpp"
 #include <ostream>
 
+using namespace Spatial;
+
+namespace Bench
+{
+
 /**
  * Abstract base class for reporter.
  */
@@ -29,3 +34,5 @@ class Reporter
 std::ostream& operator<<(
 		std::ostream& stream, const std::shared_ptr<Reporter>& reporter
 	);
+
+}

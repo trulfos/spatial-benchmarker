@@ -2,6 +2,9 @@
 #include "DataObject.hpp"
 #include <iterator>
 
+namespace Spatial
+{
+
 std::istream& operator>>(std::istream& stream, Results& results)
 {
 	unsigned n;
@@ -28,4 +31,6 @@ std::ostream& operator<<(std::ostream& stream, const Results& results)
 		);
 
 	return stream;
+}
+
 }

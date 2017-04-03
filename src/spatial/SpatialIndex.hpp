@@ -5,6 +5,9 @@
 #include "DataObject.hpp"
 #include "StatsCollector.hpp"
 
+namespace Spatial
+{
+
 /**
  * This abstract class is a common interface to all spatial indexes.
  *
@@ -98,3 +101,5 @@ class SpatialIndex
 				StatsCollector& collector
 			) const;
 };
+
+}

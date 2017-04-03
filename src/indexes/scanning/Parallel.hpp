@@ -1,6 +1,8 @@
 #pragma once
 #include "Scanning.hpp"
 
+using namespace Spatial;
+
 namespace Scanning
 {
 

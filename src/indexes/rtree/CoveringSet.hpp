@@ -4,6 +4,9 @@
 #include <functional>
 #include "Algorithm.hpp"
 
+namespace Rtree
+{
+
 /**
  * A set of entries covering a new entry (not part of the set).
  */
@@ -60,3 +63,5 @@ class CoveringSet : std::set<E *>
 		}
 
 };
+
+}

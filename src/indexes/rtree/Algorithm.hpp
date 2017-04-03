@@ -4,6 +4,9 @@
 #include <type_traits>
 #include <tuple>
 
+namespace Rtree
+{
+
 /**
  * Set of algorithm templates.
  */
@@ -169,3 +172,5 @@ DerefIterator<Iterator> makeDerefIt(const Iterator& iterator)
 {
 	return DerefIterator<Iterator>(iterator);
 };
+
+}

@@ -3,6 +3,9 @@
 #include <memory>
 #include <dlfcn.h>
 
+namespace Bench
+{
+
 /**
  * An shared pointer to an object constructed using the `create` method of a
  * dynamic library. The `destroy` method in the library is called when the
@@ -90,3 +93,5 @@ class DynamicObject : public std::shared_ptr<T>
 			return func;
 		};
 };
+
+}

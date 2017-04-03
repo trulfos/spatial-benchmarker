@@ -3,6 +3,9 @@
 #include "ProgressLogger.hpp"
 #include <algorithm>
 
+namespace Bench
+{
+
 CorrectnessReporter::CorrectnessReporter(
 		const std::string& queryPath,
 		const std::string& resultsPath
@@ -65,4 +68,6 @@ ResultSet CorrectnessReporter::getResults()
 	stream >> results;
 
 	return results;
+}
+
 }

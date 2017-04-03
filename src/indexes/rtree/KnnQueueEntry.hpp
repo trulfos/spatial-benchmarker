@@ -1,6 +1,11 @@
 #pragma once
 #include "spatial/DataObject.hpp"
 
+using namespace Spatial;
+
+namespace Rtree
+{
+
 /**
  * Entry used in the queue for knn search using the optimal algorithm.
  */
@@ -37,3 +42,5 @@ struct KnnQueueEntry {
 		return distance > other.distance;
 	};
 };
+
+}

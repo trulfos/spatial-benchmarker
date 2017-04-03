@@ -5,6 +5,9 @@
 #include <ostream>
 #include <vector>
 
+namespace Spatial
+{
+
 /**
  * Simple class representing a point in R^d where d is the dimension of the
  * point.
@@ -97,3 +100,5 @@ class Point : private std::vector<Coordinate>
 		 */
 		friend std::ostream& operator<<(std::ostream&, const Point&);
 };
+
+}

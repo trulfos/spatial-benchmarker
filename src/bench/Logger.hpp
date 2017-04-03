@@ -2,6 +2,9 @@
 #include <ostream>
 #include <string>
 
+namespace Bench
+{
+
 /**
  * Simple class to log progress while doing calculations.
  */
@@ -42,3 +45,5 @@ class Logger
 		unsigned level = 0;
 		std::ostream& stream;
 };
+
+}

@@ -1,9 +1,11 @@
 #pragma once
-
 #include <istream>
 #include <ostream>
 #include <vector>
 #include "Box.hpp"
+
+namespace Spatial
+{
 
 /**
  * This represents an data object.
@@ -55,3 +57,5 @@ class DataObject
 		Id id = 0;
 		Box box;
 };
+
+}

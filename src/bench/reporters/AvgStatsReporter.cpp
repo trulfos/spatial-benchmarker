@@ -2,6 +2,9 @@
 #include "spatial/StatsCollector.hpp"
 #include "ProgressLogger.hpp"
 
+namespace Bench
+{
+
 void AvgStatsReporter::run(
 		const SpatialIndex& index,
 		std::ostream& logStream
@@ -42,4 +45,6 @@ void AvgStatsReporter::run(
 	for (auto stat : averages) {
 		addEntry(stat.first, double(stat.second) / i);
 	}
+}
+
 }

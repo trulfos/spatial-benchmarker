@@ -2,6 +2,11 @@
 #include <iterator>
 #include "spatial/Box.hpp"
 
+using namespace Spatial;
+
+namespace Bench
+{
+
 /**
  * Reads boxes from input stream assuming a binary encoding.
  *
@@ -69,3 +74,5 @@ class BoxInputIterator : public std::iterator<std::input_iterator_tag, Box>
 		 */
 		unsigned getStreamSize(std::istream& stream);
 };
+
+}

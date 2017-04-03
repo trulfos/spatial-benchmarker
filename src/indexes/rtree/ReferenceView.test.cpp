@@ -1,6 +1,8 @@
 #include <criterion/criterion.h>
 #include "ReferenceView.hpp"
 
+using namespace Rtree;
+
 std::array<const unsigned, 10> values = {{
 		1, 2, 3, 4, 5, 6, 7, 8, 9, 10
 	}};

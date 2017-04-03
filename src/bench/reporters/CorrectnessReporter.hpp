@@ -2,6 +2,9 @@
 #include "ResultSet.hpp"
 #include "QueryReporter.hpp"
 
+namespace Bench
+{
+
 /**
  * Checks the correctness of the results given to this reporter and spits out an
  * error if any of the results are wrong.
@@ -33,3 +36,5 @@ class CorrectnessReporter : public QueryReporter
 		ResultSet getResults();
 
 };
+
+}

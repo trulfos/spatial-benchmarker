@@ -1,7 +1,9 @@
 #pragma once
-
 #include "Box.hpp"
 #include "Query.hpp"
+
+namespace Spatial
+{
 
 class RangeQuery : public Query
 {
@@ -20,3 +22,5 @@ class RangeQuery : public Query
 };
 
 std::ostream& operator<<(std::ostream& stream, const RangeQuery& query);
+
+}

@@ -3,6 +3,9 @@
 #include <vector>
 #include <algorithm>
 
+namespace Rtree
+{
+
 /**
  * Creates a view of the items in a range.
  *
@@ -157,4 +160,6 @@ template<class E>
 typename ReferenceView<E>::const_iterator ReferenceView<E>::end() const
 {
 	return makeDerefIt(Base::end());
+}
+
 }

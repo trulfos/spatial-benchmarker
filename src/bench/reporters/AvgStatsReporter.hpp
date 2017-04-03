@@ -1,6 +1,9 @@
 #pragma once
 #include "QueryReporter.hpp"
 
+namespace Bench
+{
+
 /**
  * Collects and reports statistics from the benchmark.
  */
@@ -16,3 +19,5 @@ class AvgStatsReporter : public QueryReporter
 			) override;
 
 };
+
+}

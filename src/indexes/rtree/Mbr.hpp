@@ -4,6 +4,8 @@
 #include "spatial/Coordinate.hpp"
 #include "spatial/Point.hpp"
 
+using namespace Spatial;
+
 
 namespace Rtree
 {

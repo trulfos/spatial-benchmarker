@@ -1,5 +1,8 @@
 #include "RangeQuery.hpp"
 
+namespace Spatial
+{
+
 RangeQuery::RangeQuery(unsigned id, const Box& box)
 	: Query(Query::Type::RANGE), box(box), id(id)
 {
@@ -24,4 +27,6 @@ std::ostream& operator<<(std::ostream& stream, const RangeQuery& query)
 {
 	auto& points = query.getBox().getPoints();
 	return stream << "range " << points.first << ' ' << points.second;
+}
+
 }

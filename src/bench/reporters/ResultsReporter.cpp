@@ -2,6 +2,9 @@
 #include <algorithm>
 #include "ProgressLogger.hpp"
 
+namespace Bench
+{
+
 void ResultsReporter::run(
 		const SpatialIndex& index,
 		std::ostream& logStream
@@ -26,4 +29,6 @@ void ResultsReporter::run(
 void ResultsReporter::generate(std::ostream& stream) const
 {
 	stream << resultSet;
+}
+
 }

@@ -1,5 +1,8 @@
 #include "DataObjectInputIterator.hpp"
 
+namespace Bench
+{
+
 DataObjectInputIterator::DataObjectInputIterator(
 		std::istream& stream, unsigned dimension
 	) : BoxInputIterator(stream, dimension)
@@ -49,4 +52,6 @@ DataObjectInputIterator::difference_type DataObjectInputIterator::operator-(
 void DataObjectInputIterator::extract()
 {
 	object = DataObject(id++, BoxInputIterator::operator*());
+}
+
 }

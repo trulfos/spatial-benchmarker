@@ -1,7 +1,9 @@
 #pragma once
-
 #include <vector>
 #include "DataObject.hpp"
+
+namespace Spatial
+{
 
 /**
  * Represents a set of results.
@@ -19,3 +21,5 @@ typedef std::vector<DataObject::Id> Results;
  */
 std::istream& operator>>(std::istream& stream, Results& results);
 std::ostream& operator<<(std::ostream& stream, const Results& results);
+
+}

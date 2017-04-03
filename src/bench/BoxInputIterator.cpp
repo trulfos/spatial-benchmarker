@@ -3,6 +3,9 @@
 #include "spatial/Coordinate.hpp"
 #include <cmath>
 
+namespace Bench
+{
+
 /**
  * BoxSet implementation
  */
@@ -163,4 +166,6 @@ unsigned BoxInputIterator::getStreamSize(std::istream& stream)
 	stream.seekg(position);
 
 	return bytes - position;
+}
+
 }

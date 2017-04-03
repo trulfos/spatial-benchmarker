@@ -7,6 +7,9 @@
 #include <memory>
 #include <iterator>
 
+namespace Rtree
+{
+
 /**
  * A collection of possible splits.
  */
@@ -304,4 +307,6 @@ void SplitSet<E, m>::SplitIterator::sort()
 						);
 			});
 	}
+}
+
 }

@@ -1,5 +1,8 @@
 #include "QueryInputIterator.hpp"
 
+namespace Bench
+{
+
 QueryInputIterator::QueryInputIterator(
 		std::istream& stream, unsigned dimension
 	) : BoxInputIterator(stream, dimension)
@@ -48,4 +51,6 @@ QueryInputIterator::difference_type QueryInputIterator::operator-(
 void QueryInputIterator::extract()
 {
 	query = RangeQuery(id++, BoxInputIterator::operator*());
+}
+
 }

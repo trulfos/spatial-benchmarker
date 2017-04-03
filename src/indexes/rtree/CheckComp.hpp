@@ -5,6 +5,9 @@
 #include <algorithm>
 #include "Algorithm.hpp"
 
+namespace Rtree
+{
+
 /**
  * Implements the CheckComp function from the RR*-tree paper.
  */
@@ -151,4 +154,6 @@ template<class FIt>
 std::set<FIt> CheckComp<FIt>::getVisited() const
 {
 	return visited;
+}
+
 }

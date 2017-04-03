@@ -2,8 +2,6 @@
 #include "GoalFunction.hpp"
 #include "SplitSet.hpp"
 #include "Entry.hpp"
-#include "spatial/Point.hpp"
-#include "spatial/DataObject.hpp"
 
 constexpr float EPSILON = 0.001f;
 constexpr unsigned D = 2;

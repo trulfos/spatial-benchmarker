@@ -2,6 +2,9 @@
 #include "spatial/StatsCollector.hpp"
 #include "ProgressLogger.hpp"
 
+namespace Bench
+{
+
 void StatsReporter::run(
 		const SpatialIndex& index,
 		std::ostream& logStream
@@ -23,4 +26,6 @@ void StatsReporter::run(
 
 		progress.increment();
 	}
+}
+
 }

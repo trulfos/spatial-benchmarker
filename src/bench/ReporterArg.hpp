@@ -4,6 +4,9 @@
 #include "reporters/Reporter.hpp"
 #include <tclap/UnlabeledMultiArg.h>
 
+namespace Bench
+{
+
 /**
  * Argument returning a reporter.
  */
@@ -68,3 +71,5 @@ class ReporterArg : protected TCLAP::UnlabeledMultiArg<std::string>
 				const std::string& value
 			);
 };
+
+}

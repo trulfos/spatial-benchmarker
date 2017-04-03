@@ -7,6 +7,9 @@
 #include "reporters/CorrectnessReporter.hpp"
 #include "reporters/StructReporter.hpp"
 
+namespace Bench
+{
+
 ReporterArg::ReporterArg(
 			const std::string& name,
 			const std::string& desc,
@@ -112,4 +115,6 @@ std::shared_ptr<Reporter> ReporterArg::createReporter(
 	}
 
 	throw TCLAP::ArgParseException("No reporter named " + name, "reporterarg");
+}
+
 }

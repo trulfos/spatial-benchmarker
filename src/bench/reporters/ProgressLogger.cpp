@@ -1,6 +1,9 @@
 #include "ProgressLogger.hpp"
 #include <string>
 
+namespace Bench
+{
+
 ProgressLogger::ProgressLogger(std::ostream& stream, unsigned long long max)
 	: stream(stream), max(max)
 {
@@ -36,4 +39,6 @@ void ProgressLogger::set(unsigned long long p)
 void ProgressLogger::increment()
 {
 	set(progress + 1);
+}
+
 }

@@ -5,10 +5,13 @@
 #include "Logger.hpp"
 #include "DynamicObject.hpp"
 #include "reporters/ProgressLogger.hpp"
-#include "InvalidStructureError.hpp"
+#include "spatial/InvalidStructureError.hpp"
 #include <iostream>
 #include <string>
 #include <tclap/CmdLine.h>
+
+using namespace Bench;
+using namespace Spatial;
 
 int main(int argc, char *argv[])
 {

@@ -2,6 +2,9 @@
 #include <string>
 #include <fstream>
 
+namespace Bench
+{
+
 /**
  * Represents a set of items stored in a file.
  *
@@ -88,3 +91,5 @@ class FileSet
 		Iterator start;
 		Iterator stop;
 };
+
+}

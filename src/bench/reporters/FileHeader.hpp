@@ -2,6 +2,9 @@
 #include <ostream>
 #include <istream>
 
+namespace Bench
+{
+
 /**
  * Represents the header in files.
  * Consists of the dimension and a number of entries.
@@ -46,3 +49,5 @@ class FileHeader
 				std::istream& stream, FileHeader& fh
 			);
 };
+
+}

@@ -5,6 +5,9 @@
 #include <memory>
 #include "ReferenceView.hpp"
 
+namespace Rtree
+{
+
 /**
  * Represents a possible split of a set of entries used by the RR*-tree.
  */
@@ -110,3 +113,5 @@ class Split
 				);
 		}
 };
+
+}

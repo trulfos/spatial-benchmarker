@@ -3,6 +3,9 @@
 #include <algorithm>
 #include <random>
 
+namespace Bench
+{
+
 void TotalRunTimeReporter::run(
 		const SpatialIndex& index,
 		std::ostream& logStream
@@ -58,4 +61,6 @@ void TotalRunTimeReporter::run(
 		progress.increment();
 
 	}
+}
+
 }

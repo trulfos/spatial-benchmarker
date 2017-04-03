@@ -1,6 +1,9 @@
 #pragma once
 #include "Reporter.hpp"
 
+namespace Bench
+{
+
 /**
  * Abstract class for a metric reporter.
  *
@@ -86,4 +89,6 @@ void MetricReporter<T>::generate(std::ostream& stream) const
 	}
 
 	stream << std::flush;
+}
+
 }

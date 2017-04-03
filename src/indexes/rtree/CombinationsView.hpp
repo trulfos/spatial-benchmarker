@@ -3,6 +3,9 @@
 #include <utility>
 #include <cassert>
 
+namespace Rtree
+{
+
 /**
  * Gives the combinations possible by combining a range with itself.
  */
@@ -107,4 +110,6 @@ template<class FIt>
 CombinationsView<FIt> makeCombinationsView(FIt first, FIt last)
 {
 	return CombinationsView<FIt>(first, last);
+}
+
 }

@@ -3,6 +3,8 @@
 #include "spatial/DataObject.hpp"
 #include "spatial/SpatialIndex.hpp"
 
+using namespace Spatial;
+
 namespace Scanning
 {
 

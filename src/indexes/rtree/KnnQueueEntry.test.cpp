@@ -1,6 +1,8 @@
 #include <criterion/criterion.h>
 #include "KnnQueueEntry.hpp"
 
+using namespace Rtree;
+
 using KQE = KnnQueueEntry<void>;
 KQE makeEntry(unsigned elevation, float distance)
 {

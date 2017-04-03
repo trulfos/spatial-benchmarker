@@ -2,6 +2,8 @@
 #include "CombinationsView.hpp"
 #include "Range.hpp"
 
+using namespace Rtree;
+
 
 Test(CombinationsView, basic)
 {

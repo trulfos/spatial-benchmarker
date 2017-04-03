@@ -2,6 +2,8 @@
 #include "Point.hpp"
 #include "Box.hpp"
 
+using namespace Spatial;
+
 Test(Box, contains)
 {
 	Point a = {2.0f, 4.0f};

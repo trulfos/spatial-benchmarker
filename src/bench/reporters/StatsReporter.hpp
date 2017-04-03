@@ -1,6 +1,11 @@
 #pragma once
 #include "QueryReporter.hpp"
 
+using namespace Spatial;
+
+namespace Bench
+{
+
 /**
  * Collects and reports statistics from the benchmark.
  */
@@ -16,3 +21,5 @@ class StatsReporter : public QueryReporter
 			) override;
 
 };
+
+}

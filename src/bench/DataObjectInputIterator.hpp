@@ -2,6 +2,11 @@
 #include "BoxInputIterator.hpp"
 #include "spatial/DataObject.hpp"
 
+using namespace Spatial;
+
+namespace Bench
+{
+
 /**
  * Reads data objects from input stream assuming a binary encoding.
  *
@@ -43,3 +48,5 @@ class DataObjectInputIterator : public BoxInputIterator
 
 		void extract();
 };
+
+}

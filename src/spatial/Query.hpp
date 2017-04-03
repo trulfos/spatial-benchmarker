@@ -1,7 +1,9 @@
 #pragma once
-
 #include "Point.hpp"
 #include <string>
+
+namespace Spatial
+{
 
 /**
  * Represents a query.
@@ -26,3 +28,5 @@ class Query
 		Type type;
 
 };
+
+}

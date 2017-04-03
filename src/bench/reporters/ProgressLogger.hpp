@@ -1,6 +1,9 @@
 #pragma once
 #include <ostream>
 
+namespace Bench
+{
+
 /**
  * Prints progress to the console.
  */
@@ -34,3 +37,5 @@ class ProgressLogger
 		std::ostream& stream;
 		unsigned max;
 };
+
+}

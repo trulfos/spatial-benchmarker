@@ -2,6 +2,9 @@
 #include <ios>
 #include <stdexcept>
 
+namespace Spatial
+{
+
 DataObject::DataObject(unsigned int dimension) : box(dimension)
 {
 }
@@ -19,4 +22,6 @@ DataObject::Id DataObject::getId() const
 const Box& DataObject::getBox() const
 {
 	return box;
+}
+
 }

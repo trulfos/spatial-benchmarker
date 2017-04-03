@@ -2,6 +2,9 @@
 #include <iomanip>
 #include <iterator>
 
+namespace Spatial
+{
+
 unsigned int Point::getDimension() const
 {
 	return size();
@@ -89,3 +92,5 @@ std::ostream& operator<<(std::ostream& stream, const Point& point)
 
 	return stream;
 };
+
+}
