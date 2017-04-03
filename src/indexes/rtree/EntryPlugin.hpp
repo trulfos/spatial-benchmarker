@@ -32,20 +32,13 @@ namespace Rtree
 		 *
 		 * This is used when creating a new entry. The include method will be
 		 * called on all child entries later on.
-		 */
-		EntryPlugin() = default;
-
-		/**
-		 * Called whenever the host is initialized with a list of entries.
 		 *
-		 * Called prior to adding the entries, such that the new entries can be
-		 * found in the host entry's node.
-		 *
-		 * @param host Entry hosting this plugin (which new children)
+		 * @param host Entry hosting this plugin
 		 */
 		EntryPlugin(E& host)
 		{
 		}
+
 
 		/**
 		 * Construct a new plugin from data object.
@@ -58,6 +51,21 @@ namespace Rtree
 		EntryPlugin(E& host, const DataObject& object)
 		{
 		}
+
+
+		/**
+		 * Called after the initial entries have been included.
+		 *
+		 * This happens when a node is created or assigned, in which case a new
+		 * plugin is constructed, the include method called for each entry and
+		 * finally this method is called.
+		 *
+		 * @param host Host entry for this plugin
+		 */
+		void init(E& host)
+		{
+		}
+
 
 		/**
 		 * Includes an extra entry in the related node.

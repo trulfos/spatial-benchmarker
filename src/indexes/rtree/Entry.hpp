@@ -39,7 +39,9 @@ class Entry
 		/**
 		 * Default constructor.
 		 */
-		Entry() = default;
+		Entry() : plugin(*this)
+		{
+		}
 
 
 		/**
@@ -50,7 +52,7 @@ class Entry
 		 * @param entries Initial entries
 		 */
 		Entry(N * node, std::initializer_list<Entry> entries)
-			: node(node)
+			: node(node), plugin(*this)
 		{
 			assign(entries.begin(), entries.end());
 		}
@@ -187,14 +189,14 @@ class Entry
 			// Reset fields
 			mbr = start->mbr;
 			node->reset();
+			plugin = Plugin(*this);
 
 			// Add entries
 			for (;start != end; ++start) {
 				add(*start);
 			}
 
-			// Create new plugin
-			plugin = Plugin(*this);
+			plugin.init(*this);
 		};
 
 
@@ -220,10 +222,10 @@ class Entry
 			assert(node->size() > 0);
 
 			mbr = node->begin()[0].mbr;
-			plugin = Plugin();
+			plugin = Plugin(*this);
 
 			for (const Entry& e : *this) {
-				mbr += e.mbr;
+				include(e);
 			}
 		}
 

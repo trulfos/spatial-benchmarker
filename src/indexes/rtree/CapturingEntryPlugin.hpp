@@ -18,26 +18,34 @@ namespace Rtree
 			// Store unsigned in node
 			using NodeData = unsigned;
 
-			/**
-			 * Default constructor.
-			 */
-			CapturingEntryPlugin() = default;
+			// Inherit constructors
+			using EntryPlugin<E>::EntryPlugin;
 
 			/**
-			 * Called whenever the host is initialized with a list of entries.
+			 * Default constructor.
 			 *
-			 * Called prior to adding the entries, such that the new entries can
-			 * be found in the host entry's node.
-			 *
-			 * @param host Entry hosting this plugin (which new children)
+			 * Only initializes the node field to an invalid value, ensuring
+			 * error messages in debug mode.
 			 */
 			CapturingEntryPlugin(E& host)
+				: EntryPlugin<E>(host)
+			{
+				host.getNode()->data = 0;
+			}
+
+
+			/**
+			 * Captures the MBR of the node.
+			 *
+			 * This should be run after the node has been filled with the first
+			 * entries.
+			 *
+			 * @param host Entry hosting this plugin
+			 */
+			void init(E& host)
 			{
 				host.getNode()->data = host.getNode()->size();
 			}
-
-			// Inherit most constructors
-			using EntryPlugin<E>::EntryPlugin;
 
 
 			/**

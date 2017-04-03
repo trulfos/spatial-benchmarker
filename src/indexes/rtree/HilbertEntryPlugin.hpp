@@ -10,19 +10,20 @@ namespace Rtree
  * Entry plugin providing Hilbert value management.
  */
 template<class E>
-class HilbertEntryPlugin : EntryPlugin<E>
+class HilbertEntryPlugin : public EntryPlugin<E>
 {
 	using HC = HilbertCurve<std::uint64_t, E::dimension>;
 
 	public:
-		HilbertEntryPlugin()
-			: hilbertValue(0)
+		HilbertEntryPlugin(E& host)
+			: EntryPlugin<E>(host), hilbertValue(0)
 		{
 		};
 
 
 		HilbertEntryPlugin(E& host, const DataObject&, const Box& bounds)
-			: hilbertValue(HC::map(host.getMbr().center(), bounds))
+			: EntryPlugin<E>(host),
+				hilbertValue(HC::map(host.getMbr().center(), bounds))
 		{
 		};
 
