@@ -1,6 +1,6 @@
 #include "LazyDataSet.hpp"
 #include "Color.hpp"
-#include "common/SpatialIndex.hpp"
+#include "spatial/SpatialIndex.hpp"
 #include "ReporterArg.hpp"
 #include "Logger.hpp"
 #include "DynamicObject.hpp"
@@ -49,17 +49,15 @@ int main(int argc, char *argv[])
 		LazyDataSet dataSet (filename);
 
 		// Create index
-		DynamicObject<SpatialIndex, unsigned, unsigned long long> index (
+		DynamicObject<SpatialIndex, const Box&, unsigned long long> index (
 				"./lib" + algorithm.getValue() + ".so",
-				dataSet.getDimension(),
+				dataSet.begin().getBounds(),
 				dataSet.getSize()
 			);
 
 		// Index data
 		logger.endStart("Inserting data from " + filename);
 		ProgressLogger progress (std::clog, dataSet.getSize());
-
-		index->setBounds(dataSet.begin().getBounds()); // <- Hack for Hilbert
 
 		for (const DataObject& object : dataSet) {
 			index->insert(object);

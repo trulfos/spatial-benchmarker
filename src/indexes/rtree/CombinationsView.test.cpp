@@ -1,6 +1,6 @@
 #include <criterion/criterion.h>
-#include "Algorithm.hpp"
 #include "CombinationsView.hpp"
+#include "Range.hpp"
 
 
 Test(CombinationsView, basic)
