@@ -1,5 +1,5 @@
 #pragma once
-#include "common/DataObject.hpp"
+#include "spatial/DataObject.hpp"
 
 namespace Rtree
 {

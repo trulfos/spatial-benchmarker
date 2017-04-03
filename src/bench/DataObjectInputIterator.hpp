@@ -1,6 +1,6 @@
 #pragma once
 #include "BoxInputIterator.hpp"
-#include "common/DataObject.hpp"
+#include "spatial/DataObject.hpp"
 
 /**
  * Reads data objects from input stream assuming a binary encoding.

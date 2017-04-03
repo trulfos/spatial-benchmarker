@@ -1,6 +1,6 @@
 #pragma once
 #include <iterator>
-#include "common/Box.hpp"
+#include "spatial/Box.hpp"
 
 /**
  * Reads boxes from input stream assuming a binary encoding.

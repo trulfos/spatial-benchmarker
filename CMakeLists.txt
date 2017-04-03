@@ -36,14 +36,14 @@ add_library(reporters OBJECT
 )
 
 add_library(spatial OBJECT
-	src/common/RangeQuery.cpp
-	src/common/Box.cpp
-	src/common/DataObject.cpp
-	src/common/Query.cpp
-	src/common/SpatialIndex.cpp
-	src/common/KnnQuery.cpp
-	src/common/Point.cpp
-	src/common/Results.cpp
+	src/spatial/RangeQuery.cpp
+	src/spatial/Box.cpp
+	src/spatial/DataObject.cpp
+	src/spatial/Query.cpp
+	src/spatial/SpatialIndex.cpp
+	src/spatial/KnnQuery.cpp
+	src/spatial/Point.cpp
+	src/spatial/Results.cpp
 )
 
 target_compile_options(spatial PRIVATE -fPIC)
@@ -68,12 +68,12 @@ enable_testing()
 
 add_executable(test_point
 	$<TARGET_OBJECTS:spatial>
-	src/common/Point.test.cpp
+	src/spatial/Point.test.cpp
 )
 
 add_executable(test_box
 	$<TARGET_OBJECTS:spatial>
-	src/common/Box.test.cpp
+	src/spatial/Box.test.cpp
 )
 
 add_executable(test_knnqueueentry

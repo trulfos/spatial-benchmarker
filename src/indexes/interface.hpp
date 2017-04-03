@@ -1,5 +1,5 @@
 #pragma once
-#include "common/SpatialIndex.hpp"
+#include "spatial/SpatialIndex.hpp"
 
 /**
  * Create a new index and return a pointer to it.

@@ -1,7 +1,7 @@
 #pragma once
 #include <cassert>
 #include <cmath>
-#include "common/Coordinate.hpp"
+#include "spatial/Coordinate.hpp"
 
 namespace Rtree
 {

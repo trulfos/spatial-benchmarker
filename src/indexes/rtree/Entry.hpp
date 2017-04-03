@@ -1,5 +1,5 @@
 #pragma once
-#include "common/DataObject.hpp"
+#include "spatial/DataObject.hpp"
 #include "Mbr.hpp"
 #include "EntryPlugin.hpp"
 #include <algorithm>

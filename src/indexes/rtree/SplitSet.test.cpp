@@ -1,7 +1,7 @@
 #include <criterion/criterion.h>
 #include "SplitSet.hpp"
 #include "Entry.hpp"
-#include "common/DataObject.hpp"
+#include "spatial/DataObject.hpp"
 
 using namespace Rtree;
 

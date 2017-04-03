@@ -3,8 +3,8 @@
 #include "Node.hpp"
 #include "Entry.hpp"
 #include "CapturingEntryPlugin.hpp"
-#include "common/Point.hpp"
-#include "common/Box.hpp"
+#include "spatial/Point.hpp"
+#include "spatial/Box.hpp"
 
 
 using namespace Rtree;

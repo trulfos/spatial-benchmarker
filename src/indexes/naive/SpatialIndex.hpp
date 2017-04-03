@@ -1,6 +1,6 @@
 #pragma once
 #include "bench/LazyDataSet.hpp"
-#include "common/SpatialIndex.hpp"
+#include "spatial/SpatialIndex.hpp"
 namespace Naive
 {
 

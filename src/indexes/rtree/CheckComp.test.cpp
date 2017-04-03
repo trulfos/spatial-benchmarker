@@ -1,6 +1,6 @@
 #include <criterion/criterion.h>
 #include "CheckComp.hpp"
-#include "common/DataObject.hpp"
+#include "spatial/DataObject.hpp"
 #include "Entry.hpp"
 
 using namespace Rtree;

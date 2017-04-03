@@ -1,5 +1,5 @@
 #include "StatsReporter.hpp"
-#include "common/StatsCollector.hpp"
+#include "spatial/StatsCollector.hpp"
 #include "ProgressLogger.hpp"
 
 void StatsReporter::run(

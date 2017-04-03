@@ -1,5 +1,5 @@
 #pragma once
-#include "common/Results.hpp"
+#include "spatial/Results.hpp"
 #include <vector>
 #include <istream>
 

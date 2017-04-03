@@ -1,7 +1,7 @@
 #pragma once
 #include "BoxInputIterator.hpp"
-#include "common/Query.hpp"
-#include "common/RangeQuery.hpp"
+#include "spatial/Query.hpp"
+#include "spatial/RangeQuery.hpp"
 
 /**
  * Reads queries from input stream assuming a binary encoding.

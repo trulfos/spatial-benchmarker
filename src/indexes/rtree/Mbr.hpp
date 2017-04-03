@@ -1,8 +1,8 @@
 #pragma once
 #include <cassert>
-#include "common/Box.hpp"
-#include "common/Coordinate.hpp"
-#include "common/Point.hpp"
+#include "spatial/Box.hpp"
+#include "spatial/Coordinate.hpp"
+#include "spatial/Point.hpp"
 
 
 namespace Rtree

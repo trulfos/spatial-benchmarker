@@ -1,7 +1,7 @@
 #pragma once
-#include "common/Coordinate.hpp"
-#include "common/DataObject.hpp"
-#include "common/SpatialIndex.hpp"
+#include "spatial/Coordinate.hpp"
+#include "spatial/DataObject.hpp"
+#include "spatial/SpatialIndex.hpp"
 
 namespace Scanning
 {

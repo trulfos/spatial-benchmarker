@@ -5,9 +5,9 @@
 #include <limits>
 #include <algorithm>
 #include <bitset>
-#include "common/Coordinate.hpp"
-#include "common/Point.hpp"
-#include "common/Box.hpp"
+#include "spatial/Coordinate.hpp"
+#include "spatial/Point.hpp"
+#include "spatial/Box.hpp"
 
 namespace Rtree
 {

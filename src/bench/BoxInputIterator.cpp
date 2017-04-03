@@ -1,6 +1,6 @@
 #include "BoxInputIterator.hpp"
 #include <cassert>
-#include "common/Coordinate.hpp"
+#include "spatial/Coordinate.hpp"
 #include <cmath>
 
 /**
