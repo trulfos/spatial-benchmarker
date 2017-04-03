@@ -7,6 +7,10 @@
 
 /**
  * This abstract class is a common interface to all spatial indexes.
+ *
+ * The data to be indexed is usually inserted after the index has been created.
+ * Calling the prepare method before searching allows the index to digest the
+ * data in whatever way seems reasonable.
  */
 class SpatialIndex
 {
@@ -14,10 +18,12 @@ class SpatialIndex
 
 		virtual ~SpatialIndex();
 
-
 		/**
 		 * Insert an object in the index.
 		 *
+		 * The object is not required to be available for search before after
+		 * the next call to prepare. It may thus be stored temporarily outside
+		 * the actual index structure (depending on the implementation).
 		 *
 		 * @param object Data object to insert
 		 */
@@ -45,7 +51,22 @@ class SpatialIndex
 
 
 		/**
-		 * Perform a search using the given query.
+		 * Prepare the index for searching.
+		 *
+		 * Request that this index prepares for searching. Need only be run
+		 * before the first search after an insert.
+		 */
+		virtual void prepare();
+
+
+		/**
+		 * Perform a search.
+		 *
+		 * Search for results matching the given query. Run the prepare method
+		 * first to ensure the index is ready for searching.
+		 *
+		 * @param query Query to use for searching
+		 * @return Results matching query
 		 */
 		Results search(const Query& query) const;
 
@@ -55,6 +76,10 @@ class SpatialIndex
 		 *
 		 * This should be the same as the normal search, but sacrifices
 		 * performance to collect statistics while running.
+		 *
+		 * @param query Query to use for searching
+		 * @param collector Object in which statistics should be recorded
+		 * @return Results matching query
 		 */
 		Results search(const Query& query, StatsCollector& collector) const;
 

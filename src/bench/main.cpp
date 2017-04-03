@@ -64,6 +64,9 @@ int main(int argc, char *argv[])
 			progress.increment();
 		}
 
+		logger.endStart("Preparing for search");
+		index->prepare();
+
 		logger.endStart("Running index self check");
 		try {
 			index->checkStructure();

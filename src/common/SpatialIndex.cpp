@@ -18,6 +18,12 @@ StatsCollector SpatialIndex::collectStatistics() const
 	throw std::runtime_error("This index does not support stats collection");
 }
 
+
+void SpatialIndex::prepare()
+{
+};
+
+
 Results SpatialIndex::search(const Query& query) const
 {
 	switch (query.getType()) {
@@ -62,7 +68,11 @@ Results SpatialIndex::rangeSearch(const Box& box, StatsCollector&) const
 	throw std::runtime_error("Range search instrumentation not implemented");
 }
 
-Results SpatialIndex::knnSearch(unsigned k, const Point& point, StatsCollector&) const
+Results SpatialIndex::knnSearch(
+		unsigned k,
+		const Point& point,
+		StatsCollector&
+	) const
 {
 	throw std::runtime_error("k-NN search instrumentation not implemented");
 }
