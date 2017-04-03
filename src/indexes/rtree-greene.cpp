@@ -2,7 +2,7 @@
 #include "configuration.hpp"
 #include "rtree/GreeneRtree.hpp"
 
-SpatialIndex * create(unsigned, unsigned long long)
+SpatialIndex * create(const Box&, unsigned long long)
 {
 	return new Rtree::GreeneRtree<D, M, m>();
 }

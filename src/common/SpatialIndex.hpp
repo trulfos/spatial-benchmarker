@@ -16,15 +16,8 @@ class SpatialIndex
 
 
 		/**
-		 * Set the data domain.
+		 * Insert an object in the index.
 		 *
-		 * @param bounds Data domain
-		 */
-		virtual void setBounds(const Box& bounds);
-
-
-		/**
-		 * Index an object.
 		 *
 		 * @param object Data object to insert
 		 */
@@ -33,7 +26,8 @@ class SpatialIndex
 
 		/**
 		 * Check the structure of this index.
-		 * Does nothing by default and assumes a valid structure.
+		 *
+		 * Does nothing by default and thus assumes a valid structure.
 		 *
 		 * @return True if structure is valid.
 		 */

@@ -1,9 +1,9 @@
 #include "interface.hpp"
 #include "scanning/Parallel.hpp"
 
-SpatialIndex * create(unsigned dimension, unsigned long long size)
+SpatialIndex * create(const Box& bounds, unsigned long long size)
 {
-	return new Scanning::Parallel(dimension, size);
+	return new Scanning::Parallel(bounds.getDimension(), size);
 }
 
 void destroy(SpatialIndex * index)

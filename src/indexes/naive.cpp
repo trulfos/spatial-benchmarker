@@ -1,7 +1,7 @@
 #include "interface.hpp"
 #include "naive/SpatialIndex.hpp"
 
-SpatialIndex * create(unsigned, unsigned long long)
+SpatialIndex * create(const Box&, unsigned long long)
 {
 	return new Naive::SpatialIndex();
 }

@@ -27,10 +27,18 @@ class HilbertRtree : public Rtree<Node<D, C, HilbertEntryPlugin>>
 		using EIt = typename E::iterator;
 
 
-		void setBounds(const Box& bounds) override
+		/**
+		 * Create a new hilbert entry with the given bounds.
+		 *
+		 * The bounds are used to normalize the coordinates such that the
+		 * hilbert encoding becomes more efficient.
+		 *
+		 * @param bounds Data domain boundaries
+		 */
+		HilbertRtree(const Box& bounds) : bounds(bounds)
 		{
-			this->bounds = bounds;
 		}
+
 
 		/**
 		 * Insert an entry in the tree.
