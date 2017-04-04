@@ -332,7 +332,7 @@ void Rtree<N, m>::traverse(F visitor) const
 		bool descend = visitor(entry, path.size());
 
 		// Push children (if they exist)
-		if (descend && path.size() < this->getHeight()) {
+		if (descend && path.size() < getHeight()) {
 			path.emplace_back(entry.begin(), entry.end());
 		}
 	}
