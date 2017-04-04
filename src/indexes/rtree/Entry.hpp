@@ -39,7 +39,7 @@ class Entry
 		/**
 		 * Default constructor.
 		 */
-		Entry() : plugin(*this)
+		Entry() : plugin()
 		{
 		}
 
@@ -88,37 +88,52 @@ class Entry
 			return mbr;
 		}
 
-		M& getMbr()
+		/**
+		 * Set the MBR associated with this entry.
+		 *
+		 * @param m New MBR for this entry
+		 */
+		void setMbr(const M& m)
 		{
-			return mbr;
+			mbr = m;
 		}
 
 
 		/**
-		 * Retrieve the ID of this entry.
+		 * Retrieve the id of this entry.
 		 */
 		const Id& getId() const
 		{
 			return id;
 		}
 
-		Id& getId()
+		/**
+		 * Set the id of this entry.
+		 *
+		 * @param i New id
+		 */
+		void setId(const Id& i)
 		{
-			return id;
+			id = i;
 		}
 
 
 		/**
 		 * Retrieve the node of this entry
 		 */
-		const Node * getNode() const
+		Node * getNode() const
 		{
 			return node;
 		}
 
-		Node * getNode()
+		/**
+		 * Set the node associated with this entry.
+		 *
+		 * @param n New node
+		 */
+		void setNode(Node * n)
 		{
-			return node;
+			node = n;
 		}
 
 		

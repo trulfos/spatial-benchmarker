@@ -18,20 +18,9 @@ namespace Rtree
 			// Store unsigned in node
 			using NodeData = unsigned;
 
+
 			// Inherit constructors
 			using EntryPlugin<E>::EntryPlugin;
-
-			/**
-			 * Default constructor.
-			 *
-			 * Only initializes the node field to an invalid value, ensuring
-			 * error messages in debug mode.
-			 */
-			CapturingEntryPlugin(E& host)
-				: EntryPlugin<E>(host)
-			{
-				host.getNode()->data = 0;
-			}
 
 
 			/**

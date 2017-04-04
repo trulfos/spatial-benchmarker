@@ -77,7 +77,7 @@ class RStarTree : public Rtree<Node<D, C>, m>
 
 			// Find leaf node
 			for (unsigned i = 0; i < height - 2 - level; i++) {
-				path.back()->getMbr() += entry.getMbr();
+				path.back()->include(entry);
 				E& e = chooseSubtree(*path.back(), entry, height - i - 1);
 				path.push_back(&e);
 			}

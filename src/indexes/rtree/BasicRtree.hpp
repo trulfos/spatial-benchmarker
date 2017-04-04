@@ -88,7 +88,7 @@ void BasicRtree<N, m>::insert(const DataObject& object)
 	std::vector<E *> path {&this->getRoot()};
 
 	while (path.size() < this->getHeight() - 1) {
-		path.back()->getMbr() += entry.getMbr();
+		path.back()->include(entry);
 		path.push_back(
 				&chooseSubtree(*path.back(), entry)
 			);
