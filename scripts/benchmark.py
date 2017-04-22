@@ -53,6 +53,11 @@ def parse_arguments():
             help='Print results instead of storing them to the database'
         )
 
+    parser.add_argument(
+            '--compile-only', '-c', action='store_true',
+            help='Only compile the index with the correct configuration'
+        )
+
     return parser.parse_args()
 
 
@@ -137,7 +142,7 @@ def get_benchmark_ids(db, index):
 
 
 @asyncio.coroutine
-def run_benchmark(db, benchmark_id, use_stdout, dry):
+def run_benchmark(db, benchmark_id, use_stdout, dry, compile_only):
     # Gather information
     commit = get_commit()
     benchmark = db.get_by_id('benchmark', benchmark_id)
@@ -171,6 +176,9 @@ def run_benchmark(db, benchmark_id, use_stdout, dry):
 
         print("Config %d compiled" % config_id)
         made_configs.add(config_id)
+
+    if compile_only:
+        return
 
     # Run the benchmark (async)
     process = yield from asyncio.create_subprocess_exec(
@@ -240,7 +248,7 @@ def main():
 
     # Run!
     run_queued(
-            [run_benchmark(db, b, use_stdout, args.dry) for b in benchmarks],
+            [run_benchmark(db, b, use_stdout, args.dry, args.compile_only) for b in benchmarks],
             max_parallel=args.parallel
         )
 
