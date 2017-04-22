@@ -81,19 +81,19 @@ namespace Rtree
 
 					const Mbr getMbr() const override
 					{
-						return node->mbrs[index];
+						return node->entries[index].mbr;
 					}
 
 
 					const Link getLink() const override
 					{
-						return node->links[index];
+						return node->entries[index].link;
 					}
 
 
 					const Plugin getPlugin() const override
 					{
-						return node->plugins[index];
+						return node->entries[index].plugin;
 					}
 
 					/**
@@ -113,17 +113,17 @@ namespace Rtree
 				protected:
 					void setMbr(const Mbr& m) override
 					{
-						node->mbrs[index] = m;
+						node->entries[index].mbr = m;
 					}
 
 					void setPlugin(const Plugin& p) override
 					{
-						node->plugins[index] = p;
+						node->entries[index].plugin = p;
 					}
 
 					void setLink(const Link& l) override
 					{
-						node->links[index] = l;
+						node->entries[index].link = l;
 					}
 
 				private:
@@ -245,7 +245,7 @@ namespace Rtree
 					 */
 					reference operator*()
 					{
-						return node->links[index];
+						return node->entries[index].link;
 					}
 
 					/**
@@ -253,7 +253,7 @@ namespace Rtree
 					 */
 					pointer operator->()
 					{
-						return node->links + index;
+						return &node->entries[index].links;
 					}
 
 				private:
@@ -271,7 +271,7 @@ namespace Rtree
 					{
 						while (
 							index < node->size &&
-							!node->mbrs[index].intersects(*mbr)
+							!node->entries[index].mbr.intersects(*mbr)
 						) {
 							++index;
 						}
@@ -314,9 +314,9 @@ namespace Rtree
 			{
 				assert(i < size);
 				return Entry(
-						mbrs[i],
-						links[i],
-						plugins[i]
+						entries[i].mbr,
+						entries[i].link,
+						entries[i].plugin
 					);
 			}
 
@@ -437,9 +437,17 @@ namespace Rtree
 
 
 		private:
-			Mbr mbrs[C];
-			Link links[C];
-			Plugin plugins[C];
+			/**
+			 * Simple struct for storing MBR, link and plugin in the same place.
+			 */
+			struct SimpleEntry
+			{
+				Mbr mbr;
+				Link link;
+				Plugin plugin;
+			};
+
+			SimpleEntry entries[capacity];
 			unsigned size;
 
 			typename Plugin::NodeData data;
