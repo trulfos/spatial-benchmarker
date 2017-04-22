@@ -6,7 +6,7 @@
 #include <cmath>
 #include "Rtree.hpp"
 #include "Algorithm.hpp"
-#include "Node.hpp"
+#include "DefaultNode.hpp"
 #include "Entry.hpp"
 #include "CoveringSet.hpp"
 
@@ -23,12 +23,12 @@ namespace Rtree
  * @tparam p Number of entries to reinsert (on first overflow)
  */
 template<unsigned D, unsigned C, unsigned m, unsigned p>
-class RStarTree : public Rtree<Node<D, C>, m>
+class RStarTree : public Rtree<DefaultNode<D, C>, m>
 {
 	static_assert(p < C, "p must be less than the node capacity C");
 	static_assert(2 * m <= C, "Min node fill level must be below capacity / 2");
 
-	using N = Node<D, C>;
+	using N = DefaultNode<D, C>;
 	using M = Mbr<D>;
 
 	using Base = Rtree<N, m>;

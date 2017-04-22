@@ -2,7 +2,7 @@
 #include <cassert>
 #include <vector>
 #include "BasicRtree.hpp"
-#include "Node.hpp"
+#include "DefaultNode.hpp"
 #include "Entry.hpp"
 #include "Algorithm.hpp"
 #include "QuadraticSeeds.hpp"
@@ -18,10 +18,10 @@ namespace Rtree
  * @tparam m Minimum node fill grade
  */
 template<unsigned D, unsigned C, unsigned m>
-class QuadraticRtree : public BasicRtree<Node<D, C>, m>
+class QuadraticRtree : public BasicRtree<DefaultNode<D, C>, m>
 {
 	protected:
-		using N = ::Rtree::Node<D, C>;
+		using N = ::Rtree::DefaultNode<D, C>;
 		using M = typename N::Mbr;
 
 

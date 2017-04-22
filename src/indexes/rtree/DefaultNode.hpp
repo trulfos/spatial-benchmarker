@@ -3,42 +3,40 @@
 #include "Mbr.hpp"
 #include "Entry.hpp"
 #include "EntryPlugin.hpp"
+#include "ProxyIterator.hpp"
 
 
 namespace Rtree
 {
 	/**
+	 * Node where the fields of each entry is stored together in the naive way.
+	 *
 	 * @tparam D Dimension
 	 * @tparam C Max capacity
 	 * @tparam P Plugin
 	 */
 	template<unsigned D, unsigned C, class P = EntryPlugin>
-	class Node
+	class DefaultNode
 	{
 		public:
 			// Type definitions
 			using Mbr = ::Rtree::Mbr<D>;
-			using Link = ::Rtree::Link<Node>;
+			using Link = ::Rtree::Link<DefaultNode>;
 			using Plugin = P;
-			using Entry = ::Rtree::Entry<Node>;
+			using Entry = ::Rtree::Entry<DefaultNode>;
 
 
 			// Constants
 			static constexpr unsigned capacity = C;
-
-
-			// Forward declarations
-			class ProxyIterator;
-			class ConstProxyIterator;
 
 			/**
 			 * Proxy entry for the default node class.
 			 *
 			 * @see Rtree::BaseEntry
 			 */
-			class ProxyEntry : public BaseEntry<Node>
+			class ProxyEntry : public BaseEntry<DefaultNode>
 			{
-				using Base = BaseEntry<Node>;
+				using Base = BaseEntry<DefaultNode>;
 
 				public:
 					// Types
@@ -57,7 +55,7 @@ namespace Rtree
 					 * @param node Node in which the entry resides
 					 * @param index Index of entry in node
 					 */
-					ProxyEntry(Node * node, unsigned index)
+					ProxyEntry(DefaultNode * node, unsigned index)
 						: node(node), index(index)
 					{
 					}
@@ -129,243 +127,15 @@ namespace Rtree
 					}
 
 				private:
-					Node * node;
+					DefaultNode * node;
 					unsigned index;
 
-					friend ProxyIterator;
-					friend ConstProxyIterator;
+					friend ProxyIterator<DefaultNode>;
+					friend ConstProxyIterator<DefaultNode>;
 			};
 
-			/**
-			 * TODO: Document this!
-			 */
-			class ProxyIterator
-			{
-				public:
-					using iterator_category = std::random_access_iterator_tag;
-					using reference = ProxyEntry&;
-					using pointer = ProxyEntry *;
-					using value_type = Entry;
-					using difference_type = int;
-
-					// Because standards...
-					ProxyIterator() = default;
-
-					ProxyIterator(Node * node, unsigned index)
-						: proxy(node, index)
-					{
-						assert(index <= node->getSize());
-					}
-
-					ProxyIterator& operator++()
-					{
-						++proxy.index;
-						return *this;
-					}
-
-					ProxyIterator operator++(int)
-					{
-						ProxyIterator it = *this;
-						operator++();
-						return it;
-					}
-
-					ProxyIterator& operator--()
-					{
-						--proxy.index;
-						return *this;
-					}
-
-					ProxyIterator operator--(int)
-					{
-						ProxyIterator it = *this;
-						operator--();
-						return it;
-					}
-
-					reference operator*()
-					{
-						return proxy;
-					}
-
-					const ProxyEntry& operator*() const
-					{
-						return proxy;
-					}
-
-					pointer operator->()
-					{
-						return &proxy;
-					}
-
-					ProxyIterator& operator+=(difference_type distance)
-					{
-						assert(distance + proxy.index >= 0);
-						proxy.index += distance;
-						return *this;
-					}
-
-
-					ProxyIterator& operator-=(difference_type distance)
-					{
-						return operator+(-distance);
-					}
-
-
-					ProxyIterator operator+(difference_type distance) const
-					{
-						ProxyIterator it = *this;
-						it += distance;
-						return it;
-					}
-
-
-					ProxyIterator operator-(difference_type distance) const
-					{
-						return operator+(-distance);
-					}
-
-					difference_type operator-(const ProxyIterator& other) const
-					{
-						assert(proxy.node == other.proxy.node);
-						return difference_type(proxy.index)
-							- difference_type(other.proxy.index);
-					}
-
-
-					ProxyIterator operator[](difference_type index)
-					{
-						return *(*this + index);
-					}
-
-					bool operator>(const ProxyIterator& other) const
-					{
-						assert(proxy.node == other.proxy.node);
-						return proxy.index > other.proxy.index;
-					}
-
-
-					bool operator<(const ProxyIterator& other) const
-					{
-						assert(proxy.node == other.proxy.node);
-						return proxy.index < other.proxy.index;
-					}
-
-
-					bool operator>=(const ProxyIterator& other) const
-					{
-						assert(proxy.node == other.proxy.node);
-						return proxy.index >= other.proxy.index;
-					}
-
-
-					bool operator<=(const ProxyIterator& other) const
-					{
-						assert(proxy.node == other.proxy.node);
-						return proxy.index <= other.proxy.index;
-					}
-
-
-					bool operator==(const ProxyIterator& other) const
-					{
-						return proxy.node == other.proxy.node &&
-							proxy.index == other.proxy.index;
-					}
-
-					ProxyIterator& operator=(const ProxyIterator& other)
-					{
-						proxy.node = other.proxy.node;
-						proxy.index = other.proxy.index;
-						return *this;
-					}
-
-					/**
-					 * Get the node from which this iterator comes.
-					 *
-					 * The weired name is to avoid confusion with the
-					 * `getNode()` method of entries as `i.getNode()` can easily
-					 * be confused with `i->getNode()`.
-					 *
-					 * TODO: Perhaps move to the proxy itself?
-					 *
-					 * @return Node associated with this iterator
-					 */
-					Node& getContainingNode() const
-					{
-						return *proxy.node;
-					}
-
-				private:
-					ProxyEntry proxy;
-			};
-
-
-			class ConstProxyIterator
-				: std::iterator<std::input_iterator_tag, Entry>
-			{
-				public:
-					using reference = const Entry&;
-					using pointer = const Entry *;
-					using value_type = Entry;
-
-					ConstProxyIterator(const Node * node, unsigned index)
-						: node(node), index(index)
-					{
-						assert(index <= node->getSize());
-						updateCachedEntry();
-					}
-
-					ConstProxyIterator& operator++()
-					{
-						++index;
-						updateCachedEntry();
-						return *this;
-					}
-
-					ConstProxyIterator operator++(int)
-					{
-						ConstProxyIterator it = *this;
-						operator++();
-						return it;
-					}
-
-					reference operator*() const
-					{
-						return entry;
-					}
-
-					pointer operator->() const
-					{
-						return &operator*();
-					}
-
-					bool operator==(const ConstProxyIterator& other) const
-					{
-						return node == other.node &&
-							index == other.index;
-					}
-
-				private:
-					const Node * node;
-					unsigned index;
-					Entry entry;
-
-
-					void updateCachedEntry()
-					{
-						if (index < node->getSize()) {
-							entry = Entry(
-									node->mbrs[index],
-									node->links[index],
-									node->plugins[index]
-								);
-						}
-
-					}
-			};
-
-			using iterator = ProxyIterator;
-			using const_iterator = ConstProxyIterator;
+			using iterator = ProxyIterator<DefaultNode>;
+			using const_iterator = ConstProxyIterator<DefaultNode>;
 			using reference = ProxyEntry;
 
 
@@ -401,7 +171,7 @@ namespace Rtree
 					 * @param i Index to start at
 					 */
 					ScanIterator(
-							const Node * node,
+							const DefaultNode * node,
 							const Mbr * mbr,
 							unsigned index
 						) : node(node), mbr(mbr), index(index)
@@ -487,7 +257,7 @@ namespace Rtree
 					}
 
 				private:
-					const Node * node;
+					const DefaultNode * node;
 					const Mbr * mbr;
 					unsigned index;
 
@@ -512,7 +282,7 @@ namespace Rtree
 			/**
 			 * Construct an empty node.
 			 */
-			Node() : size(0)
+			DefaultNode() : size(0)
 			{
 			}
 
@@ -524,7 +294,7 @@ namespace Rtree
 			 * @param entries Set of entries to include
 			 */
 			template<class E>
-			Node(const std::initializer_list<E>& entries)
+			DefaultNode(const std::initializer_list<E>& entries)
 			{
 				assign(entries.begin(), entries.end());
 			}
@@ -537,6 +307,17 @@ namespace Rtree
 			{
 				assert(i < size);
 				return ProxyEntry(this, i);
+			}
+
+
+			Entry operator[](unsigned i) const
+			{
+				assert(i < size);
+				return Entry(
+						mbrs[i],
+						links[i],
+						plugins[i]
+					);
 			}
 
 
@@ -578,7 +359,7 @@ namespace Rtree
 			 * Assign from initializer list.
 			 */
 			template<class E>
-			Node& operator=(const std::initializer_list<E>& entries)
+			DefaultNode& operator=(const std::initializer_list<E>& entries)
 			{
 				assign(entries.begin(), entries.end());
 

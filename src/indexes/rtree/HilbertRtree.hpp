@@ -2,7 +2,7 @@
 #include <cassert>
 #include <vector>
 #include "Rtree.hpp"
-#include "Node.hpp"
+#include "DefaultNode.hpp"
 #include "HilbertEntryPlugin.hpp"
 #include "Algorithm.hpp"
 
@@ -18,9 +18,9 @@ namespace Rtree
  * @tparam s Node split strategy s:(s+1)
  */
 template<unsigned D, unsigned C, unsigned s>
-class HilbertRtree : public Rtree<Node<D, C, HilbertEntryPlugin>>
+class HilbertRtree : public Rtree<DefaultNode<D, C, HilbertEntryPlugin>>
 {
-	using N = Node<D, C, HilbertEntryPlugin>;
+	using N = DefaultNode<D, C, HilbertEntryPlugin>;
 	using NIt = typename N::iterator;
 	using Base = Rtree<N>;
 

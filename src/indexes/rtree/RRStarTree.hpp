@@ -11,7 +11,7 @@
 #include "CoveringSet.hpp"
 #include "ReferenceView.hpp"
 #include "CheckComp.hpp"
-#include "Node.hpp"
+#include "DefaultNode.hpp"
 
 namespace Rtree
 {
@@ -24,11 +24,11 @@ namespace Rtree
  * @tparam m Minimum number of children in each node
  */
 template<unsigned D, unsigned C, unsigned m>
-class RRStarTree : public BasicRtree<Node<D, C, CapturingEntryPlugin>, m>
+class RRStarTree : public BasicRtree<DefaultNode<D, C, CapturingEntryPlugin>, m>
 {
 	public:
 
-		using N = Node<D, C, CapturingEntryPlugin>;
+		using N = DefaultNode<D, C, CapturingEntryPlugin>;
 		using NIt = typename N::iterator;
 		using M = Mbr<D>;
 
