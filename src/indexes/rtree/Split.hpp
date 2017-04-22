@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <memory>
 #include "ReferenceView.hpp"
+#include "Entry.hpp"
 
 namespace Rtree
 {
@@ -11,15 +12,17 @@ namespace Rtree
 /**
  * Represents a possible split of a set of entries used by the RR*-tree.
  */
-template<class E>
+template<class N>
 class Split
 {
-	using M = typename E::M;
+	using NIt = typename N::iterator;
 
 	public:
 
+		using Mbr = typename N::Mbr;
+
 		Split(
-				const ReferenceView<E>& entryView,
+				const ReferenceView<NIt>& entryView,
 				unsigned sort,
 				unsigned dimension,
 				unsigned splitPoint
@@ -39,15 +42,13 @@ class Split
 		/**
 		 * Retrieve MBRs for the two parts
 		 */
-		const std::array<M, 2>& getMbrs() const
+		const std::array<Mbr, 2>& getMbrs() const
 		{
 			return mbrs;
 		}
 
 
-		using rvec = std::vector<
-				typename std::remove_const<E>::type
-			>;
+		using EVec = std::vector<Entry<N>>;
 
 		/**
 		 * Retrieve the entries contained in each part.
@@ -55,13 +56,13 @@ class Split
 		 * TODO: Avoid copying the entrie view by forwarding this request to the
 		 * iterator itself (triggering a new sort or special copy operation).
 		 */
-		std::array<rvec, 2> getEntries() const
+		std::array<EVec, 2> getEntries() const
 		{
 			auto middle = entryView.begin() + splitPoint;
 
 			return {{
-					rvec(entryView.begin(), middle),
-					rvec(middle, entryView.end())
+					EVec(entryView.begin(), middle),
+					EVec(middle, entryView.end())
 				}};
 		}
 
@@ -93,21 +94,22 @@ class Split
 
 	private:
 		unsigned sort, dimension, splitPoint;
-		std::array<M, 2> mbrs;
-		ReferenceView<E> entryView;
+		std::array<Mbr, 2> mbrs;
+		ReferenceView<NIt> entryView;
 
 		/**
 		 * Sums up MBRs.
 		 */
 		template<class FIt>
-		static M mbrSum(FIt first, FIt last)
+		static Mbr mbrSum(FIt first, FIt last)
 		{
 			assert(first != last);
+			using E = typename std::iterator_traits<FIt>::value_type;
 
 			return std::accumulate(
 					first, last,
 					first->getMbr(),
-					[](const M& sum, const E& e) {
+					[](const Mbr& sum, const E& e) {
 						return sum + e.getMbr();
 					}
 				);

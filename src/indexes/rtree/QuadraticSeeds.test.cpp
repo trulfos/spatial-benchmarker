@@ -1,13 +1,22 @@
 #include <criterion/criterion.h>
 #include "QuadraticSeeds.hpp"
 #include "Entry.hpp"
+#include "Mbr.hpp"
+#include "EntryPlugin.hpp"
+#include "Link.hpp"
 #include <algorithm>
 #include <vector>
 
 using namespace Rtree;
 
-class N {};
-using E = Entry<2, N>;
+struct N {
+	using Mbr = ::Rtree::Mbr<2>;
+	using Link = ::Rtree::Link<N>;
+	using Plugin = EntryPlugin;
+};
+
+
+using E = Entry<N>;
 
 // Create a set of entries for testing
 std::array<const E, 4> entries = {{
@@ -48,13 +57,13 @@ Test(QuadraticSeeds, permutations)
 	std::vector<E> permutation (entries.begin(), entries.end());
 
 	auto byId = [](const E& a, const E& b) {
-			return a.getId() < b.getId();
+			return a.getLink().getId() < b.getLink().getId();
 		};
 
 	while (std::next_permutation(permutation.begin(), permutation.end(), byId)) {
 		QuadraticSeeds<It> seeds (entries.begin(), entries.end());
 
-		cr_assert_eq(seeds.first->getId(), 1);
-		cr_assert_eq(seeds.second->getId(), 4);
+		cr_assert_eq(seeds.first->getLink().getId(), 1);
+		cr_assert_eq(seeds.second->getLink().getId(), 4);
 	}
 }

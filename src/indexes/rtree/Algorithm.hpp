@@ -93,7 +93,8 @@ class DerefIterator
 	public:
 		using difference_type = typename std::iterator_traits<Iterator>::difference_type;
 
-		using value_type = typename std::remove_reference<
+		//TODO: Why const!?
+		using value_type = const typename std::remove_reference<
 				decltype(
 						*(typename std::iterator_traits<Iterator>::value_type())
 					)
@@ -162,6 +163,14 @@ class DerefIterator
 		{
 			return iterator - other.iterator;
 		};
+
+		/**
+		 * Convert to normal iterator again.
+		 */
+		Iterator unwrap()
+		{
+			return iterator;
+		}
 
 	private:
 		Iterator iterator;

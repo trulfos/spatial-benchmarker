@@ -28,10 +28,17 @@ class RStarTree : public Rtree<Node<D, C>, m>
 	static_assert(p < C, "p must be less than the node capacity C");
 	static_assert(2 * m <= C, "Min node fill level must be below capacity / 2");
 
+	using N = Node<D, C>;
+	using M = Mbr<D>;
+
+	using Base = Rtree<N, m>;
+	using NIt = typename N::iterator;
+
 	public:
-		using N = Node<D, C>;
-		using E = typename N::E;
-		using M = typename E::M;
+		// These depend on template parameters
+		using Base::getHeight;
+		using Base::addLevel;
+		using Base::getRoot;
 
 
 		/**
@@ -51,101 +58,160 @@ class RStarTree : public Rtree<Node<D, C>, m>
 		/**
 		 * Insert an entry in the tree.
 		 *
-		 * @param index Index to insert into
-		 * @param object DataObject to insert
-		 * @param split Last split level (used in recursive calls)
+		 * @param entry Entry to insert
+		 * @param level Destination level for the entry
+		 * @param isReinsert True to avoid reinsertion during reinsertion
 		 */
-		void insert(const E& entry, unsigned level, bool split = false)
+		void insert(Entry<N> entry, unsigned level, bool isReinsert = false)
 		{
-			const unsigned& height = this->getHeight();
+			const unsigned& height = getHeight();
 
 			// No nodes - set entry as root
-			if (this->getHeight() == 0) {
-				this->addLevel(entry);
+			if (height - level == 0) {
+				addLevel(entry);
 				return;
 			}
 
 			// Single entry - add new root
-			if (this->getHeight() == 1) {
-				this->addLevel(
-						E(this->allocateNode(), {this->getRoot(), entry})
+			if (height - level == 1) {
+				addLevel(
+						Entry<N>(new N({getRoot(), entry}))
 					);
 				return;
 			}
 
-			std::vector<E *> path {&this->getRoot()};
+			getRoot().include(entry);
 
-			// Find leaf node
-			for (unsigned i = 0; i < height - 2 - level; i++) {
+			if (height - level > 2) {
+				std::vector<NIt> path {
+						chooseSubtree(getRoot().getNode(), entry, height - 1)
+					};
 				path.back()->include(entry);
-				E& e = chooseSubtree(*path.back(), entry, height - i - 1);
-				path.push_back(&e);
-			}
 
-			// Split nodes bottom-up as long as necessary
-			E e = entry;
-			auto top = path.rbegin();
+				// Find leaf node
+				for (unsigned i = 1; i < height - 2 - level; i++) {
+					NIt e = chooseSubtree(
+							path.back()->getNode(),
+							entry,
+							height - i - 1
+						);
 
-			while (top != path.rend() && (*top)->getNode()->isFull()) {
-
-				// Reinsert entries
-				if (!split) {
-					for (E& i : extractEntries(**top, e)) {
-						insert(i, top - path.rbegin(), true);
-					}
-
-					// Adjust bounding rectangles upwards in the tree
-					for (auto n = top + 1; n != path.rend(); n++) {
-						(*n)->recalculate();
-					}
-
-					return;
+					e->include(entry);
+					path.push_back(e);
 				}
 
-				// Split node
-				e = E(this->allocateNode(), {e});
-				redistribute(**top, e);
+				// Split nodes bottom-up as long as necessary
+				auto top = path.rbegin();
 
-				++top;
+				while (top != path.rend() && (*top)->getNode().isFull()) {
+					// Reinsert entries
+					if (!isReinsert) {
+						// Extract entries to reinsert
+						auto extracted = extractEntries(*top, entry);
+
+						// Adjust bounding rectangles upwards in the tree
+						for (auto n = top; n != path.rend(); n++) {
+							(*n)->recalculate();
+						}
+						getRoot().recalculate();
+
+						// Reinsert
+						for (Entry<N>& i : extracted) {
+							insert(i, top - path.rbegin(), true);
+						}
+
+						return;
+					}
+
+					// Split node
+					entry = split(**top, entry);
+					++top;
+				}
+
+				// Can we do final insert?
+				if (top != path.rend()) {
+					(*top)->getNode().add(entry);
+					return;
+				}
 			}
+
+			// We must insert into the root
+			N& node = getRoot().getNode();
 
 			// Split root?
-			if (top == path.rend()) {
-				this->addLevel(
-						E(this->allocateNode(), {**path.begin(), e})
+			if (node.isFull()) {
+				entry = split(getRoot(), entry);
+				addLevel(
+						Entry<N>(new N({getRoot(), entry}))
 					);
-			} else {
-				(*top)->add(e);
+				return;
 			}
+
+			// Regular insert
+			node.add(entry);
 		};
+
+
+		/**
+		 * Split the node of an entry and include an extra child.
+		 *
+		 * This will create a new node with the related entry and split the
+		 * entries of parent between parent and the new node.
+		 *
+		 * @param parent Parent entry with node to split
+		 * @param entry Extra child to include in split
+		 * @return New entry with new node
+		 */
+		template<class E>
+		Entry<N> split(E& parent, Entry<N> entry)
+		{
+			// Create new node
+			Entry<N> newEntry (new N {entry});
+
+			// Distribute children
+			redistribute(
+					newEntry.getNode(),
+					parent.getNode()
+				);
+
+			// Recalculate entries
+			newEntry.recalculate();
+			parent.recalculate();
+
+			return newEntry;
+		}
 
 
 		/**
 		 * Extracts the most distant entries from the given entry.
 		 *
-		 * @param parent Parent from who's children entries should be extracted
+		 * @param parent Parent from which child entries should be extracted
 		 * @param newEntry Extra entry to include
 		 *
 		 * @return Extracted entries ordered bycenter distance to parent
 		 */
-		std::vector<E> extractEntries(E& parent, const E& newEntry)
+		std::vector<Entry<N>> extractEntries(
+				NIt parent,
+				const Entry<N>& newEntry
+			)
 		{
 			// Collect all entries
-			std::vector<E> entries (
-					parent.begin(),
-					parent.end()
+			std::vector<Entry<N>> entries (
+					parent->getNode().begin(),
+					parent->getNode().end()
 				);
 
 			entries.push_back(newEntry);
 
 
 			// Sort by center distance to parent
+			auto parentCenter = parent->getMbr().center();
 			std::sort(
 					entries.begin(),
 					entries.end(),
-					[&](const E& a, const E& b) {
-						return (a.getMbr().center() - parent.getMbr().center()).squared()
-							< (b.getMbr().center() - parent.getMbr().center()).squared();
+					[&](const Entry<N>& a, const Entry<N>& b) {
+						return (a.getMbr().center() - parentCenter).squared()
+							< (b.getMbr().center() - parentCenter).squared();
 					}
 				);
 
@@ -154,13 +220,13 @@ class RStarTree : public Rtree<Node<D, C>, m>
 			auto middle = entries.end() - p;
 
 			// Add back remaining entries to node
-			parent.assign(
+			parent->getNode().assign(
 					entries.begin(),
 					middle
 				);
 
 			// Return extracted entries
-			return std::vector<E>(
+			return std::vector<Entry<N>>(
 					middle,
 					entries.end()
 				);
@@ -174,9 +240,13 @@ class RStarTree : public Rtree<Node<D, C>, m>
 		 * @param node Node in which the subtree should be
 		 * @param elevation Node elevation (from bottom of tree)
 		 */
-		E& chooseSubtree(E& parent, const E& newEntry, unsigned elevation)
+		NIt chooseSubtree(
+				N& parent,
+				const Entry<N>& newEntry,
+				unsigned elevation
+			)
 		{
-			CoveringSet<E> covering (parent.begin(), parent.end(), newEntry);
+			CoveringSet<NIt> covering (parent.begin(), parent.end(), newEntry);
 
 			if (!covering.empty()) {
 				return covering.minBy(&M::volume);
@@ -197,13 +267,16 @@ class RStarTree : public Rtree<Node<D, C>, m>
 		 * @param mbr MBR to include
 		 * @return Entry requiring the least enlargement to include mbr
 		 */
-		E& leastVolumeEnlargement(E& parent, const E& newEntry)
+		NIt leastVolumeEnlargement(N& parent, const Entry<N>& newEntry)
 		{
-			return *argmin(
+			return argmin(
 					parent.begin(),
 					parent.end(),
-					[&](const E& entry) {
-						return entry.getMbr().delta(&M::volume, newEntry.getMbr());
+					[&](const Entry<N>& entry) {
+						return entry.getMbr().delta(
+								&M::volume,
+								newEntry.getMbr()
+							);
 					}
 				);
 		}
@@ -215,12 +288,12 @@ class RStarTree : public Rtree<Node<D, C>, m>
 		 * @param mbr MBR to include
 		 * @return Entry with the least overlap
 		 */
-		E& leastOverlapEnlargement(E& parent, const E& newEntry)
+		NIt leastOverlapEnlargement(N& parent, const Entry<N>& newEntry)
 		{
 			// Sort by volume
 			std::sort(
 					parent.begin(), parent.end(),
-					[](const E& a, const E&b) {
+					[](const Entry<N>& a, const Entry<N>&b) {
 						return a.getMbr().volume() < b.getMbr().volume();
 					}
 				);
@@ -228,19 +301,19 @@ class RStarTree : public Rtree<Node<D, C>, m>
 			// Find entry with no enlargement (if any)
 			auto noEnlargementEntry = std::find_if(
 					parent.begin(), parent.end(),
-					[&](const E& e) {
+					[&](typename N::reference e) {
 						return overlap(parent, e.getMbr() + newEntry.getMbr())
 								== overlap(parent, e.getMbr());
 					}
 				);
 
 			if (noEnlargementEntry != parent.end()) {
-				return *noEnlargementEntry;
+				return noEnlargementEntry;
 			}
 
-			return *argmin(
+			return argmin(
 					parent.begin(), parent.end(),
-					[&](const E& entry) {
+					[&](typename N::reference entry) {
 						// Calculate overlap enlargement
 						double o = overlap(parent, entry.getMbr() + newEntry.getMbr())
 							- overlap(parent, entry.getMbr());
@@ -264,13 +337,13 @@ class RStarTree : public Rtree<Node<D, C>, m>
 		 *
 		 * @return Overlap of the MBR with the children
 		 */
-		double overlap(E& parent, M mbr)
+		double overlap(N& parent, M mbr)
 		{
 			return std::accumulate(
 					parent.begin(),
 					parent.end(),
 					0.0f,
-					[&](const double& sum, const E& entry) {
+					[&](const double& sum, typename N::reference entry) {
 						return mbr.intersects(entry.getMbr()) ?
 							sum + mbr.intersection(entry.getMbr()).volume() : sum;
 					}
@@ -284,10 +357,10 @@ class RStarTree : public Rtree<Node<D, C>, m>
 		 * @param a The first entry (with children)
 		 * @param b The second entry (with children)
 		 */
-		void redistribute(E& a, E& b)
+		void redistribute(N& a, N& b)
 		{
 			// Contruct buffer with all entries
-			std::vector<E> entries (a.begin(), a.end());
+			std::vector<Entry<N>> entries (a.begin(), a.end());
 
 			entries.insert(
 					entries.end(),
@@ -299,17 +372,17 @@ class RStarTree : public Rtree<Node<D, C>, m>
 
 
 			// Choose split dimension and index
-			unsigned bestDimension = E::dimension;
+			unsigned bestDimension = D;
 			unsigned bestSplit = entries.size();
 			double minPerimeter = std::numeric_limits<double>::infinity();
 
-			for (unsigned d = 0; d < E::dimension; ++d) {
+			for (unsigned d = 0; d < D; ++d) {
 
 				// Sort along current dimension
 				std::sort(
 						entries.begin(),
 						entries.end(),
-						[&](const E& a, const E& b) {
+						[&](const Entry<N>& a, const Entry<N>& b) {
 
 							auto diff = a.getMbr().getBottom()[d]
 								- b.getMbr().getBottom()[d];
@@ -365,7 +438,7 @@ class RStarTree : public Rtree<Node<D, C>, m>
 			}
 
 			// A dimension and split should have been chosen
-			assert(bestDimension < E::dimension);
+			assert(bestDimension < D);
 			assert(bestSplit >= m && bestSplit < entries.size() - m);
 
 			// Distribute entries
@@ -375,7 +448,7 @@ class RStarTree : public Rtree<Node<D, C>, m>
 					entries.begin(),
 					middle,
 					entries.end(),
-					[&](const E& a, const E& b) {
+					[&](const Entry<N>& a, const Entry<N>& b) {
 
 						auto diff = a.getMbr().getBottom()[bestDimension]
 							- b.getMbr().getBottom()[bestDimension];

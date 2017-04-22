@@ -11,13 +11,13 @@ namespace Rtree
  * Note that some calculations have been reordered to allow precalculating most
  * of the values once the dimension is known.
  */
-template<class E, unsigned m>
+template<class N, unsigned m>
 class WeightingFunction
 {
-	using Mbr = typename E::M;
+	using Mbr = typename N::Mbr;
 
 
-	static constexpr unsigned capacity = E::Node::capacity;
+	static constexpr unsigned capacity = N::capacity;
 	static constexpr double s = 0.5f;
 	static constexpr double shift = exp(-1.0f / (s * s));
 	static constexpr double scale = 1.0f / (1 - shift);
@@ -29,11 +29,14 @@ public:
 	/**
 	 * Construct a new weighting function based on the given entry.
 	 *
-	 * @param E Parent to base calculations on
+	 * @param Parent to base calculations on
 	 */
-	WeightingFunction(const E& parent) : parent(parent), dimension(1)
+	template<class E>
+	WeightingFunction(const E& parent) :
+		current(parent.getMbr()),
+		original(parent.getPlugin().originalMbr(parent)),
+		dimension(1)
 	{
-		original = parent.getPlugin().originalMbr(parent);
 		setDimension(0);
 	}
 
@@ -45,7 +48,7 @@ public:
 	 */
 	void setDimension(unsigned d)
 	{
-		assert(d < E::dimension);
+		assert(d < Mbr::dimension);
 
 		// Skip if correct dimension is already set
 		if (dimension == d) {
@@ -54,7 +57,6 @@ public:
 
 		dimension = d;
 
-		const Mbr & current = parent.getMbr();
 		const double width = current.getTop()[d] - current.getBottom()[d];
 
 		// Recalculate cached values
@@ -86,7 +88,7 @@ public:
 	}
 
 private:
-	const E& parent;
+	Mbr current;
 	Mbr original;
 
 	// Used to cache the below result

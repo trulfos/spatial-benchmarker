@@ -17,6 +17,9 @@ template<unsigned D>
 class Mbr
 {
 	public:
+
+		static constexpr unsigned dimension = D;
+
 		Mbr()
 		{
 		};
@@ -56,6 +59,29 @@ class Mbr
 				top[i] = points.second[i];
 			}
 		};
+
+
+		/**
+		 * Creates an MBR by combining all MBRs in a range.
+		 *
+		 * @param first Iterator to first MBR in range
+		 * @param last Past-the-end iterator for the range
+		 */
+		template<class InputIterator>
+		Mbr(InputIterator first, InputIterator last)
+		{
+			assert(first != last);
+
+			// Assign the first
+			operator=(*first);
+			++first;
+
+			// Add the remaining
+			while (first != last) {
+				operator+=(*first);
+				++first;
+			}
+		}
 
 
 		bool operator!=(const Mbr& other) const

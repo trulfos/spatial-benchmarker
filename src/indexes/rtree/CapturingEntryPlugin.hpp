@@ -8,20 +8,15 @@ namespace Rtree
 	 * Simple entry class taking care of capturing the MBR of this entry on
 	 * assignment.
 	 */
-	template<class E>
-	class CapturingEntryPlugin : public EntryPlugin<E>
+	class CapturingEntryPlugin : public EntryPlugin
 	{
-		using M = typename E::M;
-
 		public:
 
 			// Store unsigned in node
 			using NodeData = unsigned;
 
-
 			// Inherit constructors
-			using EntryPlugin<E>::EntryPlugin;
-
+			using EntryPlugin::EntryPlugin;
 
 			/**
 			 * Captures the MBR of the node.
@@ -31,9 +26,10 @@ namespace Rtree
 			 *
 			 * @param host Entry hosting this plugin
 			 */
+			template<class E>
 			void init(E& host)
 			{
-				host.getNode()->data = host.getNode()->size();
+				host.getNode().data = host.getNode().getSize();
 			}
 
 
@@ -42,17 +38,22 @@ namespace Rtree
 			 *
 			 * @param host Host entry for this plugin
 			 */
-			M originalMbr(const E& host) const
+			template<class E>
+			typename E::Mbr originalMbr(const E& host) const
 			{
-				unsigned centerEntries = host.getNode()->data;
+				unsigned centerEntries = host.getNode().data;
 
 				assert(centerEntries > 0);
-				assert(centerEntries <= host.getNode()->size());
+				assert(centerEntries <= host.getNode().getSize());
+
+				auto& node = host.getNode();
 
 				return std::accumulate(
-						host.begin(), host.begin() + centerEntries,
-						host.begin()[0].getMbr(),
-						[](const M& s, const E& e) { return s + e.getMbr(); }
+						node.begin(), node.begin() + centerEntries,
+						node[0].getMbr(),
+						[](const typename E::Mbr& s, const E& e) {
+							return s + e.getMbr();
+						}
 					);
 			}
 

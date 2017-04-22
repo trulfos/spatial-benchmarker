@@ -29,8 +29,8 @@ class RRStarTree : public BasicRtree<Node<D, C, CapturingEntryPlugin>, m>
 	public:
 
 		using N = Node<D, C, CapturingEntryPlugin>;
-		using E = typename N::E;
-		using M = typename E::M;
+		using NIt = typename N::iterator;
+		using M = Mbr<D>;
 
 		/**
 		 * Provide a couple of extra statistics.
@@ -50,7 +50,10 @@ class RRStarTree : public BasicRtree<Node<D, C, CapturingEntryPlugin>, m>
 		 * @param entry Entry to find location for
 		 * @param node Node in which the subtree should be
 		 */
-		E& chooseSubtree(E& parent, const E& newEntry) override;
+		NIt chooseSubtree(
+				BaseEntry<N>& parent,
+				const Entry<N>& newEntry
+			) override;
 
 
 		/**
@@ -60,7 +63,7 @@ class RRStarTree : public BasicRtree<Node<D, C, CapturingEntryPlugin>, m>
 		 * @param b The new entry (with the new child)
 		 * @param level Level of entries
 		 */
-		void redistribute(E& a, E& b, unsigned level) override;
+		void redistribute(BaseEntry<N>& a, BaseEntry<N>& b, unsigned level) override;
 };
 
 
@@ -85,13 +88,15 @@ StatsCollector RRStarTree<D, C, m>::collectStatistics() const
 
 
 template<unsigned D, unsigned C, unsigned m>
-typename RRStarTree<D, C, m>::E& RRStarTree<D, C, m>::chooseSubtree(
-		E& parent,
-		const E& newEntry
+typename RRStarTree<D, C, m>::NIt RRStarTree<D, C, m>::chooseSubtree(
+		BaseEntry<N>& parent,
+		const Entry<N>& newEntry
 	)
 {
+	N& node = parent.getNode();
+
 	// Construct set of covering entries
-	CoveringSet<E> covering (parent.begin(), parent.end(), newEntry);
+	CoveringSet<NIt> covering (node.begin(), node.end(), newEntry);
 
 	if (!covering.empty()) {
 		return covering.minBy(
@@ -100,9 +105,9 @@ typename RRStarTree<D, C, m>::E& RRStarTree<D, C, m>::chooseSubtree(
 	}
 
 	// Create a sorted view of the children (by delta perimeter)
-	ReferenceView<E> children (parent.begin(), parent.end());
+	ReferenceView<NIt> children (node.begin(), node.end());
 
-	children.sort([&](const E& a, const E& b) {
+	children.sort([&](typename N::reference a, typename N::reference b) {
 			return a.getMbr().delta(&M::perimeter, newEntry.getMbr())
 				< b.getMbr().delta(&M::perimeter, newEntry.getMbr());
 		});
@@ -112,9 +117,11 @@ typename RRStarTree<D, C, m>::E& RRStarTree<D, C, m>::chooseSubtree(
 	if (
 			std::all_of(
 					children.begin() + 1, children.end(),
-					[&](const E& entry) {
-						return children[0].getMbr().deltaOverlap(
-								entry.getMbr(), newEntry.getMbr(), &M::perimeter
+					[&](typename N::reference entry) {
+						return children[0]->getMbr().deltaOverlap(
+								entry.getMbr(),
+								newEntry.getMbr(),
+								&M::perimeter
 							) == 0.0;
 					}
 				)
@@ -124,29 +131,33 @@ typename RRStarTree<D, C, m>::E& RRStarTree<D, C, m>::chooseSubtree(
 
 	// Construct and run CheckComp
 	using EIt = typename decltype(children)::iterator;
-	CheckComp<EIt> checkComp (children.begin(), children.end(), newEntry);
+	CheckComp<EIt> checkComp (
+			children.begin(),
+			children.end(),
+			newEntry
+		);
 
 	auto result = checkComp(children.begin());
 
 	if (result != children.end()) {
-		return *result;
+		return *result.unwrap();
 	}
 
-	return checkComp.minOverlap();
+	return *checkComp.minOverlap().unwrap();
 };
 
 
 template<unsigned D, unsigned C, unsigned m>
-void RRStarTree<D, C, m>::redistribute(E& a, E& b, unsigned level)
+void RRStarTree<D, C, m>::redistribute(BaseEntry<N>& a, BaseEntry<N>& b, unsigned level)
 {
 	// Functions for evaluating splits
-	GoalFunction<E> wg (a.getMbr() + b.getMbr());
-	WeightingFunction<E, m> wf (a);
+	GoalFunction wg (a.getMbr() + b.getMbr());
+	WeightingFunction<N, m> wf (a);
 
 	// Construct set of possible splits
-	SplitSet<E, m> splits (
-			a.begin(), b.begin(),
-			a.end(), b.end()
+	SplitSet<N, m> splits (
+			a.getNode().begin(), b.getNode().begin(),
+			a.getNode().end(), b.getNode().end()
 		);
 
 
@@ -162,7 +173,7 @@ void RRStarTree<D, C, m>::redistribute(E& a, E& b, unsigned level)
 					return std::accumulate(
 							splits.begin(), splits.end(),
 							0.0,
-							[](double sum, const Split<E>& split) {
+							[](double sum, const Split<N>& split) {
 								return sum + split.perimeter();
 							}
 						);
@@ -175,7 +186,7 @@ void RRStarTree<D, C, m>::redistribute(E& a, E& b, unsigned level)
 	// Can we use volume?
 	bool useVolume = std::all_of(
 			splits.begin(), splits.end(),
-			[](const Split<E>& split) {
+			[](const Split<N>& split) {
 				return split.hasVolume();
 			}
 		);
@@ -185,9 +196,9 @@ void RRStarTree<D, C, m>::redistribute(E& a, E& b, unsigned level)
 	}
 
 	// Determine best split
-	Split<E> split = *argmin(
+	Split<N> split = *argmin(
 			splits.begin(), splits.end(),
-			[&](const Split<E>& split) {
+			[&](const Split<N>& split) {
 
 				// Evaluate goal and weight functions
 				wf.setDimension(split.getDimension());
@@ -204,8 +215,11 @@ void RRStarTree<D, C, m>::redistribute(E& a, E& b, unsigned level)
 
 	// Distribute entries
 	auto partitions = split.getEntries();
-	a.assign(partitions[0].begin(), partitions[0].end());
-	b.assign(partitions[1].begin(), partitions[1].end());
+	a.getNode().assign(partitions[0].begin(), partitions[0].end());
+	b.getNode().assign(partitions[1].begin(), partitions[1].end());
+
+	a.recalculate();
+	b.recalculate();
 }
 
 }

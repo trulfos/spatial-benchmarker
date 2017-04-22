@@ -4,6 +4,7 @@
 #include "spatial/InvalidStructureError.hpp"
 #include "KnnQueueEntry.hpp"
 #include "Mbr.hpp"
+#include "Entry.hpp"
 #include <algorithm>
 #include <forward_list>
 #include <queue>
@@ -15,7 +16,15 @@ namespace Rtree
 
 /**
  * R-tree algorithms without optimizations.
- * Does not consider disk pages, as this is memory resident anyway.
+ *
+ * Does not consider disk pages, as this is memory resident anyway. The node
+ * layout and node scan strategy is entriely defined by the node itself.
+ *
+ * The height of the tree may be slightly confusing, but becomes natural when
+ * considering the root as an entry. Some explantions:
+ *  - Level 0: The tree is empty
+ *  - Level 1: The root entry contains a data object
+ *  - Level 2: The root entry points to a node with data objects
  *
  * @tparam N Node type
  * @tparam m Minimum node children
@@ -24,8 +33,7 @@ template <class N, unsigned m = 1>
 class Rtree : public ::SpatialIndex
 {
 	public:
-		using E = typename N::E;
-		using M = typename E::M;
+		using M = typename N::Mbr;
 		using Id = DataObject::Id;
 
 		/**
@@ -35,7 +43,7 @@ class Rtree : public ::SpatialIndex
 
 
 		/**
-		 * Deletes allocated nodes
+		 * Walks the tree and deletes all nodes.
 		 */
 		virtual ~Rtree();
 
@@ -61,22 +69,13 @@ class Rtree : public ::SpatialIndex
 		 *
 		 * @return Pointer to root
 		 */
-		E& getRoot();
-
-
-		/**
-		 * Allocate a new node.
-		 * The node will be deleted with this object.
-		 *
-		 * @return New node
-		 */
-		N * allocateNode();
+		Entry<N>& getRoot();
 
 
 		/**
 		 * Add a new level by replacing the root.
 		 */
-		void addLevel(const E& newRoot);
+		void addLevel(const Entry<N>& newRoot);
 
 
 		/**
@@ -110,8 +109,8 @@ class Rtree : public ::SpatialIndex
 		 *
 		 * The tree is traversed in preorder and executes the visitor with the
 		 * entry and level as arguments. The children of an entry is visited if
-		 * the visitor returns true. Data entrys are not visited and a fake
-		 * entry is created for the root.
+		 * the visitor returns true. Data entrys are not visited and neither is
+		 * the root.
 		 *
 		 * @param visitor Function taking a entry and the level (depth)
 		 */
@@ -139,10 +138,19 @@ class Rtree : public ::SpatialIndex
 
 	private:
 
-		std::forward_list<N *> nodes;
 		unsigned height;
-		E root;
+		Entry<N> root;
 
+
+		/**
+		 * Deletes the nodes in this tree.
+		 *
+		 * Traverse the tree and delete all nodes on the way.
+		 *
+		 * @param root Root node of tree to delete
+		 * @param height Height of given tree
+		 */
+		void deleteTree(N& root, unsigned height);
 };
 
 /*
@@ -164,9 +172,7 @@ Rtree<N, m>::Rtree() : height(0)
 template <class N, unsigned m>
 Rtree<N, m>::~Rtree()
 {
-	for (N * node : nodes) {
-		delete node;
-	}
+	deleteTree(getRoot().getNode(), getHeight());
 };
 
 
@@ -188,24 +194,9 @@ const unsigned& Rtree<N, m>::getHeight() const
  * @return Pointer to root
  */
 template <class N, unsigned m>
-typename Rtree<N, m>::E& Rtree<N, m>::getRoot()
+Entry<N>& Rtree<N, m>::getRoot()
 {
 	return root;
-};
-
-
-/**
- * Allocate a new node.
- * The node will be deleted with this object.
- *
- * @return New node
- */
-template <class N, unsigned m>
-N * Rtree<N, m>::allocateNode()
-{
-	N * node = new N();
-	nodes.push_front(node);
-	return node;
 };
 
 
@@ -213,7 +204,7 @@ N * Rtree<N, m>::allocateNode()
  * Add a new level by replacing the root.
  */
 template <class N, unsigned m>
-void Rtree<N, m>::addLevel(const E& newRoot)
+void Rtree<N, m>::addLevel(const Entry<N>& newRoot)
 {
 	root = newRoot;
 	height++;
@@ -231,33 +222,14 @@ void Rtree<N, m>::addLevel(const E& newRoot)
 template <class N, unsigned m>
 void Rtree<N, m>::checkStructure() const
 {
-	traverse([&](const E& entry, unsigned level) {
+	traverse([&](const Entry<N>& entry, unsigned level) {
 		// Skip leafs
 		if (level == height) {
 			return false;
 		}
 
-		// Check MBR containment
-		M mbr = entry.begin()->getMbr();
-
-		for (const auto& e : entry) {
-			if (!entry.getMbr().contains(e.getMbr())) {
-				throw InvalidStructureError(
-						"Node not contained within parent at level " +
-						std::to_string(level)
-					);
-			}
-
-			mbr += e.getMbr();
-		}
-
-		if (mbr != entry.getMbr()) {
-			throw InvalidStructureError("MBR not tight");
-		}
-
-
 		// Check child count
-		const unsigned& size = entry.getNode()->size();
+		const unsigned& size = entry.getNode().getSize();
 
 		if (size > N::capacity) {
 			throw InvalidStructureError(
@@ -270,6 +242,28 @@ void Rtree<N, m>::checkStructure() const
 					"Too few children at level " + std::to_string(level)
 				);
 		}
+
+		// Check MBR containment
+		N& node = entry.getNode();
+		M mbr = node[0].getMbr();
+
+		for (const auto& e : node) {
+			if (!entry.getMbr().contains(e.getMbr())) {
+				throw InvalidStructureError(
+						"Node not contained within parent at level " +
+						std::to_string(level)
+					);
+			}
+
+			mbr += e.getMbr();
+		}
+
+		if (mbr != entry.getMbr()) {
+			throw InvalidStructureError(
+					"MBR too large at level " + std::to_string(level)
+				);
+		}
+
 
 		return true;
 	});
@@ -293,14 +287,14 @@ StatsCollector Rtree<N, m>::collectStatistics() const
 	stats["nodes"] = 0;
 	stats["level_" + std::to_string(height)] = 1;
 
-	traverse([&](const E& entry, unsigned level) {
+	traverse([&](const Entry<N>& entry, unsigned level) {
 		// Skip leafs
 		if (level == height) {
 			return false;
 		}
 
 		std::string key = "level_" + std::to_string(height - level);
-		stats[key] += entry.getNode()->size();
+		stats[key] += entry.getNode().getSize();
 		stats["nodes"]++;
 		return true;
 	});
@@ -313,27 +307,45 @@ template <class N, unsigned m>
 template<class F>
 void Rtree<N, m>::traverse(F visitor) const
 {
-	assert(height > 0);
-	using EIt = typename E::const_iterator;
+	if (height < 2) {
+		return;
+	}
 
-	std::vector<std::pair<EIt, EIt>> path {{&root, &root + 1}};
+	using EIt = typename N::const_iterator;
+
+	const N& rootNode = root.getNode();
+
+	if (!visitor(root, 1)) {
+		return;
+	}
+
+	if (height == 2) {
+		return;
+	}
+
+	// Store start and end iterators for each level
+	std::vector<std::pair<EIt, EIt>> path {
+			{rootNode.begin(), rootNode.end()}
+		};
 
 	while (!path.empty()) {
 		auto& top = path.back();
 
+		// Have we finished this node?
 		if (top.first == top.second) {
 			path.pop_back();
 			continue;
 		}
 
-		const E& entry = *(top.first++);
+		const Entry<N> entry = *(top.first++);
 
 		// Call visitor
-		bool descend = visitor(entry, path.size());
+		bool descend = visitor(entry, path.size() + 1);
 
 		// Push children (if they exist)
-		if (descend && path.size() < getHeight()) {
-			path.emplace_back(entry.begin(), entry.end());
+		if (descend && path.size() < getHeight() - 1) {
+			const N& node = entry.getNode();
+			path.emplace_back(node.begin(), node.end());
 		}
 	}
 }
@@ -345,23 +357,36 @@ void Rtree<N, m>::traverse(F visitor) const
 template <class N, unsigned m>
 Results Rtree<N, m>::rangeSearch(const Box& box) const
 {
-	assert(height > 0);
+	assert(getHeight() > 0);
+	using NIt = typename N::ScanIterator;
+	using Link = typename N::Link;
+
+	std::vector<std::pair<NIt, NIt>> path {{
+			root.getNode().scan(box)
+		}};
+
 	Results resultSet;
 
-	traverse([&](const E& entry, unsigned level) {
-			// Skip nodes not overlapping
-			if (!entry.getMbr().intersects(box)) {
-				return false;
-			}
+	while (!path.empty()) {
+		auto& top = path.back();
 
-			// Push result if leaf
-			if (level == height) {
-				resultSet.push_back(entry.getId());
-				return false;
-			}
+		if (top.first == top.second) {
+			path.pop_back();
+			continue;
+		}
 
-			return true;
-		});
+		// Find node to descend into
+		const Link link = *(top.first++);
+
+		if (path.size() < getHeight() - 1) {
+			const N& node = link.getNode();
+			path.emplace_back(
+					node.scan(box)
+				);
+		} else {
+			resultSet.push_back(link.getId());
+		}
+	}
 
 	return resultSet;
 };
@@ -385,7 +410,7 @@ Results Rtree<N, m>::rangeSearch(const Box& box, StatsCollector& stats) const
 	unsigned lastLevel = 0;
 	bool descended = false;
 
-	traverse([&](const E& entry, unsigned level) {
+	traverse([&](const Entry<N>& entry, unsigned level) {
 			// Detect skipped nodes
 			if (level > lastLevel) {
 				descended = false;
@@ -416,7 +441,7 @@ Results Rtree<N, m>::rangeSearch(const Box& box, StatsCollector& stats) const
 			// Count skippable checks
 			M qMbr (box);
 
-			for (unsigned d = 0; d < E::dimension; ++d) {
+			for (unsigned d = 0; d < M::dimension; ++d) {
 				if (qMbr.getTop()[d] >= entry.getMbr().getTop()[d]) {
 					stats["unnecessary_comparisons"]++;
 				}
@@ -465,5 +490,19 @@ Results Rtree<N, m>::knnSearch(unsigned k, const Point& point) const
 	throw std::runtime_error("k-NN search not implemented");
 };
 
+
+template<class N, unsigned m>
+void Rtree<N, m>::deleteTree(N& root, unsigned height)
+{
+	if (height < 3) {
+		return;
+	}
+
+	for (auto e : root) {
+		deleteTree(e.getNode(), height - 1);
+	}
+
+	delete &root;
+}
 
 }

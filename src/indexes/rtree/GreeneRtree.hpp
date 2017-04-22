@@ -20,17 +20,19 @@ template<unsigned D, unsigned C, unsigned m>
 class GreeneRtree : public QuadraticRtree<D, C, m> //TODO: Not logical inheritance
 {
 	protected:
-		using E = typename QuadraticRtree<D, C, m>::E;
+		using N = typename QuadraticRtree<D, C, m>::N;
+		using Mbr = typename N::Mbr;
+
 		/**
 		 * Redistribute the children of the two entries between the entries.
 		 *
 		 * @param a The first entry (with children)
 		 * @param b The second entry (with children)
 		 */
-		void redistribute(E& a, E& b, unsigned) override
+		void redistribute(N& a, N& b, unsigned, const Mbr& enclosing) override
 		{
 			// Contruct buffer with all entries
-			std::vector<E> entries (
+			std::vector<Entry<N>> entries (
 					a.begin(), a.end()
 				);
 
@@ -41,7 +43,7 @@ class GreeneRtree : public QuadraticRtree<D, C, m> //TODO: Not logical inheritan
 
 
 			// Choose the two seeds by checking all combinations
-			typename std::vector<E>::iterator seeds[2];
+			typename decltype(entries)::iterator seeds[2];
 			float maxDist = -1.0f;
 
 			for (auto i = entries.begin(); i != entries.end(); ++i) {
@@ -60,11 +62,10 @@ class GreeneRtree : public QuadraticRtree<D, C, m> //TODO: Not logical inheritan
 			assert(maxDist >= 0.0f);
 
 			// Determine split dimension
-			auto enclosing = a.getMbr() + b.getMbr();
 			float maxSeparation = -1.0f;
-			unsigned splitDimension = E::dimension;
+			unsigned splitDimension = D;
 
-			for (unsigned d = 0; d < E::dimension; ++d) {
+			for (unsigned d = 0; d < D; ++d) {
 
 				// Separation, normalized by enclosing size
 				float separation = seeds[0]
@@ -79,14 +80,14 @@ class GreeneRtree : public QuadraticRtree<D, C, m> //TODO: Not logical inheritan
 			}
 
 			// We should have found a dimension
-			assert(splitDimension < E::dimension);
+			assert(splitDimension < D);
 
 
 			// Sort by low value
 			std::sort(
 					entries.begin(),
 					entries.end(),
-					[&](const E& a, const E& b) {
+					[&](const Entry<N>& a, const Entry<N>& b) {
 						return a.getMbr().getBottom()[splitDimension]
 							< b.getMbr().getBottom()[splitDimension];
 					}

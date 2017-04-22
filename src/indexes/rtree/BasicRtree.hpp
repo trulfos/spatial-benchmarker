@@ -9,14 +9,21 @@ namespace Rtree
  *
  * Inserts are performed by digging down the tree using a `chooseSubtree`
  * method. Nodes may then be split upwards and entries distributed between the
- * two new nodes using the `redistriute` method.
+ * two new nodes using the `redistribute` method.
  */
 template<class N, unsigned m>
 class BasicRtree : public Rtree<N, m>
 {
-	using E = typename N::E;
+	using Base = Rtree<N, m>;
+	using Mbr = typename N::Mbr;
 
 	public:
+		// These depends on template parameters
+		using Base::getHeight;
+		using Base::getRoot;
+		using Base::addLevel;
+
+
 		/**
 		 * Insert an entry in the tree.
 		 *
@@ -33,7 +40,10 @@ class BasicRtree : public Rtree<N, m>
 		 * @param entry Node subject to insertion
 		 * @return Best fitting node in parent
 		 */
-		virtual E& chooseSubtree(E& parent, const E& entry) = 0;
+		virtual typename N::iterator chooseSubtree(
+				BaseEntry<N>& parent,
+				const Entry<N>& entry
+			) = 0;
 
 
 		/**
@@ -44,9 +54,14 @@ class BasicRtree : public Rtree<N, m>
 		 *
 		 * @param a First node (with children)
 		 * @param b Second node (with children)
-		 * @param level Level of the given entries
+		 * @param level Level of the given nodes
+		 * @param enclosing MBR enclosing all items
 		 */
-		virtual void redistribute(E& a, E& b, unsigned level) = 0;
+		virtual void redistribute(
+				BaseEntry<N>& a,
+				BaseEntry<N>& b,
+				unsigned level
+			) = 0;
 
 	private:
 
@@ -55,7 +70,26 @@ class BasicRtree : public Rtree<N, m>
 		 *
 		 * @param entry Entry to include in new root
 		 */
-		void splitRoot(const E& entry);
+		void splitRoot(const Entry<N>& entry);
+
+
+		/**
+		 * Splits an entry.
+		 *
+		 * Splits the first entry with the second included as a child. Returns a
+		 * new entry with a new node. This does not work for the root.
+		 *
+		 * @see splitRoot
+		 * @see redistribute
+		 *
+		 * @param original Original entry with node to split
+		 * @param include New entry to include as child
+		 * @param level Level of original node (forwarded to redistribute)
+		 *
+		 * @return New entry with some children from original
+		 */
+		template<class E>
+		Entry<N> split(E& original, const Entry<N>& include, unsigned level);
 };
 
 
@@ -70,53 +104,92 @@ class BasicRtree : public Rtree<N, m>
 */
 
 template<class N, unsigned m>
+template<class E>
+Entry<N> BasicRtree<N, m>::split(
+		E& original,
+		const Entry<N>& include,
+		unsigned level
+	)
+{
+	// Create new entry (and node with included entry)
+	Entry<N> newEntry = Entry<N>(new N({include}));
+
+	// Redistribute children between nodes
+	redistribute(
+			original,
+			newEntry,
+			level
+		);
+
+	// Recalculate relevant MBRs
+	original.recalculate();
+	newEntry.recalculate();
+
+	return newEntry;
+}
+
+template<class N, unsigned m>
 void BasicRtree<N, m>::insert(const DataObject& object)
 {
-	E entry (object);
+	Entry<N> entry (object);
 
 	// No nodes - set entry as root
-	if (this->getHeight() == 0) {
-		return this->addLevel(entry);
+	if (getHeight() == 0) {
+		return addLevel(entry);
 	}
 
 	// Single entry - add new root
-	if (this->getHeight() == 1) {
+	if (getHeight() == 1) {
 		return splitRoot(entry);
 	}
 
-	// Dig down to destination leaf node
-	std::vector<E *> path {&this->getRoot()};
+	// Need to add node further down the tree
+	getRoot().include(entry);
 
-	while (path.size() < this->getHeight() - 1) {
+	if (getHeight() > 2) {
+		// Dig down to destination leaf node and update MBRs on the way
+		std::vector<typename N::iterator> path {
+				chooseSubtree(getRoot(), entry)
+			};
+
 		path.back()->include(entry);
-		path.push_back(
-				&chooseSubtree(*path.back(), entry)
-			);
-	}
 
-	// Split nodes bottom-up as long as necessary
-	auto top = path.rbegin();
+		while (path.size() < getHeight() - 2) {
+			auto e = chooseSubtree(*path.back(), entry);
+			e->include(entry);
+			path.push_back(e);
+		}
 
-	while (top != path.rend() && (*top)->getNode()->isFull()) {
-		entry = E(this->allocateNode(), {entry});
-		redistribute(**top, entry, top - path.rbegin());
-		++top;
+		// Split nodes bottom-up as long as necessary
+		auto i = path.rbegin();
+		while (i != path.rend() && (*i)->getLink().getNode().isFull()) {
+			entry = split(**i, entry, i - path.rbegin());
+			++i;
+		}
+
+		// Add to some internal node (which is not the root)
+		if (i != path.rend()) {
+			return (*i)->getLink().getNode().add(entry);
+		}
 	}
 
 	// Split root?
-	if (top == path.rend()) {
-		return splitRoot(entry);
+	if (getRoot().getNode().isFull()) {
+		return splitRoot(
+				split(getRoot(), entry, 0)
+			);
 	}
 
-	(*top)->add(entry);
+	// Add to root
+	getRoot().getNode().add(entry);
 };
 
 
 template<class N, unsigned m>
-void BasicRtree<N, m>::splitRoot(const E& entry)
+void BasicRtree<N, m>::splitRoot(const Entry<N>& entry)
 {
-	this->addLevel(
-			E(this->allocateNode(), {this->getRoot(), entry})
+	addLevel(
+			Entry<N>(new N({getRoot(), entry}))
 		);
 }
 

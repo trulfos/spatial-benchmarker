@@ -4,6 +4,7 @@
 #include <set>
 #include <algorithm>
 #include "Algorithm.hpp"
+#include "Entry.hpp"
 
 namespace Rtree
 {
@@ -15,14 +16,15 @@ template<class FIt>
 class CheckComp
 {
 	using E = typename std::iterator_traits<FIt>::value_type;
-	using M = typename E::M;
+	using N = typename E::Node;
+	using M = typename E::Mbr;
 
 	public:
 		/**
 		 * Construct a new environment for the computation with the range of
 		 * entries given.
 		 */
-		CheckComp(FIt first, FIt last, const E& newEntry);
+		CheckComp(FIt first, FIt last, const Entry<N>& newEntry);
 
 
 		/**
@@ -35,7 +37,7 @@ class CheckComp
 		 * Finds the entry with minimum overlap enlargement as calculated during
 		 * traversal.
 		 */
-		E& minOverlap();
+		FIt minOverlap();
 
 
 		/**
@@ -54,7 +56,7 @@ class CheckComp
 		std::vector<double> overlaps; // <delta>ovlp
 		std::set<FIt> visited; // CAND
 
-		const E& newEntry;
+		const Entry<N>& newEntry;
 		bool useVolume;
 };
 
@@ -69,7 +71,7 @@ class CheckComp
               |_|                                                           
 */
 template<class FIt>
-CheckComp<FIt>::CheckComp(FIt first, FIt last, const E& newEntry)
+CheckComp<FIt>::CheckComp(FIt first, FIt last, const Entry<N>& newEntry)
 	: first(first), last(last), p(first), overlaps(last - first, 0.0),
 		newEntry(newEntry)
 {
@@ -77,7 +79,7 @@ CheckComp<FIt>::CheckComp(FIt first, FIt last, const E& newEntry)
 
 	useVolume = std::all_of(
 			first, last,
-			[&](const E& e) {
+			[&](const Entry<N>& e) {
 				return (e.getMbr() + newEntry.getMbr()).volume() != 0.0;
 			}
 		);
@@ -133,9 +135,9 @@ FIt CheckComp<FIt>::operator()(FIt t)
 
 
 template<class FIt>
-typename CheckComp<FIt>::E& CheckComp<FIt>::minOverlap()
+FIt CheckComp<FIt>::minOverlap()
 {
-	return **argmin(
+	return *argmin(
 				visited.begin(),
 				visited.end(),
 				[&](FIt i) {

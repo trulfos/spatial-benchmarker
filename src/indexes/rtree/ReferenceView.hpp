@@ -2,6 +2,7 @@
 #include "Algorithm.hpp"
 #include <vector>
 #include <algorithm>
+#include <iterator>
 
 namespace Rtree
 {
@@ -14,13 +15,14 @@ namespace Rtree
  *
  * @tparam E Item type
  */
-template<class E>
-class ReferenceView : private std::vector<E *>
+template<class It>
+class ReferenceView : private std::vector<It>
 {
-	using Base = std::vector<E *>;
+	using Base = std::vector<It>;
+	using Base::push_back;
 
 	public:
-		using value_type = E;
+		using value_type = typename std::iterator_traits<It>::value_type;
 		using iterator = DerefIterator<typename Base::iterator>;
 		using const_iterator = DerefIterator<typename Base::const_iterator>;
 
@@ -30,8 +32,7 @@ class ReferenceView : private std::vector<E *>
 		 * Note that the entries must remain in their memory location while the
 		 * ReferenceView is in use.
 		 */
-		template<class FIt>
-		ReferenceView(FIt first, FIt last);
+		ReferenceView(It first, It last);
 
 
 		/**
@@ -45,8 +46,7 @@ class ReferenceView : private std::vector<E *>
 		/**
 		 * Add elements to this view.
 		 */
-		template<class FIt>
-		void insert(FIt first, FIt last);
+		void insert(It first, It last);
 
 
 		/**
@@ -64,7 +64,7 @@ class ReferenceView : private std::vector<E *>
 		/**
 		 * Get a specific item by index.
 		 */
-		E& operator[](size_t i);
+		It operator[](size_t i);
 
 
 		/**
@@ -92,74 +92,70 @@ class ReferenceView : private std::vector<E *>
  */
 
 
-template<class E>
-template<class FIt>
-ReferenceView<E>::ReferenceView(FIt first, FIt last)
+template<class It>
+ReferenceView<It>::ReferenceView(It first, It last)
 {
 	insert(first, last);
 }
 
 
-template<class E>
-ReferenceView<E>::ReferenceView()
+template<class It>
+ReferenceView<It>::ReferenceView()
 {
 }
 
 
-template<class E>
-template<class FIt>
-void ReferenceView<E>::insert(FIt first, FIt last)
+template<class It>
+void ReferenceView<It>::insert(It first, It last)
 {
-	std::transform(
-			first, last,
-			std::back_inserter(*static_cast<Base *>(this)),
-			[](E& entry) {
-				return &entry;
-			}
-		);
+	// Materialize
+	while (first != last) {
+		push_back(first);
+		++first;
+	}
 }
 
 
-template<class E>
+template<class It>
 template<class Compare>
-void ReferenceView<E>::sort(Compare compare)
+void ReferenceView<It>::sort(Compare compare)
 {
 	std::sort(
 			Base::begin(), Base::end(),
-			[&](const E * a, const E * b) {
+			[&](const It a, const It b) {
 				return compare(*a, *b);
 			}
 		);
 }
 
-template<class E>
-E& ReferenceView<E>::operator[](size_t i)
+template<class It>
+It ReferenceView<It>::operator[](size_t i)
 {
-	return *Base::operator[](i);
+	return Base::operator[](i);
 }
 
-template<class E>
-typename ReferenceView<E>::iterator ReferenceView<E>::begin()
+template<class It>
+typename ReferenceView<It>::iterator ReferenceView<It>::begin()
 {
-	return makeDerefIt(Base::begin());
+	return iterator(Base::begin());
 }
 
-template<class E>
-typename ReferenceView<E>::iterator ReferenceView<E>::end()
+template<class It>
+typename ReferenceView<It>::iterator ReferenceView<It>::end()
 {
-	return makeDerefIt(Base::end());
+	return iterator(Base::end());
 }
 
-template<class E>
-typename ReferenceView<E>::const_iterator ReferenceView<E>::begin() const
+template<class It>
+typename ReferenceView<It>::const_iterator ReferenceView<It>::begin() const
 {
-	return makeDerefIt(Base::begin());
+	return const_iterator(Base::begin());
 }
 
-template<class E>
-typename ReferenceView<E>::const_iterator ReferenceView<E>::end() const
+template<class It>
+typename ReferenceView<It>::const_iterator ReferenceView<It>::end() const
 {
-	return makeDerefIt(Base::end());
+	return const_iterator(Base::end());
 }
 
 }

@@ -15,7 +15,6 @@ namespace Rtree
 	 *
 	 * @tparam Entry type
 	 */
-	template<class E>
 	class EntryPlugin
 	{
 		public:
@@ -42,6 +41,7 @@ namespace Rtree
 			 *
 			 * @param host Entry hosting this plugin
 			 */
+			template<class E>
 			EntryPlugin(E& host)
 			{
 			}
@@ -55,6 +55,7 @@ namespace Rtree
 			 * @param host Entry hosting this plugin
 			 * @param object New data object
 			 */
+			template<class E>
 			EntryPlugin(E& host, const DataObject& object)
 			{
 			}
@@ -69,6 +70,7 @@ namespace Rtree
 			 *
 			 * @param host Host entry for this plugin
 			 */
+			template<class E>
 			void init(E& host)
 			{
 			}
@@ -83,7 +85,8 @@ namespace Rtree
 			 * @param host Entry hosting this plugin
 			 * @param entry New child entry of host
 			 */
-			void include(E& host, const E& entry)
+			template<class E, class BE>
+			void include(E& host, const BE& entry)
 			{
 			}
 	};

@@ -7,25 +7,23 @@ namespace Rtree
 {
 
 /**
- * This si the goal function of the RR*-tree.
+ * The goal function of the RR*-tree.
  */
-template<class E>
 class GoalFunction
 {
 
 	public:
-
-		using M = typename E::M;
 
 		/**
 		 * Create a new goal function based on the given entries.
 		 *
 		 * @param mbr MBR of all entries considered
 		 */
+		template<class M>
 		explicit GoalFunction(const M& mbr)
 		{
 			double minProjection = min_value(
-					makeRangeIt(0u), makeRangeIt(E::dimension),
+					makeRangeIt(0u), makeRangeIt(M::dimension),
 					[&](unsigned d) {
 						return mbr.getTop()[d] - mbr.getBottom()[d];
 					}
@@ -37,8 +35,11 @@ class GoalFunction
 		/**
 		 * Evaluate the goal function for the given split.
 		 */
-		double operator()(const Split<E>& split, bool useVolume) {
+		template<class S>
+		double operator()(const S& split, bool useVolume) {
+
 			auto mbrs = split.getMbrs();
+			using M = typename S::Mbr;
 
 			// Return overlap (if any)
 			double overlap = mbrs[0].overlap(

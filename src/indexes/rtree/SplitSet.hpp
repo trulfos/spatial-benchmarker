@@ -13,13 +13,15 @@ namespace Rtree
 /**
  * A collection of possible splits.
  */
-template<class E, unsigned m>
+template<class N, unsigned m>
 class SplitSet
 {
-	public:
-		static constexpr unsigned D = E::dimension;
+	using NIt = typename N::iterator;
 
-		using value_type = Split<E>;
+	public:
+		static constexpr unsigned D = N::Mbr::dimension;
+
+		using value_type = Split<N>;
 
 		/**
 		 * Iterator for iterating through a split set.
@@ -32,7 +34,7 @@ class SplitSet
 				 * Create an iterator starting at the given dimension.
 				 */
 				SplitIterator(
-						const ReferenceView<E> entryView,
+						const ReferenceView<NIt> entryView,
 						unsigned dimension
 					);
 
@@ -42,13 +44,13 @@ class SplitSet
 				bool operator==(const SplitIterator& other) const;
 				bool operator!=(const SplitIterator& other) const;
 				SplitIterator operator++();
-				const Split<E>& operator*() const;
-				const Split<E>* operator->() const;
+				const Split<N>& operator*() const;
+				const Split<N>* operator->() const;
 
 			private:
 
-				std::shared_ptr<Split<E>> split;
-				ReferenceView<E> entryView;
+				std::shared_ptr<Split<N>> split;
+				ReferenceView<NIt> entryView;
 				unsigned candidate;
 
 				unsigned getSplitPoint() const;
@@ -102,7 +104,7 @@ class SplitSet
 
 	private:
 		unsigned dimension = D;
-		ReferenceView<E> entryView;
+		ReferenceView<NIt> entryView;
 };
 
 
@@ -116,25 +118,25 @@ class SplitSet
               |_|                                                           
 */
 
-template<class E, unsigned m>
+template<class N, unsigned m>
 template<class FIt>
-SplitSet<E, m>::SplitSet(FIt first, FIt last)
+SplitSet<N, m>::SplitSet(FIt first, FIt last)
 {
 	entryView.insert(first, last);
 }
 
 
-template<class E, unsigned m>
+template<class N, unsigned m>
 template<class FIt>
-SplitSet<E, m>::SplitSet(FIt first, FIt first2, FIt last, FIt last2)
+SplitSet<N, m>::SplitSet(FIt first, FIt first2, FIt last, FIt last2)
 {
 	entryView.insert(first, last);
 	entryView.insert(first2, last2);
 }
 
 
-template<class E, unsigned m>
-typename SplitSet<E, m>::iterator SplitSet<E, m>::begin() const
+template<class N, unsigned m>
+typename SplitSet<N, m>::iterator SplitSet<N, m>::begin() const
 {
 	return iterator(
 			entryView,
@@ -143,8 +145,8 @@ typename SplitSet<E, m>::iterator SplitSet<E, m>::begin() const
 }
 
 
-template<class E, unsigned m>
-typename SplitSet<E, m>::iterator SplitSet<E, m>::end() const
+template<class N, unsigned m>
+typename SplitSet<N, m>::iterator SplitSet<N, m>::end() const
 {
 	return iterator(
 			entryView,
@@ -153,8 +155,8 @@ typename SplitSet<E, m>::iterator SplitSet<E, m>::end() const
 }
 
 
-template<class E, unsigned m>
-void SplitSet<E, m>::restrictTo(unsigned dimension)
+template<class N, unsigned m>
+void SplitSet<N, m>::restrictTo(unsigned dimension)
 {
 	assert(dimension < D);
 	this->dimension = dimension;
@@ -170,9 +172,9 @@ void SplitSet<E, m>::restrictTo(unsigned dimension)
 |___/ .__/_|_|\__|___|\__\___|_| \__,_|\__\___/_|  
     |_|                                            
 */
-template<class E, unsigned m>
-SplitSet<E, m>::SplitIterator::SplitIterator(
-		const ReferenceView<E> entryView,
+template<class N, unsigned m>
+SplitSet<N, m>::SplitIterator::SplitIterator(
+		const ReferenceView<NIt> entryView,
 		unsigned dimension
 	) : entryView(entryView),
 		candidate(2 * dimension * (entryView.size() - 2 * m + 1))
@@ -180,7 +182,7 @@ SplitSet<E, m>::SplitIterator::SplitIterator(
 	sort();
 
 	// Create first split
-	split = std::make_shared<Split<E>>(
+	split = std::make_shared<Split<N>>(
 			this->entryView,
 			getSortOrder(),
 			getDimension(),
@@ -189,18 +191,18 @@ SplitSet<E, m>::SplitIterator::SplitIterator(
 }
 
 
-template<class E, unsigned m>
-bool SplitSet<E, m>::SplitIterator::operator==(
-		const SplitSet<E, m>::SplitIterator& other
+template<class N, unsigned m>
+bool SplitSet<N, m>::SplitIterator::operator==(
+		const SplitSet<N, m>::SplitIterator& other
 	) const
 {
 	return candidate == other.candidate;
 }
 
 
-template<class E, unsigned m>
-bool SplitSet<E, m>::SplitIterator::operator!=(
-		const SplitSet<E, m>::SplitIterator& other
+template<class N, unsigned m>
+bool SplitSet<N, m>::SplitIterator::operator!=(
+		const SplitSet<N, m>::SplitIterator& other
 	) const
 {
 	return !(*this == other);
@@ -210,9 +212,9 @@ bool SplitSet<E, m>::SplitIterator::operator!=(
 /**
  * Increment to the next split.
  */
-template<class E, unsigned m>
-typename SplitSet<E, m>::SplitIterator
-	SplitSet<E, m>::SplitIterator::operator++()
+template<class N, unsigned m>
+typename SplitSet<N, m>::SplitIterator
+	SplitSet<N, m>::SplitIterator::operator++()
 {
 	candidate++;
 
@@ -231,7 +233,7 @@ typename SplitSet<E, m>::SplitIterator
 	}
 
 	// Create new split
-	split = std::make_shared<Split<E>>(
+	split = std::make_shared<Split<N>>(
 			entryView,
 			sortOrder,
 			dimension,
@@ -242,49 +244,51 @@ typename SplitSet<E, m>::SplitIterator
 }
 
 
-template<class E, unsigned m>
-const Split<E>& SplitSet<E, m>::SplitIterator::operator*() const
+template<class N, unsigned m>
+const Split<N>& SplitSet<N, m>::SplitIterator::operator*() const
 {
 	return *split;
 }
 
 
-template<class E, unsigned m>
-const Split<E>* SplitSet<E, m>::SplitIterator::operator->() const
+template<class N, unsigned m>
+const Split<N>* SplitSet<N, m>::SplitIterator::operator->() const
 {
 	return split.get();
 }
 
 
-template<class E, unsigned m>
-unsigned SplitSet<E, m>::SplitIterator::getSplitPoint() const
+template<class N, unsigned m>
+unsigned SplitSet<N, m>::SplitIterator::getSplitPoint() const
 {
 	return m + candidate % (entryView.size() - 2 * m + 1);
 }
 
 
-template<class E, unsigned m>
-unsigned SplitSet<E, m>::SplitIterator::getSortOrder() const
+template<class N, unsigned m>
+unsigned SplitSet<N, m>::SplitIterator::getSortOrder() const
 {
 	return (candidate / (entryView.size() - 2 * m + 1)) % 2;
 }
 
 
-template<class E, unsigned m>
-unsigned SplitSet<E, m>::SplitIterator::getDimension() const
+template<class N, unsigned m>
+unsigned SplitSet<N, m>::SplitIterator::getDimension() const
 {
 	return candidate / (2 * (entryView.size() - 2 * m + 1));
 }
 
 
-template<class E, unsigned m>
-void SplitSet<E, m>::SplitIterator::sort()
+template<class N, unsigned m>
+void SplitSet<N, m>::SplitIterator::sort()
 {
 	unsigned d = getDimension();
 
 	if (d >= D) {
 		return;
 	}
+
+	using E = typename std::iterator_traits<NIt>::value_type;
 
 	if (getSortOrder() == 0) {
 		entryView.sort([&](const E& a, const E& b) {

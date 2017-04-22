@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <functional>
 #include "Algorithm.hpp"
+#include "Entry.hpp"
 
 namespace Rtree
 {
@@ -10,20 +11,28 @@ namespace Rtree
 /**
  * A set of entries covering a new entry (not part of the set).
  */
-template<class E>
-class CoveringSet : std::set<E *>
+template<class It>
+class CoveringSet : std::set<It>
 {
+
+	using Base = std::set<It>;
+
+	// Depends on template parameters
+	using Base::begin;
+	using Base::end;
+	using Base::insert;
+
 	public:
 
 		/**
 		 * Create a new covering set by filtering the given entries.
 		 */
-		template<class FIt>
-		CoveringSet(FIt first, FIt last, const E& entry)
+		template<class N>
+		CoveringSet(It first, It last, const Entry<N>& entry)
 		{
 			while (first != last) {
 				if (first->getMbr().contains(entry.getMbr())) {
-					this->insert(&*first);
+					insert(first);
 				}
 
 				++first;
@@ -34,7 +43,7 @@ class CoveringSet : std::set<E *>
 		/**
 		 * Check if this set is empty.
 		 */
-		using std::set<E *>::empty;
+		using Base::empty;
 
 
 		/**
@@ -43,20 +52,19 @@ class CoveringSet : std::set<E *>
 		bool allHasVolume()
 		{
 			return std::all_of(
-						this->begin(),
-						this->end(),
-						[](const E * const & entry) {
+						begin(), end(),
+						[](It entry) {
 							return entry->getMbr().volume() != 0.0;
 						}
 					);
 		}
 
-		E& minBy(double (E::M::*measure)() const)
+		template<class M>
+		It minBy(double (M::*measure)() const)
 		{
-			return **argmin(
-					this->begin(),
-					this->end(),
-					[&](const E * entry) {
+			return *argmin(
+					begin(), end(),
+					[&](It entry) {
 						return (entry->getMbr().*measure)();
 					}
 				);

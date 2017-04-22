@@ -7,7 +7,6 @@
 #include "Algorithm.hpp"
 #include "QuadraticSeeds.hpp"
 #include <cmath>
-#include <iostream>
 
 namespace Rtree
 {
@@ -22,8 +21,8 @@ template<unsigned D, unsigned C, unsigned m>
 class QuadraticRtree : public BasicRtree<Node<D, C>, m>
 {
 	protected:
-		using E = typename Node<D, C>::E;
-		using M = typename E::M;
+		using N = ::Rtree::Node<D, C>;
+		using M = typename N::Mbr;
 
 
 		/**
@@ -34,31 +33,44 @@ class QuadraticRtree : public BasicRtree<Node<D, C>, m>
 		 * @param newEntry New entry to include
 		 * @return Entry requiring the least enlargement to include mbr
 		 */
-		E& chooseSubtree(E& parent, const E& newEntry) override
+		typename N::iterator chooseSubtree(
+				BaseEntry<N>& parent,
+				const Entry<N>& newEntry
+			) override
 		{
-			return *argmin(
-					parent.begin(), parent.end(),
-					[&](const E& entry) {
+			N& node = parent.getLink().getNode();
+
+			return argmin(
+					node.begin(), node.end(),
+					[&](typename N::reference& entry) {
+						M mbr = entry.getMbr();
+
 						return std::make_tuple(
-								entry.getMbr().delta(&M::volume, newEntry.getMbr()),
-								entry.getMbr().volume()
+								mbr.delta(
+										&M::volume,
+										newEntry.getMbr()
+									),
+								mbr.volume()
 							);
 					}
 				);
 		}
 
 
-
-		/**
-		 * Redistribute the children of the two entries between the entries.
-		 *
-		 * @param a The first entry (with children)
-		 * @param b The second entry (with children)
-		 */
-		void redistribute(E& a, E& b, unsigned level) override
+		void redistribute(
+				BaseEntry<N>& original,
+				BaseEntry<N>& newEntry,
+				unsigned
+			) override
 		{
+			N& a = original.getNode();
+			N& b = newEntry.getNode();
+
 			// Contruct buffer with all entries
-			std::vector<E> entries (a.begin(), a.end());
+			std::vector<Entry<N>> entries (
+					a.begin(), a.end()
+				);
+
 			entries.insert(
 					entries.end(),
 					b.begin(), b.end()
@@ -74,6 +86,9 @@ class QuadraticRtree : public BasicRtree<Node<D, C>, m>
 			a = {*seeds.first};
 			b = {*seeds.second};
 
+			M mbrA = seeds.first->getMbr();
+			M mbrB = seeds.second->getMbr();
+
 			assert(seeds.first < seeds.second);
 
 			std::iter_swap(seeds.second, entries.end() - 1);
@@ -85,23 +100,23 @@ class QuadraticRtree : public BasicRtree<Node<D, C>, m>
 			for (auto entry = entries.begin(); entry != entries.end(); ++entry) {
 
 				// Do we have to add the remaining to one side?
-				if (a.getNode()->size() == entries.size() + 2 - m) {
+				if (a.getSize() == entries.size() + 2 - m) {
 					b.add(entry, entries.end());
-					break;
+					return;
 				}
 
-				if (b.getNode()->size() == entries.size() + 2 - m) {
+				if (b.getSize() == entries.size() + 2 - m) {
 					a.add(entry, entries.end());
-					break;
+					return;
 				}
 
 				// Select the one waisting the most space if placed wrong
 				auto selected = argmin(
 						entry, entries.end(),
-						[&](const E& entry) {
+						[&](const Entry<N>& entry) {
 							return -std::fabs(
-									a.getMbr().delta(&M::volume, entry.getMbr())
-									- b.getMbr().delta(&M::volume, entry.getMbr())
+									mbrA.delta(&M::volume, entry.getMbr())
+									- mbrB.delta(&M::volume, entry.getMbr())
 								);
 						}
 					);
@@ -112,18 +127,20 @@ class QuadraticRtree : public BasicRtree<Node<D, C>, m>
 				// Add entry to correct node
 				if (
 						std::make_tuple(
-								a.getMbr().delta(&M::volume, entry->getMbr()),
-								a.getMbr().volume(),
-								a.getNode()->size()
+								mbrA.delta(&M::volume, entry->getMbr()),
+								mbrA.volume(),
+								a.getSize()
 							) > std::make_tuple(
-								b.getMbr().delta(&M::volume, entry->getMbr()),
-								b.getMbr().volume(),
-								b.getNode()->size()
+								mbrB.delta(&M::volume, entry->getMbr()),
+								mbrB.volume(),
+								b.getSize()
 							)
 				) {
 					b.add(*entry);
+					mbrB += entry->getMbr();
 				} else {
 					a.add(*entry);
+					mbrA += entry->getMbr();
 				}
 			}
 		};
