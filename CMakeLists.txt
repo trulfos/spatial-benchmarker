@@ -158,8 +158,7 @@ configure_file(
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 # R-trees
-foreach(name rtree rtree-hilbert rtree-star rtree-rstar rtree-greene
-		rtree-pointer-array)
+foreach(name rtree rtree-hilbert rtree-star rtree-rstar rtree-greene)
 	add_library(${name} MODULE EXCLUDE_FROM_ALL
 		src/indexes/${name}.cpp
 		$<TARGET_OBJECTS:spatial>
