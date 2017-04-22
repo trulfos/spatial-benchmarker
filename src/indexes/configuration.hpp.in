@@ -1,6 +1,7 @@
 #pragma once
-#include "indexes/rtree/DefaultNode.hpp"
 #include "indexes/rtree/EntryPlugin.hpp"
+#include "indexes/rtree/DefaultNode.hpp"
+#include "indexes/rtree/PointerArrayNode.hpp"
 
 /**
  * This file defines options that may be passed to the indexes.
