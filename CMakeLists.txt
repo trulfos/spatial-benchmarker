@@ -150,6 +150,7 @@ set(M 128 CACHE STRING "Node capacity for R-tree indexes")
 set(m 64 CACHE STRING "Minimum node fill grade for R-tree indexes")
 set(p 0 CACHE STRING "Number of nodes to reinsert for R*-tree")
 set(s 2 CACHE STRING "Hilbert R-tree split strategy s:(s+1)")
+set(N "DefaultNode" CACHE STRING "Node type to use for R-trees")
 
 configure_file(
 	src/indexes/configuration.hpp.in

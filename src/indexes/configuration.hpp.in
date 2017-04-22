@@ -1,4 +1,6 @@
 #pragma once
+#include "indexes/rtree/DefaultNode.hpp"
+#include "indexes/rtree/EntryPlugin.hpp"
 
 /**
  * This file defines options that may be passed to the indexes.
@@ -8,3 +10,6 @@ constexpr unsigned M = ${M};
 constexpr unsigned m = ${m};
 constexpr unsigned p = ${p};
 constexpr unsigned s = ${s};
+
+template<class P = Rtree::EntryPlugin>
+using Node = Rtree::${N}<D, M, P>;
