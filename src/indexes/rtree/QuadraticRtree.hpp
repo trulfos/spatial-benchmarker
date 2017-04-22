@@ -17,11 +17,11 @@ namespace Rtree
  * @tparam N Node type
  * @tparam m Minimum node fill grade
  */
-template<unsigned D, unsigned C, unsigned m>
-class QuadraticRtree : public BasicRtree<DefaultNode<D, C>, m>
+template<class Node, unsigned m>
+class QuadraticRtree : public BasicRtree<Node, m>
 {
 	protected:
-		using N = ::Rtree::DefaultNode<D, C>;
+		using N = Node;
 		using M = typename N::Mbr;
 
 

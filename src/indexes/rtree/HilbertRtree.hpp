@@ -13,14 +13,13 @@ namespace Rtree
  * R-tree using the Hilbert order to split nodes in a fashion very similar to
  * B-trees.
  *
- * @tparam D Dimenson
  * @tparam N Node type
  * @tparam s Node split strategy s:(s+1)
  */
-template<unsigned D, unsigned C, unsigned s>
-class HilbertRtree : public Rtree<DefaultNode<D, C, HilbertEntryPlugin>>
+template<class Node, unsigned s>
+class HilbertRtree : public Rtree<Node>
 {
-	using N = DefaultNode<D, C, HilbertEntryPlugin>;
+	using N = Node;
 	using NIt = typename N::iterator;
 	using Base = Rtree<N>;
 

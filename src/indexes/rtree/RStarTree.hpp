@@ -22,14 +22,21 @@ namespace Rtree
  * @tparam m Minimum number of children in each node
  * @tparam p Number of entries to reinsert (on first overflow)
  */
-template<unsigned D, unsigned C, unsigned m, unsigned p>
-class RStarTree : public Rtree<DefaultNode<D, C>, m>
+template<class Node, unsigned m, unsigned p>
+class RStarTree : public Rtree<Node, m>
 {
-	static_assert(p < C, "p must be less than the node capacity C");
-	static_assert(2 * m <= C, "Min node fill level must be below capacity / 2");
+	static_assert(
+			p < Node::capacity,
+			"p must be less than the node capacity"
+		);
 
-	using N = DefaultNode<D, C>;
-	using M = Mbr<D>;
+	static_assert(
+			2 * m <= Node::capacity,
+			"Min node fill level must be below capacity / 2"
+		);
+
+	using N = Node;
+	using M = typename Node::Mbr;
 
 	using Base = Rtree<N, m>;
 	using NIt = typename N::iterator;

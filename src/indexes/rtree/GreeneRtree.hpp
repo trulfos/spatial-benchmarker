@@ -3,7 +3,6 @@
 #include <vector>
 #include <algorithm>
 #include "QuadraticRtree.hpp"
-#include "Node.hpp"
 #include "Entry.hpp"
 
 namespace Rtree
@@ -12,16 +11,17 @@ namespace Rtree
 /**
  * R-tree with Greene split strategy.
  *
- * @tparam D Dimenson
  * @tparam N Node type
  * @tparam m Minimum node fill grade
  */
-template<unsigned D, unsigned C, unsigned m>
-class GreeneRtree : public QuadraticRtree<D, C, m> //TODO: Not logical inheritance
+template<class Node, unsigned m>
+class GreeneRtree : public QuadraticRtree<Node, m> //TODO: Not logical inheritance
 {
 	protected:
-		using N = typename QuadraticRtree<D, C, m>::N;
+		using N = Node;
 		using Mbr = typename N::Mbr;
+
+		static constexpr unsigned D = Mbr::dimension;
 
 		/**
 		 * Redistribute the children of the two entries between the entries.
@@ -29,8 +29,16 @@ class GreeneRtree : public QuadraticRtree<D, C, m> //TODO: Not logical inheritan
 		 * @param a The first entry (with children)
 		 * @param b The second entry (with children)
 		 */
-		void redistribute(N& a, N& b, unsigned, const Mbr& enclosing) override
+		void redistribute(
+				BaseEntry<N>& original,
+			   	BaseEntry<N>& newEntry,
+			   	unsigned
+			) override
 		{
+			N& a = original.getNode();
+			N& b = newEntry.getNode();
+			Mbr enclosing = original.getMbr() + newEntry.getMbr();
+
 			// Contruct buffer with all entries
 			std::vector<Entry<N>> entries (
 					a.begin(), a.end()

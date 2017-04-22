@@ -19,18 +19,17 @@ namespace Rtree
 /**
  * Revised R*-tree.
  *
- * @tparam D Dimension
- * @tparam C Node capacity
+ * @tparam N Node type
  * @tparam m Minimum number of children in each node
  */
-template<unsigned D, unsigned C, unsigned m>
-class RRStarTree : public BasicRtree<DefaultNode<D, C, CapturingEntryPlugin>, m>
+template<class Node, unsigned m>
+class RRStarTree : public BasicRtree<Node, m>
 {
 	public:
 
-		using N = DefaultNode<D, C, CapturingEntryPlugin>;
+		using N = Node;
 		using NIt = typename N::iterator;
-		using M = Mbr<D>;
+		using M = typename N::Mbr;
 
 		/**
 		 * Provide a couple of extra statistics.
@@ -77,8 +76,8 @@ class RRStarTree : public BasicRtree<DefaultNode<D, C, CapturingEntryPlugin>, m>
               |_|                                                           
 */
 
-template<unsigned D, unsigned C, unsigned m>
-StatsCollector RRStarTree<D, C, m>::collectStatistics() const
+template<class N, unsigned m>
+StatsCollector RRStarTree<N, m>::collectStatistics() const
 {
 	auto stats = Rtree<N, m>::collectStatistics();
 	stats["perimeter_splits"] = perimeterSplits;
@@ -87,8 +86,8 @@ StatsCollector RRStarTree<D, C, m>::collectStatistics() const
 }
 
 
-template<unsigned D, unsigned C, unsigned m>
-typename RRStarTree<D, C, m>::NIt RRStarTree<D, C, m>::chooseSubtree(
+template<class N, unsigned m>
+typename RRStarTree<N, m>::NIt RRStarTree<N, m>::chooseSubtree(
 		BaseEntry<N>& parent,
 		const Entry<N>& newEntry
 	)
@@ -147,8 +146,8 @@ typename RRStarTree<D, C, m>::NIt RRStarTree<D, C, m>::chooseSubtree(
 };
 
 
-template<unsigned D, unsigned C, unsigned m>
-void RRStarTree<D, C, m>::redistribute(BaseEntry<N>& a, BaseEntry<N>& b, unsigned level)
+template<class N, unsigned m>
+void RRStarTree<N, m>::redistribute(BaseEntry<N>& a, BaseEntry<N>& b, unsigned level)
 {
 	// Functions for evaluating splits
 	GoalFunction wg (a.getMbr() + b.getMbr());
@@ -165,7 +164,7 @@ void RRStarTree<D, C, m>::redistribute(BaseEntry<N>& a, BaseEntry<N>& b, unsigne
 	if (level == 0) {
 
 		unsigned dimension = *argmin(
-				makeRangeIt(0u), makeRangeIt(D),
+				makeRangeIt(0u), makeRangeIt(M::dimension),
 				[&](unsigned d) {
 					splits.restrictTo(d);
 
