@@ -2,14 +2,24 @@
 #include "SplitSet.hpp"
 #include "Entry.hpp"
 #include "spatial/DataObject.hpp"
+#include "Link.hpp"
 
 using namespace Rtree;
 
-class Node {};
-using E = Entry<2, Node>;
+static constexpr unsigned D = 2;
+
+struct Node {
+	using Mbr = ::Rtree::Mbr<D>;
+	using Link = ::Rtree::Link<Node>;
+	using Plugin = ::Rtree::EntryPlugin;
+
+	using iterator = std::array<Entry<Node>, 5>::iterator;
+};
+
+using E = Entry<Node>;
 
 // Create a set of entries for testing
-std::array<const E, 5> entries = {{
+std::array<E, 5> entries = {{
 		DataObject(1, {Point {0.0, 4.0}, Point {6.0, 8.0}}),
 		DataObject(2, {Point {1.0, 3.0}, Point {7.0, 6.0}}),
 		DataObject(3, {Point {2.0, 2.0}, Point {9.0, 7.0}}),
@@ -32,7 +42,7 @@ std::array<std::array<unsigned, 5>, 4> orders = {{
 Test(SplitSet, basic)
 {
 	// Create the split set
-	SplitSet<const E, 1> splits(
+	SplitSet<Node, 1> splits(
 			entries.begin(), entries.begin(),
 			entries.end(), entries.begin()
 		);
@@ -63,7 +73,7 @@ Test(SplitSet, basic)
 Test(SplitSet, ordering)
 {
 	// Create the split set
-	SplitSet<const E, 1> splits(
+	SplitSet<Node, 1> splits(
 			entries.begin(), entries.begin(),
 			entries.end(), entries.begin()
 		);
@@ -91,7 +101,7 @@ Test(SplitSet, ordering)
 Test(SplitSet, restrictTo)
 {
 	// Create the split set
-	SplitSet<const E, 1> splits(
+	SplitSet<Node, 1> splits(
 			entries.begin(), entries.begin(),
 			entries.end(), entries.begin()
 		);

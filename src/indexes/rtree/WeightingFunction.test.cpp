@@ -1,7 +1,8 @@
 #include <criterion/criterion.h>
 #include "WeightingFunction.hpp"
-#include "Node.hpp"
+#include "DefaultNode.hpp"
 #include "Entry.hpp"
+#include "Link.hpp"
 #include "CapturingEntryPlugin.hpp"
 
 
@@ -10,6 +11,15 @@ using namespace Rtree;
 constexpr unsigned m = 15;
 constexpr unsigned D = 3;
 constexpr unsigned M = 100;
+
+
+template<class N>
+class TestEntry : public Entry<N>
+{
+	public:
+		using Entry<N>::Entry;
+		using Entry<N>::setMbr;
+};
 
 template<class WF>
 void checkAll(const std::array<double, 11>& correct, unsigned d, WF& wf)
@@ -32,18 +42,16 @@ void checkAll(const std::array<double, 11>& correct, unsigned d, WF& wf)
  */
 Test(WeightingFunction, paper_test_case)
 {
-	using N = Node<D, M, CapturingEntryPlugin>;
-	using E = typename N::E;
+	using N = DefaultNode<D, M, CapturingEntryPlugin>;
+	using E = TestEntry<N>;
 
 	E parent (
-			new N(),
-			{E(DataObject{1, Box(Point(3, 0.0), Point(3, 0.0))})}
+			new N({E(DataObject{1, Box(Point(3, 0.0), Point(3, 0.0))})})
 		);
-	E child;
 
-	parent.getMbr() = Box(Point {-0.5, -0.25, 0.0}, Point {0.5, 0.75, 1.0});
+	parent.setMbr(Box(Point {-0.5, -0.25, 0.0}, Point {0.5, 0.75, 1.0}));
 
-	WeightingFunction<E, m> wf (parent);
+	WeightingFunction<N, m> wf (parent);
 
 	// asym = 0
 	checkAll(
@@ -66,5 +74,5 @@ Test(WeightingFunction, paper_test_case)
 		wf
 	);
 
-	delete parent.getNode();
+	delete &parent.getNode();
 }

@@ -96,10 +96,10 @@ Test(mbr, box_box_distance)
 
 Test(mbr, intersects)
 {
-	Mbr<2> mbrA ({Point({1.0f, 2.0f}), Point({3.0f, 4.0f})});
-	Mbr<2> mbrB ({Point({2.0f, 1.0f}), Point({4.0f, 3.0f})});
-	Mbr<2> mbrC ({Point({10.0f, 10.0f}), Point({11.0f, 11.0f})});
-	Mbr<2> mbrD ({Point({3.0f, 4.0f}), Point({5.0f, 5.0f})});
+	Mbr<2> mbrA = Box(Point({1.0f, 2.0f}), Point({3.0f, 4.0f}));
+	Mbr<2> mbrB = Box(Point({2.0f, 1.0f}), Point({4.0f, 3.0f}));
+	Mbr<2> mbrC = Box(Point({10.0f, 10.0f}), Point({11.0f, 11.0f}));
+	Mbr<2> mbrD = Box(Point({3.0f, 4.0f}), Point({5.0f, 5.0f}));
 
 
 	cr_assert(
@@ -132,8 +132,8 @@ Test(mbr, intersects)
 
 Test(mbr, intersection)
 {
-	Mbr<2> mbrA ({Point({1.0f, 2.0f}), Point({3.0f, 4.0f})});
-	Mbr<2> mbrB ({Point({2.0f, 1.0f}), Point({4.0f, 3.0f})});
+	Mbr<2> mbrA = Box(Point({1.0f, 2.0f}), Point({3.0f, 4.0f}));
+	Mbr<2> mbrB = Box(Point({2.0f, 1.0f}), Point({4.0f, 3.0f}));
 
 	cr_assert_float_eq(
 			mbrA.intersection(mbrB).volume(),
@@ -153,31 +153,31 @@ Test(mbr, intersection)
 Test(mbr, perimeter)
 {
 	cr_assert_float_eq(
-			Mbr<2>({Point({1.0f, 2.0f}), Point({3.0f, 4.0f})}).perimeter(),
+			Mbr<2>(Box(Point({1.0f, 2.0f}), Point({3.0f, 4.0f}))).perimeter(),
 			4.0f,
 			EPSILON,
 			"Perimeter of 2x2 MBR should be 4"
 		);
 
 	cr_assert_float_eq(
-			Mbr<2>({Point({0.0f, 0.0f}), Point({1.0f, 0.0f})}).perimeter(),
+			Mbr<2>(Box(Point({0.0f, 0.0f}), Point({1.0f, 0.0f}))).perimeter(),
 			1.0f,
 			EPSILON,
 			"Perimeter of 1x0 MBR should be 1"
 		);
 
 	cr_assert_float_eq(
-			Mbr<2>({Point({0.0f, 0.0f}), Point({0.0f, 0.0f})}).perimeter(),
+			Mbr<2>(Box(Point({0.0f, 0.0f}), Point({0.0f, 0.0f}))).perimeter(),
 			0.0f,
 			EPSILON,
 			"Perimeter of 0x0 MBR should be 0"
 		);
 
 	cr_assert_float_eq(
-			Mbr<3>({
+			Mbr<3>(Box(
 					Point {-1.0f, -1.0f, -1.0f},
 					Point {1.0f, 1.0f, 1.0f}
-				}).perimeter(),
+				)).perimeter(),
 			6.0f,
 			EPSILON,
 			"Perimeter of 2x2x2 MBR should be 6"
@@ -187,14 +187,14 @@ Test(mbr, perimeter)
 Test(mbr, center)
 {
 	cr_assert_float_eq(
-			Mbr<2>({Point({1.0f, 2.0f}), Point({3.0f, 4.0f})}).center()[0],
+			Mbr<2>(Box(Point({1.0f, 2.0f}), Point({3.0f, 4.0f}))).center()[0],
 			2.0f,
 			EPSILON,
 			"MBR should have center at x=2"
 		);
 
 	cr_assert_float_eq(
-			Mbr<2>({Point({1.0f, 2.0f}), Point({3.0f, 4.0f})}).center()[1],
+			Mbr<2>(Box(Point({1.0f, 2.0f}), Point({3.0f, 4.0f}))).center()[1],
 			3.0f,
 			EPSILON,
 			"MBR should have center at y=3"
@@ -204,9 +204,9 @@ Test(mbr, center)
 
 Test(mbr, waste)
 {
-	Mbr<2> a ({Point({1.0f, 3.0f}), Point({3.0f, 5.0f})}),
-		b ({Point({9.0f, 1.0f}), Point({10.0f, 2.0f})}),
-		c ({Point({3.0f, 3.0f}), Point({5.0f, 5.0f})});
+	Mbr<2> a = Box(Point({1.0f, 3.0f}), Point({3.0f, 5.0f})),
+		b = Box(Point({9.0f, 1.0f}), Point({10.0f, 2.0f})),
+		c = Box(Point({3.0f, 3.0f}), Point({5.0f, 5.0f}));
 
 	cr_assert_float_eq(
 			a.waste(b),
@@ -242,8 +242,8 @@ Test(mbr, waste)
 
 Test(mbr, delta)
 {
-	Mbr<2> a ({Point({1.0f, 1.0f}), Point({3.0f, 3.0f})}),
-		b ({Point({4.0f, 1.0f}), Point({5.0f, 2.0f})});
+	Mbr<2> a = Box(Point({1.0f, 1.0f}), Point({3.0f, 3.0f})),
+		b = Box(Point({4.0f, 1.0f}), Point({5.0f, 2.0f}));
 
 	cr_expect_float_eq(
 			a.delta(&Mbr<2>::volume, b),
@@ -273,9 +273,9 @@ Test(mbr, delta)
 
 Test(mbr, deltaOverlap)
 {
-	Mbr<2> a ({Point {0.0f, 0.0f}, Point {2.0f, 3.0f}}),
-		b ({Point {3.0f, 1.0f}, Point {5.0f, 3.0f}}),
-		c ({Point {3.0, 1.0}, Point {4.0, 2.0}});
+	Mbr<2> a = Box(Point {0.0f, 0.0f}, Point {2.0f, 3.0f}),
+		b = Box(Point {3.0f, 1.0f}, Point {5.0f, 3.0f}),
+		c = Box(Point {3.0, 1.0}, Point {4.0, 2.0});
 
 
 	// Initially not overlapping

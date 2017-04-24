@@ -1,12 +1,22 @@
 #include <criterion/criterion.h>
 #include "CheckComp.hpp"
 #include "spatial/DataObject.hpp"
+#include "Link.hpp"
 #include "Entry.hpp"
 
 using namespace Rtree;
 
-class Node {};
-using E = Entry<2, Node>;
+constexpr unsigned D = 2;
+
+struct Node {
+	using Mbr = ::Rtree::Mbr<D>;
+	using Link = ::Rtree::Link<Node>;
+	using Plugin = ::Rtree::EntryPlugin;
+
+	using iterator = std::array<Entry<Node>, 5>::iterator;
+};
+
+using E = Entry<Node>;
 
 
 /**
@@ -41,7 +51,7 @@ Test(CheckComp, example_from_paper)
 			entries.end()
 		);
 
-	cr_expect_eq(checkComp.minOverlap().getId(), 3);
+	cr_expect_eq(checkComp.minOverlap()->getId(), 3);
 	cr_expect_eq(checkComp.getP() - entries.begin(), 4);
 
 	cr_expect_eq(

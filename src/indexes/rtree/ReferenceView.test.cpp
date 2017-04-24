@@ -9,7 +9,10 @@ std::array<const unsigned, 10> values = {{
 
 Test(ReferenceView, iterator_constructor)
 {
-	ReferenceView<const unsigned> view (values.begin(), values.end());
+	ReferenceView<typename decltype(values)::iterator> view (
+			values.begin(),
+			values.end()
+		);
 
 	auto it = view.begin();
 	for (unsigned i = 0; i < values.size(); i++) {
@@ -23,7 +26,10 @@ Test(ReferenceView, iterator_constructor)
 
 Test(ReferenceView, sort_method)
 {
-	ReferenceView<const unsigned> view (values.begin(), values.end());
+	ReferenceView<typename decltype(values)::iterator> view (
+			values.begin(),
+			values.end()
+		);
 
 	view.sort([](const unsigned& a, const unsigned& b) {
 			return b < a;
@@ -42,8 +48,12 @@ Test(ReferenceView, sort_method)
 
 Test(ReferenceView, copy_constructor)
 {
-	ReferenceView<const unsigned> view0 (values.begin(), values.end());
-	ReferenceView<const unsigned> view (view0);
+	ReferenceView<typename decltype(values)::iterator> view0 (
+			values.begin(),
+			values.end()
+		);
+
+	ReferenceView<typename decltype(values)::iterator> view (view0);
 
 	// Mess with original view
 	view0.sort([](const unsigned& a, const unsigned& b) {

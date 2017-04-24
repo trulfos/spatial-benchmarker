@@ -2,14 +2,24 @@
 #include "GoalFunction.hpp"
 #include "SplitSet.hpp"
 #include "Entry.hpp"
+#include "EntryPlugin.hpp"
+#include "Link.hpp"
 
 constexpr float EPSILON = 0.001f;
 constexpr unsigned D = 2;
 
 using namespace Rtree;
-class Node {};
-using E = Entry<D, Node>;
-using M = typename E::M;
+
+struct Node {
+	using Mbr = ::Rtree::Mbr<D>;
+	using Link = ::Rtree::Link<Node>;
+	using Plugin = ::Rtree::EntryPlugin;
+
+	using iterator = std::array<Entry<Node>, 3>::iterator;
+};
+
+using E = Entry<Node>;
+using M = typename E::Mbr;
 
 
 /**
@@ -26,11 +36,13 @@ Test(GoalFunction, volumeless)
 			DataObject(2, b)
 		}};
 
-	GoalFunction<E> gf (mbr);
+	GoalFunction gf (mbr);
 
 	for (unsigned d = 0; d < 2 * D; d++) {
-		Split<E> split (
-				ReferenceView<E>(entries.begin(), entries.end()),
+		Split<Node> split (
+				ReferenceView<typename decltype(entries)::iterator>(
+						entries.begin(), entries.end()
+					),
 				D / 2,
 				D % 2,
 				1
@@ -75,7 +87,7 @@ Test(GoalFunction, simple)
 		}};
 
 
-	GoalFunction<E> gf (
+	GoalFunction gf (
 			std::accumulate(
 					entries.begin(), entries.end(),
 					entries[0].getMbr(),
@@ -91,13 +103,13 @@ Test(GoalFunction, simple)
 			EPSILON
 		);
 
-	SplitSet<E, 1> splits (entries.begin(), entries.end());
+	SplitSet<Node, 1> splits (entries.begin(), entries.end());
 
 	std::array<double, 8> scores = {{
 		4.0, -8.0, 8.0, -8.0, -8.0, 4.0, 8.0, -8.0
 	}};
 
-	for (const Split<E>& split : splits) {
+	for (const Split<Node>& split : splits) {
 		cr_expect_float_eq(
 				gf(split, true),
 				scores[
