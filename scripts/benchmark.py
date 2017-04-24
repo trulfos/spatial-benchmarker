@@ -203,7 +203,7 @@ def main():
     # Run!
     run_queued(
             [run_benchmark(db, t, use_stdout, args.dry)
-                for t in tasks],
+                for t in sorted(tasks)],
             max_parallel=args.parallel
         )
 
