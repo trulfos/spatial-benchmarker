@@ -74,16 +74,14 @@ cmake -DD=3 -DM=128 ..
 make rtree-hilbert
 ```
 
-The `scripts/benchmark` script automatically compiles the benchmark for the
-correct dimension. For example, the following compiles the hilbert R-tree and
-runs the `abs02` benchmark in the benchmark folder with a node size of 128.
-```bash
-./scripts/benchmark rtree-hilbert benchmarks/abs02/ -DM=128
-```
+The `scripts/compile_for.py` automatically compiles the code using a given
+configuration id. The config is then fetched from the SQLite database.
 
-The results of the above are recorded in `results` (an sqlite database) and can
-be retrieved either manually using the `sqlite3` command or by running
-`scripts/plot`.
+The `scripts/benchmark.py` script compiles the benchmark for a config and runs
+the corresponding index on a data set with reporters (benchmark) as fetched from
+the database. The results are recorded in the SQLite database) and can be
+retrieved either manually using the `sqlite3` command or by running some of the
+existing scripts (such as `scripts/make_table.py`).
 
 
 ### Unit tests

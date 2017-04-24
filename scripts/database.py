@@ -39,11 +39,14 @@ class Database:
                 create table `run` (
                     `run_id` integer primary key autoincrement,
                     `benchmark_id` integer not null,
+                    `config_id` integer not null,
                     `timestamp` datetime default current_timestamp not null,
                     `commit` text not null,
 
                     foreign key (`benchmark_id`)
-                        references `benchmark` (`benchmark_id`)
+                        references `benchmark` (`benchmark_id`),
+                    foreign key (`config_id`)
+                        references `config` (`config_id`)
                 )
                 """,
                 """
@@ -59,10 +62,7 @@ class Database:
                 """
                 create table `benchmark` (
                     `benchmark_id` integer primary key autoincrement,
-                    `config_id` integer not null,
-                    `dataset` text not null,
-
-                    foreign key (`config_id`) references `config` (`config_id`)
+                    `dataset` text not null
                 )
                 """,
                 """
@@ -96,13 +96,16 @@ class Database:
                 )
                 """,
                 """
-                create table `suite_benchmark` (
+                create table `suite_member` (
                     `suite_id` integer not null,
                     `benchmark_id` integer not null,
+                    `config_id` integer not null,
 
                     foreign key (`suite_id`) references `suite` (`suite_id`),
                     foreign key (`benchmark_id`)
-                        references `benchmark` (`benchmark_id`)
+                        references `benchmark` (`benchmark_id`),
+                    foreign key (`config_id`)
+                        references `config` (`config_id`)
                 )
                 """,
                 """

@@ -6,7 +6,7 @@ import csv
 import os
 import sys
 from database import Database
-import configs
+import compile_for
 import reporters as reps
 
 
@@ -19,13 +19,8 @@ def parse_arguments():
         )
 
     parser.add_argument(
-            'benchmarks', nargs='*', default=[],
-            help='Configurations to benchmark (ids)'
-        )
-
-    parser.add_argument(
-            '--index', '-i', metavar='index name', nargs='*', default=[],
-            help='Include all benchmarks for the given index(es)'
+            'tasks', metavar='<config>:<benchmark>', nargs='*', default=[],
+            help='Configuration-benchhmark pairs to evaluate'
         )
 
     parser.add_argument(
@@ -53,29 +48,7 @@ def parse_arguments():
             help='Print results instead of storing them to the database'
         )
 
-    parser.add_argument(
-            '--compile-only', '-c', action='store_true',
-            help='Only compile the index with the correct configuration'
-        )
-
     return parser.parse_args()
-
-
-def run_make(options, index):
-    subprocess.check_call(
-            ['cmake'] + ['-D%s=%s' % d for d in options.items()] + ['..'],
-            stdout=subprocess.DEVNULL
-        )
-
-    subprocess.check_call(
-            ['make', 'bench'],
-            stdout=subprocess.DEVNULL
-        )
-
-    subprocess.check_call(
-            ['make', index],
-            stdout=subprocess.DEVNULL
-        )
 
 
 def run_queued(futures, max_parallel=1):
@@ -119,15 +92,6 @@ def get_commit():
         ).strip()
 
 
-def detect_dimension(filename):
-    i = len(filename) - 1
-
-    while filename[i].isdigit() and i > 0:
-        i -= 1
-
-    return int(filename[i + 1:])
-
-
 def get_benchmark_ids(db, index):
     benchmarks = db.connection.execute(
             """
@@ -142,8 +106,9 @@ def get_benchmark_ids(db, index):
 
 
 @asyncio.coroutine
-def run_benchmark(db, benchmark_id, use_stdout, dry, compile_only):
+def run_benchmark(db, task, use_stdout, dry):
     # Gather information
+    (config_id, benchmark_id) = task
     commit = get_commit()
     benchmark = db.get_by_id('benchmark', benchmark_id)
 
@@ -151,39 +116,25 @@ def run_benchmark(db, benchmark_id, use_stdout, dry, compile_only):
         print('Error: Benchmark %s does not exist' % benchmark_id)
         return
 
-    config_id = benchmark['config_id']
-    config = configs.get_by_id(db, config_id)
     dataset = benchmark['dataset']
     reporters = reps.get(db, benchmark_id)
 
     if not reporters:
-        print('No reporters to run for benchmark %d' % benchmark_id)
+        print('No reporters to run for benchmark %s' % benchmark_id)
         return
 
-    dimension = detect_dimension(dataset)
-    index = config['index']
-    library = '%s_%d' % (index, config_id)
-
-    # Build
+    # Build (if not already built)
     if config_id not in made_configs:
-        print("Compiling for config %d..." % config_id)
-        definitions = dict(config['definitions'], D=dimension)
+        print("Compiling for config %s..." % config_id)
+        compile_for.compile(db, config_id)
+        print("Config %s compiled" % config_id)
 
-        run_make(definitions, index)
-
-        # Copy lib to avoid overwriting before load
-        os.rename('lib%s.so' % index, 'lib%s.so' % library)
-
-        print("Config %d compiled" % config_id)
         made_configs.add(config_id)
-
-    if compile_only:
-        return
 
     # Run the benchmark (async)
     process = yield from asyncio.create_subprocess_exec(
             *(
-                    ['./bench', library, '../' + dataset] +
+                    ['./bench', config_id, '../' + dataset] +
                     ['%(name)s:../%(arguments)s' % r for r in reporters]
                 ),
             stdout=sys.stdout if dry else asyncio.subprocess.PIPE,
@@ -192,7 +143,10 @@ def run_benchmark(db, benchmark_id, use_stdout, dry, compile_only):
 
     status_code = yield from process.wait()
     if status_code != 0:
-        print("BENCHMARKER CRASHED!\nBenchmark: %s" % benchmark_id)
+        print(
+                "BENCHMARKER CRASHED!\n...when running: %s:%s" %
+                (config_id, benchmark_id)
+            )
 
     if dry:
         return
@@ -201,7 +155,10 @@ def run_benchmark(db, benchmark_id, use_stdout, dry, compile_only):
 
     # Save results
     run_id = db.insert(
-            'run', benchmark_id=benchmark_id, commit=commit
+            'run',
+            benchmark_id=benchmark_id,
+            config_id=config_id,
+            commit=commit
         ).lastrowid
 
     for result in zip(results.split('\n\n'), reporters):
@@ -222,17 +179,14 @@ def run_benchmark(db, benchmark_id, use_stdout, dry, compile_only):
 def main():
     args = parse_arguments()
     db = Database(args.database)
-    benchmarks = set(args.benchmarks)
+    tasks = set(tuple(t.split(':')) for t in set(args.tasks))
     build_dir = args.builddir
 
     # Collect additional benchmark ids
-    for index in args.index:
-        benchmarks |= get_benchmark_ids(db, index)
-
     for suite_id in args.suite:
-        benchmarks |= set(
-                sb['benchmark_id'] for sb in
-                db.get_where('suite_benchmark', suite_id=suite_id)
+        tasks |= set(
+                (str(sb['config_id']), str(sb['benchmark_id'])) for sb in
+                db.get_where('suite_member', suite_id=suite_id)
             )
 
     # Prepare for out of source compilation
@@ -248,7 +202,8 @@ def main():
 
     # Run!
     run_queued(
-            [run_benchmark(db, b, use_stdout, args.dry, args.compile_only) for b in benchmarks],
+            [run_benchmark(db, t, use_stdout, args.dry)
+                for t in tasks],
             max_parallel=args.parallel
         )
 
