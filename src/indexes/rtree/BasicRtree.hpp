@@ -176,7 +176,7 @@ void BasicRtree<N, m>::insert(const DataObject& object)
 	// Split root?
 	if (getRoot().getNode().isFull()) {
 		return splitRoot(
-				split(getRoot(), entry, 0)
+				split(getRoot(), entry, getHeight() - 2)
 			);
 	}
 
