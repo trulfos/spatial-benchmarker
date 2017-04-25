@@ -132,6 +132,7 @@ class RStarTree : public Rtree<Node, m>
 
 					// Split node
 					entry = split(**top, entry);
+					isReinsert = false;
 					++top;
 				}
 
