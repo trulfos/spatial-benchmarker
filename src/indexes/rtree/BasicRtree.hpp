@@ -131,20 +131,19 @@ Entry<N> BasicRtree<N, m>::split(
 template<class N, unsigned m>
 void BasicRtree<N, m>::insert(const DataObject& object)
 {
-	Entry<N> entry (object);
+	Entry<N> original (object);
 
 	// No nodes - set entry as root
 	if (getHeight() == 0) {
-		return addLevel(entry);
+		return addLevel(original);
 	}
 
 	// Single entry - add new root
 	if (getHeight() == 1) {
-		return splitRoot(entry);
+		return splitRoot(original);
 	}
 
-	// Need to add node further down the tree
-	getRoot().include(entry);
+	Entry<N> entry = original;
 
 	if (getHeight() > 2) {
 		// Dig down to destination leaf node and update MBRs on the way
@@ -152,24 +151,31 @@ void BasicRtree<N, m>::insert(const DataObject& object)
 				chooseSubtree(getRoot(), entry)
 			};
 
-		path.back()->include(entry);
-
 		while (path.size() < getHeight() - 2) {
-			auto e = chooseSubtree(*path.back(), entry);
-			e->include(entry);
-			path.push_back(e);
+			path.back()->include(entry);
+			path.push_back(
+					chooseSubtree(*path.back(), entry)
+				);
 		}
 
 		// Split nodes bottom-up as long as necessary
 		auto i = path.rbegin();
-		while (i != path.rend() && (*i)->getLink().getNode().isFull()) {
+		while (i != path.rend() && (*i)->getNode().isFull()) {
 			entry = split(**i, entry, i - path.rbegin());
 			++i;
 		}
 
 		// Add to some internal node (which is not the root)
 		if (i != path.rend()) {
-			return (*i)->getLink().getNode().add(entry);
+			(*i)->getNode().add(entry);
+
+			while (i != path.rend()) {
+				(*i)->include(original);
+				++i;
+			}
+
+			getRoot().include(original);
+			return ;
 		}
 	}
 
@@ -182,6 +188,7 @@ void BasicRtree<N, m>::insert(const DataObject& object)
 
 	// Add to root
 	getRoot().getNode().add(entry);
+	getRoot().include(original);
 };
 
 
