@@ -6,6 +6,7 @@
 #include "reporters/AvgStatsReporter.hpp"
 #include "reporters/CorrectnessReporter.hpp"
 #include "reporters/StructReporter.hpp"
+#include "reporters/PapiReporter.hpp"
 
 namespace Bench
 {
@@ -112,6 +113,9 @@ std::shared_ptr<Reporter> ReporterArg::createReporter(
 	}
 	if (name == "struct") {
 		return std::make_shared<StructReporter>();
+	}
+	if (name == "papi") {
+		return std::make_shared<PapiReporter>(arguments[0]);
 	}
 
 	throw TCLAP::ArgParseException("No reporter named " + name, "reporterarg");

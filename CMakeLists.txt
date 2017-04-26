@@ -2,7 +2,25 @@ cmake_minimum_required(VERSION 3.2)
 
 project("Spatial Indexing Framework")
 
-include_directories(src)
+
+# We need PAPI
+include(ExternalProject)
+ExternalProject_Add(Papi
+	URL http://icl.utk.edu/projects/papi/downloads/papi-5.5.1.tar.gz
+	URL_HASH SHA1=92dfb479fb025177e5eb56df76afc96cd11eb81f
+	SOURCE_DIR papi
+	BUILD_IN_SOURCE 1
+	CONFIGURE_COMMAND cd src && ./configure
+	BUILD_COMMAND cd src && make
+	INSTALL_COMMAND ""
+)
+
+include_directories(src ${CMAKE_CURRENT_BINARY_DIR}/papi/src)
+
+add_library(papi STATIC IMPORTED)
+set_property(TARGET papi PROPERTY IMPORTED_LOCATION
+	${CMAKE_CURRENT_BINARY_DIR}/papi/src/libpapi.a)
+add_dependencies(papi Papi)
 
 set(optimized_flags -O3 -flto -fuse-linker-plugin)
 set(CMAKE_EXE_LINKER_FLAGS "-O3 -flto -fuse-linker-plugin")
@@ -33,6 +51,7 @@ add_library(reporters OBJECT
 	src/bench/reporters/FileHeader.cpp
 	src/bench/reporters/ProgressLogger.cpp
 	src/bench/reporters/ResultsReporter.cpp
+	src/bench/reporters/PapiReporter.cpp
 )
 
 add_library(spatial OBJECT
@@ -61,7 +80,7 @@ add_executable(bench
 	$<TARGET_OBJECTS:spatial>
 )
 
-target_link_libraries(bench m dl)
+target_link_libraries(bench m dl papi)
 
 # Add tests
 enable_testing()

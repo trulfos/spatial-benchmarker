@@ -1,2 +1,2 @@
 -std=c++11
--Isrc/
+-Isrc/ -Ibuild/papi/src
