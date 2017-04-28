@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import os
 import sqlite3
+from stdev import StddevSamp
 
 
 class Database:
@@ -19,7 +20,12 @@ class Database:
         # Check if database exists and create it if not
         exists = os.path.exists(filename)
         self.connection = sqlite3.connect(filename)
+
+        # Make rows indexable by header field
         self.connection.row_factory = sqlite3.Row
+
+        # Add custom functions
+        self.connection.create_aggregate('stddev_samp', 1, StddevSamp)
 
         if not exists:
             self.create_database()
@@ -110,13 +116,14 @@ class Database:
                 """,
                 """
                 create view `latest_run` as
-                select *, cast(substr(`dataset`, -2) as integer) `D` from `run`
+                select * from `run`
                 inner join `benchmark` using (`benchmark_id`)
                 inner join `config` using (`config_id`)
                 where not exists (
                     select * from `run` `r`
                     where `r`.`timestamp` > `run`.`timestamp`
                     and `r`.`benchmark_id` = `run`.`benchmark_id`
+                    and `r`.`config_id` = `run`.`config_id`
                 )
                 """
             ]
