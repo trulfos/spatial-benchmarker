@@ -3,6 +3,7 @@
 #include <random>
 #include <algorithm>
 #include <papi.h>
+#include <sched.h>
 
 namespace Bench
 {
@@ -28,20 +29,17 @@ namespace Bench
 			std::ostream& logStream
 		)
 	{
-		ProgressLogger progress(logStream, RUNS);
+		ProgressLogger progress(logStream, RUNS * REORDER_RUNS);
 		std::default_random_engine engine (11);
 
-		auto querySet = getQuerySet();
 
-		// Load queries into memory
-		std::vector<RangeQuery> queries (querySet.getSize());
-		std::transform(
-				querySet.begin(), querySet.end(),
-				queries.begin(),
-				[](const decltype(querySet)::value_type& query) {
-					return query;
-				}
-			);
+		// Bind to specific processor core
+		cpu_set_t set;
+		CPU_ZERO(&set);
+		CPU_SET(1, &set);
+		if (sched_setaffinity(0, sizeof(set), &set)) {
+			throw std::runtime_error("Could not pin process to core");
+		}
 
 		// Set up performance counters (move to constructor?)
 		std::array<int, 3> events = {
@@ -55,29 +53,61 @@ namespace Bench
 			throw std::runtime_error("Too few hardware counters");
 		}
 
+		// Load queries into memory
+		auto querySet = getQuerySet();
 
-		// Test multiple times
-		for (unsigned i = 0; i < RUNS; ++i) {
+		std::vector<RangeQuery> originalQueries (querySet.getSize());
+		std::copy(
+				querySet.begin(), querySet.end(),
+				originalQueries.begin()
+			);
 
-			// Clear cache
-			clearCache();
+		// Make space for results
+		for (unsigned j = 0; j < RUNS; j++) {
 
-			// Make space for results
-			std::array<int long long, events.size()> results;
+			// Make a copy that can be reshuffeled
+			std::vector<RangeQuery> queries = originalQueries;
+
+			std::array<int long long, events.size()> totals = {};
+			int long long runtime = 0;
+
+			// Test multiple times
+			for (unsigned i = 0; i < REORDER_RUNS; ++i) {
+
+				// Clear cache
+				clearCache();
+
+				std::array<int long long, events.size()> results = {};
+
+				// Start measurements
+				check(PAPI_start_counters(events.data(), events.size()));
+				int long long startTime = PAPI_get_real_nsec();
+
+				// Run the code to 
+				for (const RangeQuery& query : queries) {
+					index.search(query);
+				}
+
+				// Stop measurements
+				int long long endTime = PAPI_get_real_nsec();
+				check(PAPI_stop_counters(results.data(), results.size()));
+
+				for (unsigned k = 0; k < results.size(); k++) {
+					totals[k] += results[k];
+				}
 
 
-			// Start measurements
-			check(PAPI_start_counters(events.data(), events.size()));
-			int long long startTime = PAPI_get_real_nsec();
+				runtime += endTime - startTime;
 
-			// Run the code to 
-			for (const RangeQuery& query : queries) {
-				index.search(query);
+				// Rearrange queries
+				std::shuffle(
+						queries.begin(), queries.end(),
+						engine
+					);
+
+				// Update progress bar
+				progress.increment();
 			}
-
-			// Stop measurements
-			int long long endTime = PAPI_get_real_nsec();
-			check(PAPI_stop_counters(results.data(), results.size()));
 
 			// Store metrics
 			for (unsigned i = 0; i < events.size(); ++i) {
@@ -86,21 +116,13 @@ namespace Bench
 					throw std::runtime_error("Could not translate event name");
 				}
 
-				addEntry(std::string(name), results[i]);
+				addEntry(std::string(name), totals[i] / REORDER_RUNS);
 			}
 
-			addEntry("PAPI_REAL_NSEC", endTime - startTime);
-
-			// Rearrange queries
-			std::shuffle(
-					queries.begin(), queries.end(),
-					engine
-				);
-
-			// Update progress bar
-			progress.increment();
+			addEntry("PAPI_REAL_NSEC", runtime / REORDER_RUNS);
 
 		}
+
 	}
 
 }
