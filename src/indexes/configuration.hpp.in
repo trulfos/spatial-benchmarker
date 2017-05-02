@@ -2,6 +2,7 @@
 #include "indexes/rtree/EntryPlugin.hpp"
 #include "indexes/rtree/DefaultNode.hpp"
 #include "indexes/rtree/PointerArrayNode.hpp"
+#include "indexes/rtree/VectorizedNode.hpp"
 
 /**
  * This file defines options that may be passed to the indexes.

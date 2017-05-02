@@ -142,6 +142,11 @@ add_executable(test_quadraticseeds
 	src/indexes/rtree/QuadraticSeeds.test.cpp
 )
 
+add_executable(test_vectorizednode
+	$<TARGET_OBJECTS:spatial>
+	src/indexes/rtree/VectorizedNode.test.cpp
+)
+
 foreach(name
 		point
 		box
@@ -155,6 +160,7 @@ foreach(name
 		checkcomp
 		referenceview
 		quadraticseeds
+		vectorizednode
 	)
 	add_test(NAME ${name} COMMAND test_${name})
 	target_link_libraries(test_${name} criterion)

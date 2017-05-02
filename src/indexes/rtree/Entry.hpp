@@ -45,6 +45,7 @@ namespace Rtree
 				return *this;
 			}
 
+
 			/**
 			 * Inculdes the given entry in this entry.
 			 *
@@ -201,10 +202,13 @@ namespace Rtree
 			 *
 			 * @param mbr MBR of new entry
 			 * @param link Pointer to node or object id
-			 * @param plugin Initial plugin value
+			 * @param plugin Initial plugin value (optional)
 			 */
-			Entry(const Mbr& mbr, const Link& link, const Plugin& plugin)
-				: mbr(mbr), link(link), plugin(plugin)
+			Entry(
+					const Mbr& mbr,
+					const Link& link,
+					const Plugin& plugin = Plugin()
+				) : mbr(mbr), link(link), plugin(plugin)
 			{
 			}
 
