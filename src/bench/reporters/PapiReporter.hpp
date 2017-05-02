@@ -12,7 +12,10 @@ namespace Bench
 	{
 		public:
 
-			using QueryReporter::QueryReporter;
+			PapiReporter(const std::string& queryPath, unsigned runs = 20)
+				: QueryReporter(queryPath), runs(runs)
+			{
+			}
 
 			void run(
 					const SpatialIndex& index,
@@ -30,7 +33,7 @@ namespace Bench
 			/**
 			 * Number of times to repeat the reodering and running of queries.
 			 */
-			static constexpr unsigned RUNS = 20;
+			unsigned runs;
 
 	};
 

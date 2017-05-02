@@ -115,7 +115,14 @@ std::shared_ptr<Reporter> ReporterArg::createReporter(
 		return std::make_shared<StructReporter>();
 	}
 	if (name == "papi") {
-		return std::make_shared<PapiReporter>(arguments[0]);
+		if (arguments.size() == 1) {
+			return std::make_shared<PapiReporter>(arguments[0]);
+		}
+
+		return std::make_shared<PapiReporter>(
+				arguments[0],
+				std::stoul(arguments[1])
+			);
 	}
 
 	throw TCLAP::ArgParseException("No reporter named " + name, "reporterarg");

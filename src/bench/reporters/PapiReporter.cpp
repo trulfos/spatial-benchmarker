@@ -29,7 +29,7 @@ namespace Bench
 			std::ostream& logStream
 		)
 	{
-		ProgressLogger progress(logStream, RUNS * REORDER_RUNS);
+		ProgressLogger progress(logStream, runs * REORDER_RUNS);
 		std::default_random_engine engine (11);
 
 
@@ -63,7 +63,7 @@ namespace Bench
 			);
 
 		// Make space for results
-		for (unsigned j = 0; j < RUNS; j++) {
+		for (unsigned j = 0; j < runs; j++) {
 
 			// Make a copy that can be reshuffeled
 			std::vector<RangeQuery> queries = originalQueries;
