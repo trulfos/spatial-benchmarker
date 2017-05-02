@@ -77,7 +77,7 @@ def main():
             from `latest_run`
             inner join `result` using (`run_id`)
             inner join `option` using (`config_id`)
-            inner join suite_member using (`config_id`, `benchmark_id`)
+            inner join `suite_member` using (`config_id`, `benchmark_id`)
 
             where `result`.`name` = ?
                 and `option`.`name` = ?

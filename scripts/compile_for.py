@@ -33,7 +33,7 @@ def parse_arguments():
     return parser.parse_args()
 
 
-def compile(db, config_id, stdout=subprocess.DEVNULL):
+def compile(db, config_id, stdout=subprocess.DEVNULL, override_options=None):
     config = db.get_by_id('config', config_id)
     index = config['index']
 
@@ -41,6 +41,9 @@ def compile(db, config_id, stdout=subprocess.DEVNULL):
             (o['name'], o['value']) for o in
             db.get_where('option', config_id=config_id)
         )
+
+    if override_options is not None:
+        options = dict(options, **override_options)
 
     subprocess.check_call(
             ['cmake'] + ['-D%s=%s' % o for o in options.items()] + ['..'],

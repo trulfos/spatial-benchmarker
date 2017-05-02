@@ -106,10 +106,9 @@ def get_benchmark_ids(db, index):
 
 
 @asyncio.coroutine
-def run_benchmark(db, task, use_stdout, dry):
-    # Gather information
-    (config_id, benchmark_id) = task
-    commit = get_commit()
+def benchmark(db, config_id, benchmark_id, use_stdout):
+
+    # Gather benchmark information
     benchmark = db.get_by_id('benchmark', benchmark_id)
 
     if not benchmark:
@@ -123,21 +122,13 @@ def run_benchmark(db, task, use_stdout, dry):
         print('No reporters to run for benchmark %s' % benchmark_id)
         return
 
-    # Build (if not already built)
-    if config_id not in made_configs:
-        print("Compiling for config %s..." % config_id)
-        compile_for.compile(db, config_id)
-        print("Config %s compiled" % config_id)
-
-        made_configs.add(config_id)
-
     # Run the benchmark (async)
     process = yield from asyncio.create_subprocess_exec(
             *(
-                    ['./bench', config_id, '../' + dataset] +
+                    ['./bench', str(config_id), '../' + dataset] +
                     ['%(name)s:../%(arguments)s' % r for r in reporters]
                 ),
-            stdout=sys.stdout if dry else asyncio.subprocess.PIPE,
+            stdout=asyncio.subprocess.PIPE,
             stderr=sys.stdout if use_stdout else asyncio.subprocess.DEVNULL
         )
 
@@ -148,10 +139,35 @@ def run_benchmark(db, task, use_stdout, dry):
                 (config_id, benchmark_id)
             )
 
-    if dry:
-        return
+    results = (yield from process.stdout.read()).decode('utf-8').split('\n\n')
 
-    results = (yield from process.stdout.read()).decode('utf-8')
+    return zip(
+            (list(csv.DictReader(r.split('\n'), delimiter='\t'))
+                for r in results),
+            reporters
+        )
+
+
+@asyncio.coroutine
+def run_benchmark(db, task, use_stdout, dry):
+    # Gather information
+    commit = get_commit()
+    (config_id, benchmark_id) = task
+
+    # Build (if not already built)
+    if config_id not in made_configs:
+        print("Compiling for config %s..." % config_id)
+        compile_for.compile(db, config_id)
+        print("Config %s compiled" % config_id)
+
+        made_configs.add(config_id)
+
+    # Run the code
+    results = yield from benchmark(db, config_id, benchmark_id, use_stdout)
+
+    if dry:
+        print('\n\n'.join(r[0] for r in results))
+        return
 
     # Save results
     run_id = db.insert(
@@ -161,16 +177,11 @@ def run_benchmark(db, task, use_stdout, dry):
             commit=commit
         ).lastrowid
 
-    for result in zip(results.split('\n\n'), reporters):
-        results_reader = csv.DictReader(
-                result[0].split('\n'),
-                delimiter='\t'
-            )
-
+    for result in results:
         db.insertmany(
                 'result',
                 (dict(r, run_id=run_id, reporter_id=result[1]['id'])
-                    for r in results_reader)
+                    for r in results[0])
             )
 
     db.commit()
@@ -208,4 +219,5 @@ def main():
         )
 
 
-main()
+if __name__ == '__main__':
+    main()
