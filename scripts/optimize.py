@@ -70,6 +70,29 @@ def memoized(func):
     return wrapper_func
 
 
+def clamp(value, minimum, maximum):
+    """
+    Clamps a value to the given range
+    """
+    return min(maximum, max(minimum, value))
+
+
+def prepare_options(parameters):
+    """
+    Converts a set of parameters used during optimization to index options.
+    This allows relative parameters to be used while passing absolute options
+    to the index.
+    """
+    options = dict(parameters)
+
+    # Convert from percentage m to absolute m
+    if 'm' in options and 'M' in options:
+        M = options['M']
+        options['m'] = clamp(round(M * options['m'] / 100), 1, M//2)
+
+    return options
+
+
 def climb(start_point, validator, evaluator):
     """
     Does the actual search
@@ -89,7 +112,7 @@ def climb(start_point, validator, evaluator):
         candidates = filter(validator, candidates)
 
         # Evaluate all
-        evaluated = [(evaluator(c), c) for c in candidates]
+        evaluated = [(evaluator(prepare_options(c)), c) for c in candidates]
 
         try:
             local_best = min(evaluated)
@@ -113,22 +136,26 @@ def check_restrictions(restrictions, point):
     return all(eval(r, dict(point)) for r in restrictions)
 
 
-def evaluate(db, config_id, benchmark_id, parameters):
-    print('Evaluating for ', parameters)
-    compile_for.compile(db, config_id, override_options=parameters)
+def evaluate(db, config_id, benchmark_id, options):
+    print('Evaluating for ', options)
+    compile_for.compile(db, config_id, override_options=options)
 
     results = asyncio.get_event_loop().run_until_complete(
             benchmark.benchmark(db, config_id, benchmark_id, True)
         )
 
     # Sum up results
-    return sum(
-            sum(
+    min_runtime = min(
+            min(
                 float(r['value'])
                 for r in reporter_results
                 if r['name'] == 'PAPI_REAL_NSEC'
             ) for (reporter_results, _) in results
         )
+
+    print('Runtime: %s' % min_runtime)
+
+    return min_runtime
 
 
 def main():
