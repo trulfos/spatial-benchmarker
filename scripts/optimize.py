@@ -76,9 +76,9 @@ def climb(start_point, validator, evaluator):
     """
     current = start_point
     best = float('inf')
-    step_size = 5
+    step_size = 100
 
-    while step_size > 1:
+    while True:
         # Generate candidate solutions
         candidates = (
                 dict(current, **{p: current[p] + s})
@@ -100,9 +100,11 @@ def climb(start_point, validator, evaluator):
         if local_best is not None and best > local_best[0]:
             (best, current) = local_best
             print("New best: ", best, " (params: ", current, ")")
-        else:
+        elif step_size > 1:
             print("Decreasing step size")
             step_size = max(round(step_size / 2), 1)
+        else:
+            break
 
     return current
 
