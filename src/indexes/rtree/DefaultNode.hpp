@@ -4,6 +4,7 @@
 #include "Entry.hpp"
 #include "EntryPlugin.hpp"
 #include "ProxyIterator.hpp"
+#include "ProxyEntry.hpp"
 
 
 namespace Rtree
@@ -19,120 +20,13 @@ namespace Rtree
 	class DefaultNode
 	{
 		public:
-			// Type definitions
+			static constexpr unsigned capacity = C;
+
 			using Mbr = ::Rtree::Mbr<D>;
 			using Link = ::Rtree::Link<DefaultNode>;
 			using Plugin = P;
 			using Entry = ::Rtree::Entry<DefaultNode>;
-
-
-			// Constants
-			static constexpr unsigned capacity = C;
-
-			/**
-			 * Proxy entry for the default node class.
-			 *
-			 * @see Rtree::BaseEntry
-			 */
-			class ProxyEntry : public BaseEntry<DefaultNode>
-			{
-				using Base = BaseEntry<DefaultNode>;
-
-				public:
-					// Types
-					using Mbr = typename Base::Mbr;
-					using Link = typename Base::Link;
-					using Plugin = typename Base::Plugin;
-
-					// Allows default constructing the iterator
-					ProxyEntry() = default;
-
-
-					/**
-					 * Create a proxy entry based on the node and the index of
-					 * the entry within the node.
-					 *
-					 * @param node Node in which the entry resides
-					 * @param index Index of entry in node
-					 */
-					ProxyEntry(DefaultNode * node, unsigned index)
-						: node(node), index(index)
-					{
-					}
-
-					ProxyEntry& operator=(const ProxyEntry& other)
-					{
-						//TODO: Why doesn't the below template handle this?
-						setMbr(other.getMbr());
-						setLink(other.getLink());
-						setPlugin(other.getPlugin());
-						return *this;
-					}
-
-					template<class E>
-					ProxyEntry& operator=(const E& other)
-					{
-						setMbr(other.getMbr());
-						setLink(other.getLink());
-						setPlugin(other.getPlugin());
-
-						return *this;
-					}
-
-					const Mbr getMbr() const override
-					{
-						return node->entries[index].mbr;
-					}
-
-
-					const Link getLink() const override
-					{
-						return node->entries[index].link;
-					}
-
-
-					const Plugin getPlugin() const override
-					{
-						return node->entries[index].plugin;
-					}
-
-					/**
-					 * Make sure proxy nodes are swappable
-					 *
-					 * This swaps what the proxies refers to and not the fields
-					 * of the proxies themselves.
-					 */
-					friend void swap(ProxyEntry& a, ProxyEntry& b)
-					{
-						Entry tmp;
-						tmp = a;
-						a = b;
-						b = tmp;
-					}
-
-				protected:
-					void setMbr(const Mbr& m) override
-					{
-						node->entries[index].mbr = m;
-					}
-
-					void setPlugin(const Plugin& p) override
-					{
-						node->entries[index].plugin = p;
-					}
-
-					void setLink(const Link& l) override
-					{
-						node->entries[index].link = l;
-					}
-
-				private:
-					DefaultNode * node;
-					unsigned index;
-
-					friend ProxyIterator<DefaultNode>;
-					friend ConstProxyIterator<DefaultNode>;
-			};
+			using ProxyEntry = ::Rtree::ProxyEntry<DefaultNode>;
 
 			using iterator = ProxyIterator<DefaultNode>;
 			using const_iterator = ConstProxyIterator<DefaultNode>;
@@ -436,6 +330,75 @@ namespace Rtree
 			
 
 
+			/**
+			 * Get the plugin of an entry in this node.
+			 *
+			 * @param index Index of entry
+			 * @return Plugin of entry at the given index
+			 */
+			Plugin getPlugin(unsigned index) const
+			{
+				return entries[index].plugin;
+			}
+
+
+			/**
+			 * Get the link of an entry in this node.
+			 *
+			 * @param index Index of entry
+			 * @return Link of entry at the given index
+			 */
+			Link getLink(unsigned index) const
+			{
+				return entries[index].link;
+			}
+
+
+			/**
+			 * Get the MBR of an entry in this node.
+			 *
+			 * @param index Index of entry
+			 * @return MBR of entry at the given index
+			 */
+			Mbr getMbr(unsigned index) const
+			{
+				return entries[index].mbr;
+			}
+
+
+			/**
+			 * Set the MBR of an entry in this node.
+			 *
+			 * @param index Index of entry for which to set MBR
+			 */
+			void setMbr(unsigned index, const Mbr& m)
+			{
+				entries[index].mbr = m;
+			}
+
+
+			/**
+			 * Set the link of an entry in this node.
+			 *
+			 * @param index Index of entry for which to set link
+			 */
+			void setLink(unsigned index, const Link& l)
+			{
+				entries[index].link = l;
+			}
+
+
+			/**
+			 * Set the plugin of an entry in this node.
+			 *
+			 * @param index Index of entry for which to set plugin
+			 */
+			void setPlugin(unsigned index, const Plugin& p)
+			{
+				entries[index].plugin = p;
+			}
+
+
 		private:
 			/**
 			 * Simple struct for storing MBR, link and plugin in the same place.
@@ -452,6 +415,7 @@ namespace Rtree
 
 			typename Plugin::NodeData data;
 			friend Plugin;
+
 	};
 
 }

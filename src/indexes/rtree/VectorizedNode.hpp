@@ -3,6 +3,7 @@
 #include "Entry.hpp"
 #include "Link.hpp"
 #include "ProxyIterator.hpp"
+#include "ProxyEntry.hpp"
 #include "spatial/Coordinate.hpp"
 #include "immintrin.h"
 #include <bitset>
@@ -24,131 +25,14 @@ namespace Rtree
 	class VectorizedNode
 	{
 		public:
+			static constexpr unsigned capacity = C;
+
 			// Type definitions
 			using Mbr = ::Rtree::Mbr<D>;
 			using Link = ::Rtree::Link<VectorizedNode>;
 			using Plugin = P;
 			using Entry = ::Rtree::Entry<VectorizedNode>;
-
-
-			// Constants
-			static constexpr unsigned capacity = C;
-
-			/**
-			 * Proxy entry for the default node class.
-			 *
-			 * @see Rtree::BaseEntry
-			 */
-			class ProxyEntry : public BaseEntry<VectorizedNode>
-			{
-				using Base = BaseEntry<VectorizedNode>;
-
-				public:
-					// Types
-					using Mbr = typename Base::Mbr;
-					using Link = typename Base::Link;
-					using Plugin = typename Base::Plugin;
-
-					// Allows default constructing the iterator
-					ProxyEntry() = default;
-
-
-					/**
-					 * Create a proxy entry based on the node and the index of
-					 * the entry within the node.
-					 *
-					 * @param node Node in which the entry resides
-					 * @param index Index of entry in node
-					 */
-					ProxyEntry(VectorizedNode * node, unsigned index)
-						: node(node), index(index)
-					{
-					}
-
-					ProxyEntry& operator=(const ProxyEntry& other)
-					{
-						//TODO: Why doesn't the below template handle this?
-						setMbr(other.getMbr());
-						setLink(other.getLink());
-						setPlugin(other.getPlugin());
-						return *this;
-					}
-
-					template<class E>
-					ProxyEntry& operator=(const E& other)
-					{
-						setMbr(other.getMbr());
-						setLink(other.getLink());
-						setPlugin(other.getPlugin());
-
-						return *this;
-					}
-
-					const Mbr getMbr() const override
-					{
-						return node->getMbr(index);
-					}
-
-
-					const Link getLink() const override
-					{
-						return node->links[index];
-					}
-
-
-					const Plugin getPlugin() const override
-					{
-						return node->plugins[index];
-					}
-
-					/**
-					 * Make sure proxy nodes are swappable
-					 *
-					 * This swaps what the proxies refers to and not the fields
-					 * of the proxies themselves.
-					 */
-					friend void swap(ProxyEntry& a, ProxyEntry& b)
-					{
-						Entry tmp;
-						tmp = a;
-						a = b;
-						b = tmp;
-					}
-
-				protected:
-					void setMbr(const Mbr& m) override
-					{
-						auto top = m.getTop();
-						auto bottom = m.getBottom();
-
-						auto base = reinterpret_cast<double *>(
-								node->coordinates + 2 * D * (index / BLOCK_SIZE)
-							) + index % BLOCK_SIZE;
-
-						for (unsigned d = 0; d < D; ++d) {
-							base[0] = bottom[d];
-							base[BLOCK_SIZE] = top[d];
-							base += 2 * BLOCK_SIZE;
-						}
-					}
-
-					void setPlugin(const Plugin& p) override
-					{
-						node->plugins[index] = p;
-					}
-
-					void setLink(const Link& l) override
-					{
-						node->links[index] = l;
-					}
-
-				private:
-					VectorizedNode * node;
-					unsigned index;
-
-					friend ProxyIterator<VectorizedNode>;
-					friend ConstProxyIterator<VectorizedNode>;
-			};
+			using ProxyEntry = ::Rtree::ProxyEntry<VectorizedNode>;
 
 			using iterator = ProxyIterator<VectorizedNode>;
 			using const_iterator = ConstProxyIterator<VectorizedNode>;
@@ -492,28 +376,36 @@ namespace Rtree
 			
 
 
-		private:
-
-			//TODO:
-			//static_assert(Coordinate == double, "Vector node assumes doubles");
-
-			// Number of lanes in each __m256d
-			static constexpr unsigned BLOCK_SIZE = 4;
-			static constexpr unsigned N_BLOCKS = (C + BLOCK_SIZE - 1) / BLOCK_SIZE;
-
-			__m256d coordinates[N_BLOCKS * 2 * D];
-
-			Link links[C];
-			Plugin plugins[C];
-			unsigned size;
-
-			// Memory offset - requried to be able to delete this
-			unsigned short offset;
-
-			typename Plugin::NodeData data;
-			friend Plugin;
+			/**
+			 * Get the plugin of an entry in this node.
+			 *
+			 * @param index Index of entry
+			 * @return Plugin of entry at the given index
+			 */
+			Plugin getPlugin(unsigned index) const
+			{
+				return plugins[index];
+			}
 
 
+			/**
+			 * Get the link of an entry in this node.
+			 *
+			 * @param index Index of entry
+			 * @return Link of entry at the given index
+			 */
+			Link getLink(unsigned index) const
+			{
+				return links[index];
+			}
+
+
+			/**
+			 * Get the MBR of an entry in this node.
+			 *
+			 * @param index Index of entry
+			 * @return MBR of entry at the given index
+			 */
 			Mbr getMbr(unsigned index) const
 			{
 				Point top(D);
@@ -531,6 +423,74 @@ namespace Rtree
 
 				return Box(top, bottom);
 			}
+
+
+			/**
+			 * Set the MBR of an entry in this node.
+			 *
+			 * @param index Index of entry for which to set MBR
+			 */
+			void setMbr(unsigned index, const Mbr& m)
+			{
+				auto top = m.getTop();
+				auto bottom = m.getBottom();
+
+				auto base = reinterpret_cast<double *>(
+						coordinates + 2 * D * (index / BLOCK_SIZE)
+					) + index % BLOCK_SIZE;
+
+				for (unsigned d = 0; d < D; ++d) {
+					base[0] = bottom[d];
+					base[BLOCK_SIZE] = top[d];
+					base += 2 * BLOCK_SIZE;
+				}
+			}
+
+
+			/**
+			 * Set the link of an entry in this node.
+			 *
+			 * @param index Index of entry for which to set link
+			 */
+			void setLink(unsigned index, const Link& l)
+			{
+				links[index] = l;
+			}
+
+
+			/**
+			 * Set the plugin of an entry in this node.
+			 *
+			 * @param index Index of entry for which to set plugin
+			 */
+			void setPlugin(unsigned index, const Plugin& p)
+			{
+				plugins[index] = p;
+			}
+
+
+		private:
+
+			static_assert(
+					std::is_same<Coordinate, double>::value,
+					"Vector node assumes doubles"
+				);
+
+			// Number of lanes in each __m256d
+			static constexpr unsigned BLOCK_SIZE = 4;
+			static constexpr unsigned N_BLOCKS = (C + BLOCK_SIZE - 1) / BLOCK_SIZE;
+
+			__m256d coordinates[N_BLOCKS * 2 * D];
+
+			Link links[C];
+			Plugin plugins[C];
+			unsigned size;
+
+			// Memory offset - requried to be able to delete this
+			unsigned short offset;
+
+			typename Plugin::NodeData data;
+			friend Plugin;
 	};
 
 }
