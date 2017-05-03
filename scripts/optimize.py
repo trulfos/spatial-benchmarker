@@ -4,8 +4,6 @@
 Optimizes the runtime of an index given a set of configuration parameters using
 hill climbing with random restarts. Does not store results, but prints the
 (assumed) optimal parameters at the end.
-
-TODO: Some parameters are not integers?
 """
 import argparse
 from functools import partial
@@ -48,6 +46,28 @@ def parse_arguments():
         )
 
     return parser.parse_args()
+
+
+def hash_dict(d):
+    return hash(','.join(
+            '%s=%s' % p for p in sorted(d.items())
+        ))
+
+
+def memoized(func):
+    cache = {}
+
+    def wrapper_func(d):
+        key = hash_dict(d)
+
+        if key not in cache:
+            cache[key] = func(d)
+        else:
+            print("Fetched from cache: ", d)
+
+        return cache[key]
+
+    return wrapper_func
 
 
 def climb(start_point, validator, evaluator):
@@ -122,7 +142,9 @@ def main():
             climb(
                     point,
                     partial(check_restrictions, args.restrictions),
-                    partial(evaluate, db, config_id, benchmark_id)
+                    memoized(
+                            partial(evaluate, db, config_id, benchmark_id)
+                        )
                 )
         )
 
