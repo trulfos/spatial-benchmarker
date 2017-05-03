@@ -1,5 +1,6 @@
 #pragma once
 #include "Entry.hpp"
+#include "ProxyIterator.hpp"
 
 namespace Rtree
 {

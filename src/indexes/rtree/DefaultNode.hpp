@@ -1,10 +1,5 @@
 #pragma once
-#include "Link.hpp"
-#include "Mbr.hpp"
-#include "Entry.hpp"
-#include "EntryPlugin.hpp"
-#include "ProxyIterator.hpp"
-#include "ProxyEntry.hpp"
+#include "BaseNode.hpp"
 
 
 namespace Rtree
@@ -17,21 +12,21 @@ namespace Rtree
 	 * @tparam P Plugin
 	 */
 	template<unsigned D, unsigned C, class P = EntryPlugin>
-	class DefaultNode
+	class DefaultNode : public BaseNode<DefaultNode<D, C, P>, C, P>
 	{
-		public:
-			static constexpr unsigned capacity = C;
+		using Base = BaseNode<DefaultNode<D, C, P>, C, P>;
 
+		public:
 			using Mbr = ::Rtree::Mbr<D>;
 			using Link = ::Rtree::Link<DefaultNode>;
 			using Plugin = P;
-			using Entry = ::Rtree::Entry<DefaultNode>;
-			using ProxyEntry = ::Rtree::ProxyEntry<DefaultNode>;
 
-			using iterator = ProxyIterator<DefaultNode>;
-			using const_iterator = ConstProxyIterator<DefaultNode>;
-			using reference = ProxyEntry;
+			// Inherit constructor and operator=
+			using Base::Base;
+			using Base::operator=;
 
+			// Depends on template parameters
+			using Base::getSize;
 
 			/**
 			 * Iterator running through links in this node matching a query.
@@ -164,7 +159,7 @@ namespace Rtree
 					void findNext()
 					{
 						while (
-							index < node->size &&
+							index < node->getSize() &&
 							!node->entries[index].mbr.intersects(*mbr)
 						) {
 							++index;
@@ -174,157 +169,13 @@ namespace Rtree
 
 
 			/**
-			 * Construct an empty node.
-			 */
-			DefaultNode() : size(0)
-			{
-			}
-
-
-			/**
-			 * Construct a node with a given set of entries.
-			 *
-			 * @tparam E Entry type
-			 * @param entries Set of entries to include
-			 */
-			template<class E>
-			DefaultNode(const std::initializer_list<E>& entries)
-			{
-				assign(entries.begin(), entries.end());
-			}
-
-
-			/**
-			 * Get a proxy entry to given index.
-			 */
-			ProxyEntry operator[](unsigned i)
-			{
-				assert(i < size);
-				return ProxyEntry(this, i);
-			}
-
-
-			Entry operator[](unsigned i) const
-			{
-				assert(i < size);
-				return Entry(
-						entries[i].mbr,
-						entries[i].link,
-						entries[i].plugin
-					);
-			}
-
-
-			/**
-			 * Add entry to end.
-			 */
-			void add(const Entry& entry)
-			{
-				assert(size < C);
-				operator[](size++) = entry;
-			}
-
-
-			/**
-			 * Replace the entries in this with given node.
-			 *
-			 * @param first Iterator to first element of range
-			 * @param last Iterator to past-the-end of the range
-			 */
-			template<class InputIterator>
-			void assign(InputIterator first, InputIterator last)
-			{
-				size = 0;
-				add(first, last);
-			}
-
-
-			template<class InputIterator>
-			void add(InputIterator first, InputIterator last)
-			{
-				while (first != last) {
-					add(*first);
-					++first;
-				}
-			}
-
-
-			/**
-			 * Assign from initializer list.
-			 */
-			template<class E>
-			DefaultNode& operator=(const std::initializer_list<E>& entries)
-			{
-				assign(entries.begin(), entries.end());
-
-				return *this;
-			}
-
-
-			/**
-			 * Get the number of entries in this node.
-			 *
-			 * @return Number of entries
-			 */
-			unsigned getSize() const
-			{
-				return size;
-			}
-
-
-			/**
-			 * Check whether this node is full.
-			 *
-			 * @return True if full
-			 */
-			bool isFull() const
-			{
-				return size == C;
-			}
-
-
-			/**
-			 * Begin iteration through all entries.
-			 */
-			iterator begin()
-			{
-				return iterator(this, 0);
-			}
-
-
-			/**
-			 * Iterator to past-the-end.
-			 */
-			iterator end()
-			{
-				return iterator(this, size);
-			}
-
-			/**
-			 * Begin iteration through constant node.
-			 */
-			const_iterator begin() const
-			{
-				return const_iterator(this, 0);
-			}
-
-			/**
-			 * Past-the-end const iterator.
-			 */
-			const_iterator end() const
-			{
-				return const_iterator(this, size);
-			}
-
-
-			/**
 			 * Scan node and return set of matching entries.
 			 */
 			std::pair<ScanIterator, ScanIterator> scan(const Mbr& mbr) const
 			{
 				return std::make_pair(
 						ScanIterator(this, &mbr, 0),
-						ScanIterator(this, nullptr, size)
+						ScanIterator(this, nullptr, getSize())
 					);
 			}
 			
@@ -410,11 +261,7 @@ namespace Rtree
 				Plugin plugin;
 			};
 
-			SimpleEntry entries[capacity];
-			unsigned size;
-
-			typename Plugin::NodeData data;
-			friend Plugin;
+			SimpleEntry entries[C];
 
 	};
 

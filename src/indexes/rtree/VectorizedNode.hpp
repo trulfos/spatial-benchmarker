@@ -1,14 +1,8 @@
 #pragma once
-#include "Mbr.hpp"
-#include "Entry.hpp"
-#include "Link.hpp"
-#include "ProxyIterator.hpp"
-#include "ProxyEntry.hpp"
+#include "BaseNode.hpp"
 #include "spatial/Coordinate.hpp"
 #include "immintrin.h"
 #include <bitset>
-
-using Spatial::Coordinate;
 
 namespace Rtree
 {
@@ -22,21 +16,32 @@ namespace Rtree
 	 * @tparam P Plugin
 	 */
 	template<unsigned D, unsigned C, class P = EntryPlugin>
-	class VectorizedNode
+	class VectorizedNode : public BaseNode<VectorizedNode<D, C, P>, C, P>
 	{
-		public:
-			static constexpr unsigned capacity = C;
+		using Base = BaseNode<VectorizedNode<D, C, P>, C, P>;
+		using Coordinate = Spatial::Coordinate;
 
-			// Type definitions
+
+		static_assert(
+				std::is_same<Coordinate, double>::value,
+				"Vector node assumes doubles"
+			);
+
+		static constexpr unsigned BLOCK_SIZE = 4;
+		static constexpr unsigned N_BLOCKS = (C + BLOCK_SIZE - 1) / BLOCK_SIZE;
+
+
+		public:
 			using Mbr = ::Rtree::Mbr<D>;
 			using Link = ::Rtree::Link<VectorizedNode>;
 			using Plugin = P;
-			using Entry = ::Rtree::Entry<VectorizedNode>;
-			using ProxyEntry = ::Rtree::ProxyEntry<VectorizedNode>;
 
-			using iterator = ProxyIterator<VectorizedNode>;
-			using const_iterator = ConstProxyIterator<VectorizedNode>;
-			using reference = ProxyEntry;
+			// Inherit constructor and operator=
+			using Base::Base;
+			using Base::operator=;
+
+			// Depends on template parameters
+			using Base::getSize;
 
 
 			class ScanIterator
@@ -56,7 +61,7 @@ namespace Rtree
 							unsigned index
 						) : node(node), mbr(&mbr), index(index)
 					{
-						if (index < node->size) {
+						if (index < node->getSize()) {
 							bitset = scanBlock();
 							findNext();
 						}
@@ -64,7 +69,7 @@ namespace Rtree
 
 					ScanIterator& operator++()
 					{
-						assert(index < node->size);
+						assert(index < node->getSize());
 
 						next();
 						findNext();
@@ -81,7 +86,7 @@ namespace Rtree
 
 					reference operator*()
 					{
-						assert(index < node->size);
+						assert(index < node->getSize());
 						return node->links[index];
 					}
 
@@ -139,7 +144,7 @@ namespace Rtree
 					 */
 					void findNext()
 					{
-						while (!(bitset & 1) && index < node->size) {
+						while (!(bitset & 1) && index < node->getSize()) {
 							next();
 						}
 					}
@@ -188,148 +193,6 @@ namespace Rtree
 			};
 
 
-			/**
-			 * Construct an empty node.
-			 */
-			VectorizedNode() : size(0)
-			{
-			}
-
-
-			/**
-			 * Construct a node with a given set of entries.
-			 *
-			 * @tparam E Entry type
-			 * @param entries Set of entries to include
-			 */
-			template<class E>
-			VectorizedNode(const std::initializer_list<E>& entries)
-			{
-				assign(entries.begin(), entries.end());
-			}
-
-
-			/**
-			 * Get a proxy entry to given index.
-			 */
-			ProxyEntry operator[](unsigned i)
-			{
-				assert(i < size);
-				return ProxyEntry(this, i);
-			}
-
-
-			Entry operator[](unsigned i) const
-			{
-				assert(i < size);
-				return Entry(
-						getMbr(i),
-						links[i],
-						plugins[i]
-					);
-			}
-
-
-			/**
-			 * Add entry to end.
-			 */
-			void add(const Entry& entry)
-			{
-				assert(size < C);
-				operator[](size++) = entry;
-			}
-
-
-			/**
-			 * Replace the entries in this with given node.
-			 *
-			 * @param first Iterator to first element of range
-			 * @param last Iterator to past-the-end of the range
-			 */
-			template<class InputIterator>
-			void assign(InputIterator first, InputIterator last)
-			{
-				size = 0;
-				add(first, last);
-			}
-
-
-			template<class InputIterator>
-			void add(InputIterator first, InputIterator last)
-			{
-				while (first != last) {
-					add(*first);
-					++first;
-				}
-			}
-
-
-			/**
-			 * Assign from initializer list.
-			 */
-			template<class E>
-			VectorizedNode& operator=(const std::initializer_list<E>& entries)
-			{
-				assign(entries.begin(), entries.end());
-
-				return *this;
-			}
-
-
-			/**
-			 * Get the number of entries in this node.
-			 *
-			 * @return Number of entries
-			 */
-			unsigned getSize() const
-			{
-				return size;
-			}
-
-
-			/**
-			 * Check whether this node is full.
-			 *
-			 * @return True if full
-			 */
-			bool isFull() const
-			{
-				return size == C;
-			}
-
-
-			/**
-			 * Begin iteration through all entries.
-			 */
-			iterator begin()
-			{
-				return iterator(this, 0);
-			}
-
-
-			/**
-			 * Iterator to past-the-end.
-			 */
-			iterator end()
-			{
-				return iterator(this, size);
-			}
-
-			/**
-			 * Begin iteration through constant node.
-			 */
-			const_iterator begin() const
-			{
-				return const_iterator(this, 0);
-			}
-
-			/**
-			 * Past-the-end const iterator.
-			 */
-			const_iterator end() const
-			{
-				return const_iterator(this, size);
-			}
 
 
 			/**
@@ -339,7 +202,7 @@ namespace Rtree
 			{
 				return std::make_pair(
 						ScanIterator(this, mbr, 0),
-						ScanIterator(this, mbr, size)
+						ScanIterator(this, mbr, getSize())
 					);
 			}
 
@@ -367,7 +230,7 @@ namespace Rtree
 
 
 			/**
-			 * Override delete operator to provide the correct pointer.
+			 * Override delete operator to use correct delete method.
 			 */
 			void operator delete (void * pointer)
 			{
@@ -470,27 +333,9 @@ namespace Rtree
 
 
 		private:
-
-			static_assert(
-					std::is_same<Coordinate, double>::value,
-					"Vector node assumes doubles"
-				);
-
-			// Number of lanes in each __m256d
-			static constexpr unsigned BLOCK_SIZE = 4;
-			static constexpr unsigned N_BLOCKS = (C + BLOCK_SIZE - 1) / BLOCK_SIZE;
-
 			__m256d coordinates[N_BLOCKS * 2 * D];
-
 			Link links[C];
 			Plugin plugins[C];
-			unsigned size;
-
-			// Memory offset - requried to be able to delete this
-			unsigned short offset;
-
-			typename Plugin::NodeData data;
-			friend Plugin;
 	};
 
 }
