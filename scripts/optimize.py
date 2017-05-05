@@ -21,8 +21,19 @@ def parse_arguments():
         )
 
     parser.add_argument(
-            'task', metavar='<config>:<benchmark>',
-            help='Configuration-benchhmark pairs to optimize for'
+            'base_config', metavar='<base config>',
+            help='Config to use for fixed parameters'
+        )
+
+    parser.add_argument(
+            '--benchmarks', '-b', metavar='<benchmark>[ <benchmark>]*',
+            nargs='+',
+            help='Benchmarks to optimize for'
+        )
+
+    parser.add_argument(
+            '--suites', '-s', metavar='<suite>[ <suite>]', nargs='+',
+            help='Suite whos benchmarks to optimize for'
         )
 
     parser.add_argument(
@@ -136,26 +147,36 @@ def check_restrictions(restrictions, point):
     return all(eval(r, dict(point)) for r in restrictions)
 
 
-def evaluate(db, config_id, benchmark_id, options):
-    print('Evaluating for ', options)
-    compile_for.compile(db, config_id, override_options=options)
+#  _____ ___  ____   ___
+# |_   _/ _ \|  _ \ / _ \
+#   | || | | | | | | | | |
+#   | || |_| | |_| | |_| |
+#   |_| \___/|____/ \___/
+# Support for suites such that entire suites can be optimized simultaneously
+def evaluate(db, config, benchmarks, options):
 
-    results = asyncio.get_event_loop().run_until_complete(
-            benchmark.benchmark(db, config_id, benchmark_id, True)
-        )
+    total_runtime = 0
 
-    # Sum up results
-    min_runtime = min(
-            min(
-                float(r['value'])
-                for r in reporter_results
-                if r['name'] == 'PAPI_REAL_NSEC'
-            ) for (reporter_results, _) in results
-        )
+    for b in benchmarks:
+        print('Evaluating for ', options)
+        compile_for.compile(db, config, override_options=options)
 
-    print('Runtime: %s' % min_runtime)
+        results = asyncio.get_event_loop().run_until_complete(
+                benchmark.benchmark(db, config, b, True)
+            )
 
-    return min_runtime
+        # Sum up results
+        total_runtime += sum(
+                min(
+                    float(r['value'])
+                    for r in reporter_results
+                    if r['name'] == 'PAPI_REAL_NSEC'
+                ) for (reporter_results, _) in results
+            )
+
+    print('Runtime: %s' % total_runtime)
+
+    return total_runtime
 
 
 def main():
