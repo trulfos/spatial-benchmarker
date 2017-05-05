@@ -7,12 +7,21 @@ hill climbing with random restarts. Does not store results, but prints the
 """
 import argparse
 from functools import partial
-from itertools import product
+from random import random, gauss
+from math import exp, e
 from database import Database
 import compile_for
 import benchmark
 import os
 import asyncio
+
+
+def compose2(f, g):
+
+    def composite(*args, **kwargs):
+        return f(g(*args, **kwargs))
+
+    return composite
 
 
 def parse_arguments():
@@ -21,12 +30,12 @@ def parse_arguments():
         )
 
     parser.add_argument(
-            'base_config', metavar='<base config>',
+            'config', metavar='<base config>',
             help='Config to use for fixed parameters'
         )
 
     parser.add_argument(
-            '--benchmarks', '-b', metavar='<benchmark>[ <benchmark>]*',
+            '--benchmarks', '-m', metavar='<benchmark>[ <benchmark>]*',
             nargs='+',
             help='Benchmarks to optimize for'
         )
@@ -104,65 +113,76 @@ def prepare_options(parameters):
     return options
 
 
-def climb(start_point, validator, evaluator):
+def anneal(start_solution, validator, evaluator):
     """
     Does the actual search
     """
-    current = start_point
-    best = float('inf')
-    step_size = 100
+    evaluate = compose2(evaluator, prepare_options)
+    current = (evaluate(start_solution), start_solution)
+    best = current
+    temperature = current[0]
+    unsuccessful = 0
+    iterations = 0
 
-    while True:
-        # Generate candidate solutions
-        candidates = (
-                dict(current, **{p: current[p] + s})
-                for (p, s) in product(current.keys(), [step_size, -step_size])
-            )
+    while unsuccessful < 20:
 
-        # Filter out invalid solutions
-        candidates = filter(validator, candidates)
+        iterations += 1
+        print('\n--- Iteration %d (t: %.2f) ---' % (iterations, temperature))
 
-        # Evaluate all
-        evaluated = [(evaluator(prepare_options(c)), c) for c in candidates]
+        # Generate candidate solution
+        candidate = None
+        while candidate is None or not validator(candidate):
+            candidate = dict(
+                    (k, round(gauss(v, 0.5 * start_solution[k])))
+                    for k, v in current[1].items()
+                )
 
-        try:
-            local_best = min(evaluated)
-        except ValueError:
-            local_best = None
+        # Evaluate
+        score = evaluate(candidate)
 
-        # Update best or decrease step size?
-        if local_best is not None and best > local_best[0]:
-            (best, current) = local_best
-            print("New best: ", best, " (params: ", current, ")")
-        elif step_size > 1:
-            print("Decreasing step size")
-            step_size = max(round(step_size / 2), 1)
+        # Move to the candidate?
+        delta = score - current[0]
+        if delta < 0 or e * random() < exp(-delta / temperature):
+            current = (score, candidate)
+            print("New solution: ", score, " (params: ", candidate, ")")
+            unsuccessful = 0
+
+            # Update the best seen so far
+            if delta < 0:
+                best = current
+            else:
+                print('(soluion is worse than previous)')
+
         else:
-            break
+            print('Keeping previous solution')
+            unsuccessful += 1
 
-    return current
+        # Decrease temperature
+        temperature *= 0.95
+
+    print("Finished in %d iterations" % iterations)
+    return best
 
 
 def check_restrictions(restrictions, point):
     return all(eval(r, dict(point)) for r in restrictions)
 
 
-#  _____ ___  ____   ___
-# |_   _/ _ \|  _ \ / _ \
-#   | || | | | | | | | | |
-#   | || |_| | |_| | |_| |
-#   |_| \___/|____/ \___/
-# Support for suites such that entire suites can be optimized simultaneously
 def evaluate(db, config, benchmarks, options):
 
     total_runtime = 0
 
     for b in benchmarks:
-        print('Evaluating for ', options)
+        print(
+                'Evaluating ' +
+                ' '.join('%s=%s' % i for i in options.items()) +
+                '... '
+            )
+
         compile_for.compile(db, config, override_options=options)
 
         results = asyncio.get_event_loop().run_until_complete(
-                benchmark.benchmark(db, config, b, True)
+                benchmark.benchmark(db, config, b, False)
             )
 
         # Sum up results
@@ -174,26 +194,26 @@ def evaluate(db, config, benchmarks, options):
                 ) for (reporter_results, _) in results
             )
 
-    print('Runtime: %s' % total_runtime)
-
+    print('Result: %s' % total_runtime)
     return total_runtime
 
 
 def main():
     args = parse_arguments()
     db = Database(args.database)
-    (config_id, benchmark_id) = map(int, args.task.split(':'))
+    config_id = int(args.config)
+    benchmark_ids = [int(v) for v in args.benchmarks]
 
     os.chdir(args.builddir)
 
     point = dict((p, int(v)) for (p, v) in (a.split(':') for a in args.params))
 
     print(
-            climb(
+            anneal(
                     point,
                     partial(check_restrictions, args.restrictions),
                     memoized(
-                            partial(evaluate, db, config_id, benchmark_id)
+                            partial(evaluate, db, config_id, benchmark_ids)
                         )
                 )
         )
