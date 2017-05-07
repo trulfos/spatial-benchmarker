@@ -8,8 +8,10 @@ hill climbing with random restarts. Does not store results, but prints the
 import argparse
 from functools import partial
 from random import random, gauss
-from math import exp, e
+from math import exp
 from database import Database
+from tasks import TasksAction
+from itertools import groupby
 import compile_for
 import benchmark
 import os
@@ -30,22 +32,17 @@ def parse_arguments():
         )
 
     parser.add_argument(
-            'config', metavar='<base config>',
-            help='Config to use for fixed parameters'
-        )
-
-    parser.add_argument(
-            'params', metavar='<name>:<start value>', nargs='+',
+            'params', metavar='name:start_value', nargs='+',
             help='Parameters to optimize and its min and max value'
         )
 
     parser.add_argument(
-            '--benchmarks', '-m', metavar='<benchmarks>',
-            nargs='+', help='Benchmarks to optimize for'
+            '--tasks', '-t', metavar='config_id:benchmark_id|suite_id',
+            action=TasksAction, nargs='+', help='Benchmarks to optimize for'
         )
 
     parser.add_argument(
-            '--suites', '-s', metavar='<suite>[ <suite>]', nargs='+',
+            '--suites', '-s', metavar='suite_id', nargs='+',
             help='Suite whos benchmarks to optimize for'
         )
 
@@ -141,19 +138,25 @@ def anneal(start_solution, validator, evaluator):
 
         # Move to the candidate?
         delta = score - current[0]
-        if delta < 0 or e * random() < exp(-delta / temperature):
+        if delta < 0 or random() < exp(-delta / temperature):
             current = (score, candidate)
-            print("New solution: ", score, " (params: ", candidate, ")")
+            print("New solution: ", candidate)
             unsuccessful = 0
 
             # Update the best seen so far
             if delta < 0:
                 best = current
             else:
-                print('(soluion is worse than previous)')
+                print(
+                        'Solution is worse (updated with prob. %.2f)'
+                        % (exp(-delta / temperature))
+                    )
 
         else:
-            print('Keeping previous solution')
+            print(
+                    'Keeping previous solution (with prob. %.2f)'
+                    % (1 - exp(-delta / temperature))
+                )
             unsuccessful += 1
 
         # Decrease temperature
@@ -164,6 +167,16 @@ def anneal(start_solution, validator, evaluator):
 
 
 def check_restrictions(restrictions, point):
+
+    # Hard coded restriction on M
+    if 'M' in point and point['M'] < 2:
+        return False
+
+    # Hard coded restriction on m
+    if 'm' in point and (point['m'] < 0 or point['m'] > 50):
+        return False
+
+    # Apply all custom restrictions
     return all(eval(r, dict(point)) for r in restrictions)
 
 
@@ -193,29 +206,36 @@ def evaluate(db, config, benchmarks, options):
                 ) for (reporter_results, _) in results
             )
 
-    print('Result: %s' % total_runtime)
+    print('Result: %.2e' % total_runtime)
     return total_runtime
 
 
 def main():
     args = parse_arguments()
     db = Database(args.database)
-    config_id = int(args.config)
-    benchmark_ids = [int(v) for v in args.benchmarks]
+    point = dict((p, int(v)) for (p, v) in (a.split(':') for a in args.params))
+    is_valid = partial(check_restrictions, args.restrictions)
 
     os.chdir(args.builddir)
 
-    point = dict((p, int(v)) for (p, v) in (a.split(':') for a in args.params))
+    # Group tasks by config id
+    groups = groupby(sorted(args.tasks), lambda task: task[0])
+    results = {}
 
-    print(
-            anneal(
-                    point,
-                    partial(check_restrictions, args.restrictions),
-                    memoized(
-                            partial(evaluate, db, config_id, benchmark_ids)
-                        )
-                )
-        )
+    for config_id, tasks in groups:
+        benchmark_ids = [t[1] for t in tasks]
+        evaluator = memoized(partial(evaluate, db, config_id, benchmark_ids))
+
+        # Do the actual search
+        print(
+                '\n---- Running for config %s (b. %s) ----\n' %
+                (config_id, ', '.join(str(b) for b in benchmark_ids))
+            )
+        results[config_id] = anneal(point, is_valid, evaluator)
+
+        print('Finished! Result: ', results[config_id])
+
+    print('All done!', results)
 
 
 if __name__ == '__main__':
