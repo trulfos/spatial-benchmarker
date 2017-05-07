@@ -6,6 +6,7 @@ import csv
 import os
 import sys
 from database import Database
+from tasks import TasksAction
 import compile_for
 import reporters as reps
 
@@ -19,13 +20,8 @@ def parse_arguments():
         )
 
     parser.add_argument(
-            'tasks', metavar='<config>:<benchmark>', nargs='*', default=[],
-            help='Configuration-benchhmark pairs to evaluate'
-        )
-
-    parser.add_argument(
-            '--suite', '-s', metavar='suite id', nargs='*', default=[],
-            help='Include all benchmarks for the given suite(s)'
+            'tasks', metavar='config_id:benchmark_id|suite_id', nargs='*',
+            default=[], action=TasksAction, help='Tasks to evaluate'
         )
 
     parser.add_argument(
@@ -190,15 +186,7 @@ def run_benchmark(db, task, use_stdout, dry):
 def main():
     args = parse_arguments()
     db = Database(args.database)
-    tasks = set(tuple(t.split(':')) for t in set(args.tasks))
     build_dir = args.builddir
-
-    # Collect additional benchmark ids
-    for suite_id in args.suite:
-        tasks |= set(
-                (str(sb['config_id']), str(sb['benchmark_id'])) for sb in
-                db.get_where('suite_member', suite_id=suite_id)
-            )
 
     # Prepare for out of source compilation
     subprocess.check_call(['mkdir', '-p', build_dir])
@@ -214,7 +202,7 @@ def main():
     # Run!
     run_queued(
             [run_benchmark(db, t, use_stdout, args.dry)
-                for t in sorted(tasks)],
+                for t in sorted(args.tasks)],
             max_parallel=args.parallel
         )
 
