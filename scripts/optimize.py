@@ -157,7 +157,7 @@ def anneal(start_solution, validator, evaluator):
             unsuccessful += 1
 
         # Decrease temperature
-        temperature *= 0.95
+        temperature *= 0.99
 
     print("Finished in %d iterations" % iterations)
     return best
