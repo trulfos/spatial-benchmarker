@@ -35,19 +35,18 @@ def parse_arguments():
         )
 
     parser.add_argument(
-            '--benchmarks', '-m', metavar='<benchmark>[ <benchmark>]*',
-            nargs='+',
-            help='Benchmarks to optimize for'
+            'params', metavar='<name>:<start value>', nargs='+',
+            help='Parameters to optimize and its min and max value'
+        )
+
+    parser.add_argument(
+            '--benchmarks', '-m', metavar='<benchmarks>',
+            nargs='+', help='Benchmarks to optimize for'
         )
 
     parser.add_argument(
             '--suites', '-s', metavar='<suite>[ <suite>]', nargs='+',
             help='Suite whos benchmarks to optimize for'
-        )
-
-    parser.add_argument(
-            'params', metavar='<name>:<start value>', nargs='+',
-            help='Parameters to optimize and its min and max value'
         )
 
     parser.add_argument(
