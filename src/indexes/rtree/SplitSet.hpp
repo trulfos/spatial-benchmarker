@@ -34,7 +34,7 @@ class SplitSet
 				 * Create an iterator starting at the given dimension.
 				 */
 				SplitIterator(
-						const ReferenceView<NIt> entryView,
+						const std::vector<Entry<N>>& entries,
 						unsigned dimension
 					);
 
@@ -50,7 +50,7 @@ class SplitSet
 			private:
 
 				std::shared_ptr<Split<N>> split;
-				ReferenceView<NIt> entryView;
+				std::vector<const Entry<N> *> entryView;
 				unsigned candidate;
 
 				unsigned getSplitPoint() const;
@@ -104,7 +104,7 @@ class SplitSet
 
 	private:
 		unsigned dimension = D;
-		ReferenceView<NIt> entryView;
+		std::vector<Entry<N>> entries;
 };
 
 
@@ -122,7 +122,7 @@ template<class N, unsigned m>
 template<class FIt>
 SplitSet<N, m>::SplitSet(FIt first, FIt last)
 {
-	entryView.insert(first, last);
+	entries.insert(entries.end(), first, last);
 }
 
 
@@ -130,8 +130,8 @@ template<class N, unsigned m>
 template<class FIt>
 SplitSet<N, m>::SplitSet(FIt first, FIt first2, FIt last, FIt last2)
 {
-	entryView.insert(first, last);
-	entryView.insert(first2, last2);
+	entries.insert(entries.end(), first, last);
+	entries.insert(entries.end(), first2, last2);
 }
 
 
@@ -139,7 +139,7 @@ template<class N, unsigned m>
 typename SplitSet<N, m>::iterator SplitSet<N, m>::begin() const
 {
 	return iterator(
-			entryView,
+			entries,
 			dimension == D ? 0 : dimension
 		);
 }
@@ -149,7 +149,7 @@ template<class N, unsigned m>
 typename SplitSet<N, m>::iterator SplitSet<N, m>::end() const
 {
 	return iterator(
-			entryView,
+			entries,
 			dimension == D ? D : dimension + 1
 		);
 }
@@ -174,11 +174,19 @@ void SplitSet<N, m>::restrictTo(unsigned dimension)
 */
 template<class N, unsigned m>
 SplitSet<N, m>::SplitIterator::SplitIterator(
-		const ReferenceView<NIt> entryView,
+		const std::vector<Entry<N>>& entries,
 		unsigned dimension
-	) : entryView(entryView),
-		candidate(2 * dimension * (entryView.size() - 2 * m + 1))
+	) : candidate(2 * dimension * (entries.size() - 2 * m + 1))
 {
+	std::transform(
+			entries.begin(), entries.end(),
+			std::back_inserter(entryView),
+			[](const Entry<N>& e) {
+				return &e;
+			}
+		);
+
+
 	sort();
 
 	// Create first split
@@ -291,25 +299,31 @@ void SplitSet<N, m>::SplitIterator::sort()
 	using E = typename std::iterator_traits<NIt>::value_type;
 
 	if (getSortOrder() == 0) {
-		entryView.sort([&](const E& a, const E& b) {
-				return std::tie(
-						a.getMbr().getTop()[d],
-						a.getMbr().getBottom()[d]
-					) < std::tie(
-							b.getMbr().getTop()[d],
-							b.getMbr().getBottom()[d]
-						);
-			});
+		std::sort(
+				entryView.begin(), entryView.end(),
+				[&](const E * a, const E * b) {
+					return std::tie(
+							a->getMbr().getTop()[d],
+							a->getMbr().getBottom()[d]
+						) < std::tie(
+								b->getMbr().getTop()[d],
+								b->getMbr().getBottom()[d]
+							);
+				}
+			);
 	} else {
-		entryView.sort([&](const E& a, const E& b) {
-				return std::tie(
-						a.getMbr().getBottom()[d],
-						a.getMbr().getTop()[d]
-					) < std::tie(
-							b.getMbr().getBottom()[d],
-							b.getMbr().getTop()[d]
-						);
-			});
+		std::sort(
+				entryView.begin(), entryView.end(),
+				[&](const E * a, const E * b) {
+					return std::tie(
+							a->getMbr().getBottom()[d],
+							a->getMbr().getTop()[d]
+						) < std::tie(
+								b->getMbr().getBottom()[d],
+								b->getMbr().getTop()[d]
+							);
+				}
+			);
 	}
 }
 

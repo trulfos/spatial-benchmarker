@@ -22,7 +22,7 @@ class Split
 		using Mbr = typename N::Mbr;
 
 		Split(
-				const ReferenceView<NIt>& entryView,
+				const std::vector<const Entry<N> *>& entryView,
 				unsigned sort,
 				unsigned dimension,
 				unsigned splitPoint
@@ -61,8 +61,8 @@ class Split
 			auto middle = entryView.begin() + splitPoint;
 
 			return {{
-					EVec(entryView.begin(), middle),
-					EVec(middle, entryView.end())
+					EVec(makeDerefIt(entryView.begin()), makeDerefIt(middle)),
+					EVec(makeDerefIt(middle), makeDerefIt(entryView.end()))
 				}};
 		}
 
@@ -95,7 +95,7 @@ class Split
 	private:
 		unsigned sort, dimension, splitPoint;
 		std::array<Mbr, 2> mbrs;
-		ReferenceView<NIt> entryView;
+		std::vector<const Entry<N> *> entryView;
 
 		/**
 		 * Sums up MBRs.
@@ -108,9 +108,9 @@ class Split
 
 			return std::accumulate(
 					first, last,
-					first->getMbr(),
-					[](const Mbr& sum, const E& e) {
-						return sum + e.getMbr();
+					(*first)->getMbr(),
+					[](const Mbr& sum, const E e) {
+						return sum + e->getMbr();
 					}
 				);
 		}
