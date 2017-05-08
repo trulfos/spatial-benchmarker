@@ -37,23 +37,6 @@ else()
 	add_compile_options(${optimized_flags})
 endif()
 
-add_library(reporters OBJECT
-	src/bench/reporters/CorrectnessReporter.cpp
-	src/bench/reporters/ResultSet.cpp
-	src/bench/reporters/AvgStatsReporter.cpp
-	src/bench/reporters/TotalRunTimeReporter.cpp
-	src/bench/reporters/StatsReporter.cpp
-	src/bench/reporters/RunTimeReporter.cpp
-	src/bench/reporters/StructReporter.cpp
-	src/bench/reporters/Reporter.cpp
-	src/bench/reporters/QueryRunTimeReporter.cpp
-	src/bench/reporters/QueryReporter.cpp
-	src/bench/reporters/FileHeader.cpp
-	src/bench/reporters/ProgressLogger.cpp
-	src/bench/reporters/ResultsReporter.cpp
-	src/bench/reporters/PapiReporter.cpp
-)
-
 add_library(spatial OBJECT
 	src/spatial/RangeQuery.cpp
 	src/spatial/Box.cpp
@@ -76,7 +59,22 @@ add_executable(bench
 	src/bench/DataObjectInputIterator.cpp
 	src/bench/BoxInputIterator.cpp
 
-	$<TARGET_OBJECTS:reporters>
+	# Reporters!
+	src/bench/reporters/CorrectnessReporter.cpp
+	src/bench/reporters/ResultSet.cpp
+	src/bench/reporters/AvgStatsReporter.cpp
+	src/bench/reporters/TotalRunTimeReporter.cpp
+	src/bench/reporters/StatsReporter.cpp
+	src/bench/reporters/RunTimeReporter.cpp
+	src/bench/reporters/StructReporter.cpp
+	src/bench/reporters/Reporter.cpp
+	src/bench/reporters/QueryRunTimeReporter.cpp
+	src/bench/reporters/QueryReporter.cpp
+	src/bench/reporters/FileHeader.cpp
+	src/bench/reporters/ProgressLogger.cpp
+	src/bench/reporters/ResultsReporter.cpp
+	src/bench/reporters/PapiReporter.cpp
+
 	$<TARGET_OBJECTS:spatial>
 )
 
