@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.2)
 
 project("Spatial Indexing Framework")
+include(ExternalProject)
 
 
 # We need PAPI
-include(ExternalProject)
 ExternalProject_Add(Papi
 	URL http://icl.utk.edu/projects/papi/downloads/papi-5.5.1.tar.gz
 	URL_HASH SHA1=92dfb479fb025177e5eb56df76afc96cd11eb81f
@@ -15,13 +15,25 @@ ExternalProject_Add(Papi
 	INSTALL_COMMAND ""
 )
 
-include_directories(src ${CMAKE_CURRENT_BINARY_DIR}/papi/src)
 
 add_library(papi STATIC IMPORTED)
 set_property(TARGET papi PROPERTY IMPORTED_LOCATION
 	${CMAKE_CURRENT_BINARY_DIR}/papi/src/libpapi.a)
 add_dependencies(papi Papi)
 
+
+# TCLAP for argument parsing
+ExternalProject_Add(Tclap
+	URL https://downloads.sourceforge.net/project/tclap/tclap-1.2.1.tar.gz
+	URL_HASH SHA1=4f124216dd6e6936f5af6372d921a6c51563f8fd
+	SOURCE_DIR tclap
+	CONFIGURE_COMMAND ""
+	BUILD_COMMAND ""
+	INSTALL_COMMAND ""
+)
+
+
+include_directories(src ${CMAKE_CURRENT_BINARY_DIR}/papi/src ${CMAKE_CURRENT_BINARY_DIR}/tclap/include)
 set(optimized_flags -O3 -flto -fuse-linker-plugin)
 set(CMAKE_EXE_LINKER_FLAGS "-O3 -flto -fuse-linker-plugin")
 set(CMAKE_MODULE_LINKER_FLAGS "-O3 -flto -fuse-linker-plugin")
@@ -79,6 +91,7 @@ add_executable(bench
 )
 
 target_link_libraries(bench m dl papi)
+add_dependencies(bench Tclap)
 
 # Add tests
 enable_testing()
