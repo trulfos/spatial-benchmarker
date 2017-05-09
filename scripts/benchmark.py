@@ -177,7 +177,7 @@ def run_benchmark(db, task, use_stdout, dry):
         db.insertmany(
                 'result',
                 (dict(r, run_id=run_id, reporter_id=result[1]['id'])
-                    for r in results[0])
+                    for r in result[0])
             )
 
     db.commit()
