@@ -89,10 +89,18 @@ def main():
                 `reporter_id`,
                 `option`.`value`
 
-            order by `index`, `benchmark_id`, `reporter_id`, `option`.`value`
+            order by
+                `index`,
+                cast(`option`.`value` as real),
+                `option`.`value`,
+                `benchmark_id`,
+                `reporter_id`
             """ % ', '.join(['?'] * len(args.suite)),
             (args.metric, args.config) + tuple(args.suite)
         ).fetchall()
+
+    for r in results:
+        print(r)
 
     by_index = group_by(results, key=lambda r: r['index'])
 
@@ -105,22 +113,32 @@ def main():
         if len(set(d['commit'] for d in index_data)) > 1:
             print_warning('Data from several commits have been combined!')
 
+        print([d['option'] for d in index_data])
+
         # Determine keys?
-        keys = sorted(set(d['option'] for d in index_data))
+        keys = sorted(
+                set((d['benchmark_id'], d['reporter_id']) for d in index_data)
+            )
+
         print(
                 'benchmark_id\treporter_id\t' +
-                '\t'.join(k + '\tstddev' for k in keys)
+                '\t'.join('%s-%s' % k + '\tstddev' for k in keys)
             )
 
-        by_benchmark = group_by(
+        by_option = group_by(
                 index_data,
-                key=lambda d: '%s\t%s' % (d['benchmark_id'], d['reporter_id'])
+                key=lambda d: d['option']
             )
 
-        for benchmark_id, values in by_benchmark.items():
-            print(benchmark_id, end='\t')
+        for option, values in by_option.items():
+            print(option, end='\t')
 
-            vs = dict(group_by(list(values), key=lambda v: v['option']))
+            vs = dict(
+                    group_by(
+                        list(values),
+                        key=lambda v: (v['benchmark_id'], v['reporter_id'])
+                    )
+                )
 
             print(
                     '\t'.join(
