@@ -140,12 +140,12 @@ class Database:
 
     def insert(self, table, **kwargs):
         """
-        Inserts a row in the given table.
+        Inserts a row in the given table and returns the id.
         """
         return self.connection.execute(
                 self.create_insert_statement(table, kwargs.keys()),
                 kwargs
-            )
+            ).lastrowid
 
     def insertmany(self, table, data):
         """

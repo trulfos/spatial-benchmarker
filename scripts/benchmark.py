@@ -171,7 +171,7 @@ def run_benchmark(db, task, use_stdout, dry):
             benchmark_id=benchmark_id,
             config_id=config_id,
             commit=commit
-        ).lastrowid
+        )
 
     for result in results:
         db.insertmany(
