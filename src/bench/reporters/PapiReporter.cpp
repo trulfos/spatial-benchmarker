@@ -70,6 +70,7 @@ namespace Bench
 
 			std::array<int long long, events.size()> totals = {};
 			int long long runtime = 0;
+			int long long virtRuntime = 0;
 
 			// Test multiple times
 			for (unsigned i = 0; i < REORDER_RUNS; ++i) {
@@ -82,6 +83,7 @@ namespace Bench
 				// Start measurements
 				check(PAPI_start_counters(events.data(), events.size()));
 				int long long startTime = PAPI_get_real_nsec();
+				int long long virtStartTime = PAPI_get_virt_nsec();
 
 				// Run the code to 
 				for (const RangeQuery& query : queries) {
@@ -90,6 +92,7 @@ namespace Bench
 
 				// Stop measurements
 				int long long endTime = PAPI_get_real_nsec();
+				int long long virtEndTime = PAPI_get_virt_nsec();
 				check(PAPI_stop_counters(results.data(), results.size()));
 
 				for (unsigned k = 0; k < results.size(); k++) {
@@ -98,6 +101,7 @@ namespace Bench
 
 
 				runtime += endTime - startTime;
+				virtRuntime += virtEndTime - virtStartTime;
 
 				// Rearrange queries
 				std::shuffle(
@@ -120,6 +124,7 @@ namespace Bench
 			}
 
 			addEntry("PAPI_REAL_NSEC", runtime / REORDER_RUNS);
+			addEntry("PAPI_VIRT_NSEC", virtRuntime / REORDER_RUNS);
 
 		}
 

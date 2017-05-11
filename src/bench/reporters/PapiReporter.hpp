@@ -12,7 +12,7 @@ namespace Bench
 	{
 		public:
 
-			PapiReporter(const std::string& queryPath, unsigned runs = 20)
+			PapiReporter(const std::string& queryPath, unsigned runs = 1)
 				: QueryReporter(queryPath), runs(runs)
 			{
 			}
