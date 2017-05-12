@@ -3,6 +3,8 @@
 #include <random>
 #include <algorithm>
 #include <papi.h>
+#include <sched.h>
+#include <sys/resource.h>
 
 namespace Bench
 {
@@ -21,7 +23,6 @@ namespace Bench
 				);
 		}
 	}
-
 
 	void PapiReporter::run(
 			const SpatialIndex& index,
@@ -65,6 +66,9 @@ namespace Bench
 			std::array<int long long, events.size()> totals = {};
 			int long long runtime = 0;
 			int long long virtRuntime = 0;
+			int long long switches = 0;
+			int long long pageFaults = 0;
+
 
 			// Test multiple times
 			for (unsigned i = 0; i < REORDER_RUNS; ++i) {
@@ -73,8 +77,13 @@ namespace Bench
 				clearCache();
 
 				std::array<int long long, events.size()> results = {};
+				rusage startUsage, endUsage;
 
 				// Start measurements
+				if (getrusage(RUSAGE_SELF, &startUsage)) {
+					throw std::runtime_error("Could not get usage info");
+				}
+
 				check(PAPI_start_counters(events.data(), events.size()));
 				int long long startTime = PAPI_get_real_nsec();
 				int long long virtStartTime = PAPI_get_virt_nsec();
@@ -90,6 +99,11 @@ namespace Bench
 				int long long virtEndTime = PAPI_get_virt_nsec();
 				check(PAPI_stop_counters(results.data(), results.size()));
 
+				if (getrusage(RUSAGE_SELF, &endUsage)) {
+					throw std::runtime_error("Could not get usage info :(");
+				}
+
+				// Sum up
 				for (unsigned k = 0; k < results.size(); k++) {
 					totals[k] += results[k];
 				}
@@ -97,6 +111,9 @@ namespace Bench
 
 				runtime += endTime - startTime;
 				virtRuntime += virtEndTime - virtStartTime;
+				switches += endUsage.ru_nivcsw - startUsage.ru_nivcsw;
+				switches += endUsage.ru_nvcsw - startUsage.ru_nvcsw;
+				pageFaults += endUsage.ru_majflt - startUsage.ru_majflt;
 
 				// Rearrange queries
 				std::shuffle(
@@ -120,6 +137,8 @@ namespace Bench
 
 			addEntry("PAPI_REAL_NSEC", runtime / REORDER_RUNS);
 			addEntry("PAPI_VIRT_NSEC", virtRuntime / REORDER_RUNS);
+			addEntry("PAPI_CTX_SW", switches);
+			addEntry("PAPI_PG_FLT", pageFaults);
 
 		}
 
