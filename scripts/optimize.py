@@ -32,13 +32,14 @@ def parse_arguments():
         )
 
     parser.add_argument(
-            'params', metavar='name:start_value', nargs='+',
-            help='Parameters to optimize and its min and max value'
+            'tasks', metavar='config_id:benchmark_id|suite_id',
+            action=TasksAction, nargs='+', help='Benchmarks to optimize for'
         )
 
     parser.add_argument(
-            '--tasks', '-t', metavar='config_id:benchmark_id|suite_id',
-            action=TasksAction, nargs='+', help='Benchmarks to optimize for'
+            '--params', metavar='name:start_value', nargs='+',
+            default=['M:50', 'm:40'],
+            help='Parameters to optimize and its min and max value'
         )
 
     parser.add_argument(
@@ -163,7 +164,7 @@ def anneal(start_solution, validator, evaluator):
         temperature *= 0.95
 
     print("Finished in %d iterations" % iterations)
-    return best
+    return best, iterations
 
 
 def check_restrictions(restrictions, point):
@@ -231,7 +232,8 @@ def main():
                 '\n---- Running for config %s (b. %s) ----\n' %
                 (config_id, ', '.join(str(b) for b in benchmark_ids))
             )
-        results[config_id] = anneal(point, is_valid, evaluator)
+        results[config_id], iterations = anneal(point, is_valid, evaluator)
+        results[config_id]['iterations'] = iterations
 
         print('Finished! Result: ', results[config_id])
 
