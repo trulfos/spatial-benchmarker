@@ -42,10 +42,11 @@ namespace Bench
 		}
 
 		// Set up performance counters (move to constructor?)
-		std::array<int, 3> events = {
+		std::array<int, 4> events = {
 				PAPI_TOT_INS,
 				PAPI_L3_TCM,
-				PAPI_RES_STL
+				PAPI_RES_STL,
+				PAPI_TLB_DM
 			};
 
 		int nHardwareCounters = PAPI_num_counters();
