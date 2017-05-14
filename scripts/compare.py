@@ -9,6 +9,7 @@ obviously makes no difference when the statistic is only reported once.
 
 from database import Database
 import argparse
+from sys import stderr
 
 
 def group_by(values, **kwargs):
@@ -55,7 +56,7 @@ def parse_arguments():
 
 
 def print_warning(message):
-    print('\033[31mWarning: %s\033[0m' % message)
+    print('\033[31mWarning: %s\033[0m' % message, file=stderr)
 
 
 def main():
@@ -74,14 +75,20 @@ def main():
                 stddev_samp(`result`.`value`) `stddev`,
                 count(distinct `config_id`) `config_count`
 
-            from `latest_run`
-            inner join `result` using (`run_id`)
+            from `result`
+            inner join `run` using (`run_id`)
+            inner join `config` using (`config_id`)
             inner join `option` using (`config_id`)
-            inner join `suite_member` using (`config_id`, `benchmark_id`)
 
             where `result`.`name` = ?
                 and `option`.`name` = ?
-                and `suite_id` in (%s)
+                and `run_id` in (
+                    select `run_id`
+                    from `latest_run`
+                    inner join `suite_member`
+                        using (`config_id`, `benchmark_id`)
+                    where `suite_id` in (%s)
+                )
 
             group by
                 `index`,
@@ -99,13 +106,11 @@ def main():
             (args.metric, args.config) + tuple(args.suite)
         ).fetchall()
 
-    for r in results:
-        print(r)
-
     by_index = group_by(results, key=lambda r: r['index'])
 
     for index, index_data in by_index.items():
-        print("\n----- %s -----" % index)
+        if len(set(r['index'] for r in results)) > 1:
+            print("\n----- %s -----" % index)
 
         if max(d['config_count'] for d in index_data) > 1:
             print_warning('Several different configs have been averaged!')
@@ -113,16 +118,14 @@ def main():
         if len(set(d['commit'] for d in index_data)) > 1:
             print_warning('Data from several commits have been combined!')
 
-        print([d['option'] for d in index_data])
-
         # Determine keys?
         keys = sorted(
                 set((d['benchmark_id'], d['reporter_id']) for d in index_data)
             )
 
         print(
-                'benchmark_id\treporter_id\t' +
-                '\t'.join('%s-%s' % k + '\tstddev' for k in keys)
+                'id\t' +
+                '\t'.join('%s-%s' % k + '\t%s-%s-stddev' % k for k in keys)
             )
 
         by_option = group_by(
