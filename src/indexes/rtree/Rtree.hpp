@@ -361,28 +361,26 @@ Results Rtree<N, m>::rangeSearch(const Box& box) const
 	using NIt = typename N::ScanIterator;
 	using Link = typename N::Link;
 
-	std::vector<std::pair<NIt, NIt>> path {{
-			root.getNode().scan(box)
-		}};
-
+	unsigned depth = 0;
 	Results resultSet;
+	std::vector<std::pair<NIt, NIt>> path (getHeight());
 
-	while (!path.empty()) {
-		auto& top = path.back();
+	// "Scan" root node
+	path[depth++] = root.getNode().scan(box);
+
+	while (depth) {
+		auto& top = path[depth - 1];
 
 		if (top.first == top.second) {
-			path.pop_back();
+			--depth;
 			continue;
 		}
 
 		// Find node to descend into
 		const Link link = *(top.first++);
 
-		if (path.size() < getHeight() - 1) {
-			const N& node = link.getNode();
-			path.emplace_back(
-					node.scan(box)
-				);
+		if (depth < getHeight() - 1) {
+			path[depth++] = link.getNode().scan(box);
 		} else {
 			resultSet.push_back(link.getId());
 		}
