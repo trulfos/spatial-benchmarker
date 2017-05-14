@@ -141,7 +141,7 @@ def anneal(start_solution, validator, evaluator):
         delta = score - current[0]
         if delta < 0 or random() < exp(-delta / temperature):
             current = (score, candidate)
-            print("New solution: ", candidate)
+            print("New solution: ", current)
             unsuccessful = 0
 
             # Update the best seen so far
@@ -233,11 +233,11 @@ def main():
                 (config_id, ', '.join(str(b) for b in benchmark_ids))
             )
         results[config_id], iterations = anneal(point, is_valid, evaluator)
-        results[config_id]['iterations'] = iterations
+        results[config_id][1]['iterations'] = iterations
 
         print('Finished! Result: ', results[config_id])
 
-    print('All done!', results)
+    print('All done!\n', results)
 
 
 if __name__ == '__main__':
