@@ -3,6 +3,7 @@
 #include "indexes/rtree/DefaultNode.hpp"
 #include "indexes/rtree/PointerArrayNode.hpp"
 #include "indexes/rtree/VectorizedNode.hpp"
+#include "indexes/rtree/FullScanNode.hpp"
 
 /**
  * This file defines options that may be passed to the indexes.
