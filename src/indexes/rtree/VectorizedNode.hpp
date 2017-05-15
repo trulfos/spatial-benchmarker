@@ -271,8 +271,7 @@ namespace Rtree
 			 */
 			Mbr getMbr(unsigned index) const
 			{
-				Point top(D);
-				Point bottom(D);
+				std::array<Coordinate, D> bottom, top;
 
 				auto base = reinterpret_cast<const double *>(
 						coordinates + 2 * D * (index / BLOCK_SIZE)
@@ -284,7 +283,7 @@ namespace Rtree
 					base += 2 * BLOCK_SIZE;
 				}
 
-				return Box(top, bottom);
+				return Mbr(top, bottom);
 			}
 
 

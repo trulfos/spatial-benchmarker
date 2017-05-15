@@ -61,6 +61,26 @@ class Mbr
 		};
 
 
+
+		/**
+		 * Create MBR from a top and bottom array
+		 */
+		Mbr(
+				const std::array<Coordinate, D>& top,
+				const std::array<Coordinate, D>& bottom
+			)
+		{
+#			ifndef NDEBUG
+			for (unsigned i = 0; i < D; i++) {
+				assert(top[i] >= bottom[i]);
+			}
+#			endif
+
+			std::copy(top.begin(), top.end(), this->top);
+			std::copy(bottom.begin(), bottom.end(), this->bottom);
+		}
+
+
 		/**
 		 * Creates an MBR by combining all MBRs in a range.
 		 *
