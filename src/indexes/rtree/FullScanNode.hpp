@@ -82,19 +82,22 @@ namespace Rtree
 
 						auto highs = mbr.getTop();
 						auto lows = mbr.getBottom();
+						unsigned blocks = (node->getSize() + BLOCK_SIZE - 1) / BLOCK_SIZE;
 
 						// Compare across all dimensions
 						for (unsigned d = 0; d < D; ++d) {
 							// Check top of query
 							scanStrip<_CMP_GT_OS>(
 									base + 2 * d * BLOCK_SIZE * N_BLOCKS,
-									&highs[d]
+									&highs[d],
+									blocks
 								);
 
 							// Check bottom of query
 							scanStrip<_CMP_LT_OS>(
 									base + (2 * d + 1) * BLOCK_SIZE * N_BLOCKS,
-									&lows[d]
+									&lows[d],
+									blocks
 								);
 						}
 
@@ -190,16 +193,22 @@ namespace Rtree
 					 * against a reference value using the given operation.
 					 *
 					 * @tparam OP Compare operation to use (e.g. _CMP_LT_OS)
+					 *
 					 * @param base Pointer to first value in strip
 					 * @param value Pointer to reference value
+					 * @param blocks Number of blocks to scan
 					 */
 					template<unsigned OP>
-					void scanStrip(const double * base, const double * value)
+					void scanStrip(
+							const double * base,
+							const double * value,
+							const unsigned& blocks
+						)
 					{
 						// Load reference value
 						__m256d reference = _mm256_broadcast_sd(value);
 
-						for (unsigned b = 0; b < N_BLOCKS; ++b) {
+						for (unsigned b = 0; b < blocks; ++b) {
 							// Load subject value
 							__m256d subject = _mm256_load_pd(
 									base + BLOCK_SIZE * b
