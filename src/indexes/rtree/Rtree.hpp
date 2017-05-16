@@ -360,13 +360,14 @@ Results Rtree<N, m>::rangeSearch(const Box& box) const
 	assert(getHeight() > 0);
 	using NIt = typename N::ScanIterator;
 	using Link = typename N::Link;
+	const typename N::Mbr query (box);
 
 	unsigned depth = 0;
 	Results resultSet;
 	std::vector<std::pair<NIt, NIt>> path (getHeight());
 
 	// "Scan" root node
-	path[depth++] = root.getNode().scan(box);
+	path[depth++] = root.getNode().scan(query);
 
 	while (depth) {
 		auto& top = path[depth - 1];
@@ -377,10 +378,11 @@ Results Rtree<N, m>::rangeSearch(const Box& box) const
 		}
 
 		// Find node to descend into
-		const Link link = *(top.first++);
+		const Link link = *top.first;
+		++top.first;
 
 		if (depth < getHeight() - 1) {
-			path[depth++] = link.getNode().scan(box);
+			path[depth++] = link.getNode().scan(query);
 		} else {
 			resultSet.push_back(link.getId());
 		}

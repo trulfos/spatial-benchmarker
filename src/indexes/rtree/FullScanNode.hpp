@@ -205,10 +205,11 @@ namespace Rtree
 									base + BLOCK_SIZE * b
 								);
 
+							// Compare and update bitset
 							std::int64_t results = _mm256_movemask_pd(
 									_mm256_cmp_pd(subject, reference, OP)
 								);
-							// Compare and update bitset
+
 							bitset[(BLOCK_SIZE * b) / 64] &= ~(
 									results << ((BLOCK_SIZE * b) % 64)
 								);
