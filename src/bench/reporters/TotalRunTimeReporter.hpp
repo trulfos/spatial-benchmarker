@@ -16,7 +16,7 @@ class TotalRunTimeReporter : public QueryReporter, private RunTimeReporter
 {
 	public:
 
-		using QueryReporter::QueryReporter;
+		TotalRunTimeReporter(const std::string& queryPath, unsigned runs);
 
 		void run(
 				const SpatialIndex& index,
@@ -24,7 +24,7 @@ class TotalRunTimeReporter : public QueryReporter, private RunTimeReporter
 			) override;
 
 	private:
-		static constexpr unsigned RUNS = 10;
+		unsigned runs;
 
 };
 

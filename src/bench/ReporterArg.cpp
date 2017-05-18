@@ -93,8 +93,19 @@ std::shared_ptr<Reporter> ReporterArg::createReporter(
 	}
 
 	// Instantiate reporter
+	if (name == "struct") {
+		return std::make_shared<StructReporter>();
+	}
+
+	if (arguments.size() < 1) {
+		throw std::runtime_error("Too few arguments for reporter");
+	}
+
 	if (name == "runtime") {
-		return std::make_shared<TotalRunTimeReporter>(arguments[0]);
+		return std::make_shared<TotalRunTimeReporter>(
+				arguments[0],
+				arguments.size() > 1 ? std::stoul(arguments[1]) : 10
+			);
 	}
 	if (name == "qruntime") {
 		return std::make_shared<QueryRunTimeReporter>(arguments[0]);
@@ -110,9 +121,6 @@ std::shared_ptr<Reporter> ReporterArg::createReporter(
 	}
 	if (name == "correctness") {
 		return std::make_shared<CorrectnessReporter>(arguments[0], arguments[1]);
-	}
-	if (name == "struct") {
-		return std::make_shared<StructReporter>();
 	}
 	if (name == "papi") {
 		if (arguments.size() == 1) {

@@ -6,12 +6,19 @@
 namespace Bench
 {
 
+TotalRunTimeReporter::TotalRunTimeReporter(
+		const std::string& queryPath,
+		unsigned runs
+	) : QueryReporter(queryPath), runs(runs)
+{
+}
+
 void TotalRunTimeReporter::run(
 		const SpatialIndex& index,
 		std::ostream& logStream
 	)
 {
-	ProgressLogger progress(logStream, RUNS);
+	ProgressLogger progress(logStream, runs);
 	std::default_random_engine engine (11);
 
 	auto querySet = getQuerySet();
@@ -27,7 +34,7 @@ void TotalRunTimeReporter::run(
 		);
 
 	// Test multiple times
-	for (unsigned i = 0; i < RUNS; ++i) {
+	for (unsigned i = 0; i < runs; ++i) {
 
 		// Clear cache
 		clearCache();
