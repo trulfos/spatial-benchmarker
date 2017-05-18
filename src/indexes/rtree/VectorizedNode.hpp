@@ -166,11 +166,6 @@ namespace Rtree
 						// Compare across all dimensions
 						for (unsigned j = 0; j < D; ++j) {
 
-							// Skip if we know the result
-							if (!bitset) {
-								break;
-							}
-
 							// Load bottom and top for query box
 							__m256d bottom = _mm256_broadcast_sd(&lows[j]);
 							__m256d top = _mm256_broadcast_sd(&highs[j]);
