@@ -171,7 +171,7 @@ def anneal(start_solution, validator, evaluator):
 def check_restrictions(restrictions, point):
 
     # Hard coded restriction on M
-    if 'M' in point and point['M'] < 2:
+    if 'M' in point and point['M'] < 4:
         return False
 
     # Hard coded restriction on m
