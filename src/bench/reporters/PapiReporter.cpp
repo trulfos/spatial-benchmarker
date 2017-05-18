@@ -3,7 +3,6 @@
 #include <random>
 #include <algorithm>
 #include <papi.h>
-#include <sched.h>
 
 namespace Bench
 {
@@ -31,15 +30,6 @@ namespace Bench
 	{
 		ProgressLogger progress(logStream, runs * REORDER_RUNS);
 		std::default_random_engine engine (11);
-
-
-		// Bind to specific processor core
-		cpu_set_t set;
-		CPU_ZERO(&set);
-		CPU_SET(1, &set);
-		if (sched_setaffinity(0, sizeof(set), &set)) {
-			throw std::runtime_error("Could not pin process to core");
-		}
 
 		// Set up performance counters (move to constructor?)
 		std::array<int, 4> events = {
