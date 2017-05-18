@@ -12,6 +12,7 @@ from math import exp
 from database import Database
 from tasks import TasksAction
 from itertools import groupby
+from sys import stdout
 import compile_for
 import benchmark
 import os
@@ -185,13 +186,14 @@ def evaluate(db, config, benchmarks, options):
 
     total_runtime = 0
 
-    for b in benchmarks:
-        print(
-                'Evaluating ' +
-                ' '.join('%s=%s' % i for i in options.items()) +
-                '... '
-            )
+    print(
+            'Evaluating ' +
+            ' '.join('%s=%s' % i for i in options.items()),
+            end=''
+        )
+    stdout.flush()
 
+    for b in benchmarks:
         compile_for.compile(db, config, override_options=options)
 
         results = asyncio.get_event_loop().run_until_complete(
@@ -207,7 +209,10 @@ def evaluate(db, config, benchmarks, options):
                 ) for (reporter_results, _) in results
             )
 
-    print('Result: %.2e' % total_runtime)
+        print('.', end='')
+        stdout.flush()
+
+    print(' Result: %.2e' % total_runtime)
     return total_runtime
 
 
