@@ -45,6 +45,12 @@ namespace Rtree
 
 			class ScanIterator
 			{
+				// Bit set block type
+				using BS = unsigned;
+
+				// Number of bits in each bit set block
+				static constexpr unsigned bss = 8 * sizeof(BS);
+
 				public:
 					using iterator_category = std::input_iterator_tag;
 					using value_type = Link;
@@ -73,7 +79,7 @@ namespace Rtree
 
 						// Initialize bitset
 						for (unsigned i = 0; i < bitset.size(); ++i) {
-							bitset[i] = 0xFFFFFFFFFFFFFFFF;
+							bitset[i] = ~0;
 						}
 
 						const double * base = reinterpret_cast<const double *>(
@@ -87,14 +93,14 @@ namespace Rtree
 						// Compare across all dimensions
 						for (unsigned d = 0; d < D; ++d) {
 							// Check top of query
-							scanStrip<_CMP_GT_OS>(
+							scanStrip<_CMP_LE_OS>(
 									base + 2 * d * BLOCK_SIZE * N_BLOCKS,
 									&highs[d],
 									blocks
 								);
 
 							// Check bottom of query
-							scanStrip<_CMP_LT_OS>(
+							scanStrip<_CMP_GE_OS>(
 									base + (2 * d + 1) * BLOCK_SIZE * N_BLOCKS,
 									&lows[d],
 									blocks
@@ -149,7 +155,7 @@ namespace Rtree
 					unsigned index;
 
 					// Entries intersecting query
-					std::array<std::uint64_t, (C + 63)/64> bitset;
+					std::array<BS, (C + 63)/bss> bitset;
 
 
 					/**
@@ -162,7 +168,7 @@ namespace Rtree
 					 */
 					void findNext()
 					{
-						unsigned block = index / 64;
+						unsigned block = index / bss;
 
 						while (index < node->getSize()) {
 
@@ -172,11 +178,11 @@ namespace Rtree
 							if (i > 0) {
 								i -= 1;
 								bitset[block] ^= (1ll << i);
-								index = 64 * block + i;
+								index = bss * block + i;
 								break;
 							}
 
-							index = 64 * (++block);
+							index = bss * (++block);
 						}
 
 						// None found?
@@ -205,24 +211,50 @@ namespace Rtree
 							const unsigned& blocks
 						)
 					{
+						static_assert(bss % BLOCK_SIZE == 0);
+
 						// Load reference value
 						__m256d reference = _mm256_broadcast_sd(value);
 
-						for (unsigned b = 0; b < blocks; ++b) {
+						unsigned b = 0;
+
+						// Scan entire bit set blocks while possible
+						while (BLOCK_SIZE * blocks - b > bss) {
+							BS results = 0;
+
+							for (unsigned i = 0; i < bss; i += BLOCK_SIZE) {
+								// Load subject value
+								__m256d subject = _mm256_load_pd(
+										base + b + i
+									);
+
+								// Compare and update bitset
+								results |= ((BS)_mm256_movemask_pd(
+										_mm256_cmp_pd(subject, reference, OP)
+									)) << i;
+							}
+
+							bitset[b / bss] &= results;
+							b += bss;
+						}
+
+						// Handle the remaining blocks
+						BS results = 0;
+
+						for (unsigned i = 0; i < blocks * BLOCK_SIZE - b; i += BLOCK_SIZE) {
 							// Load subject value
 							__m256d subject = _mm256_load_pd(
-									base + BLOCK_SIZE * b
+									base + b + i
 								);
 
 							// Compare and update bitset
-							std::int64_t results = _mm256_movemask_pd(
+							results |= ((BS) _mm256_movemask_pd(
 									_mm256_cmp_pd(subject, reference, OP)
-								);
+								)) << i;
 
-							bitset[(BLOCK_SIZE * b) / 64] &= ~(
-									results << ((BLOCK_SIZE * b) % 64)
-								);
 						}
+
+						bitset[b / bss] &= results;
 					}
 
 			};
