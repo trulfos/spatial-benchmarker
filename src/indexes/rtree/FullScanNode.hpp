@@ -2,6 +2,25 @@
 #include "BaseNode.hpp"
 #include "spatial/Coordinate.hpp"
 #include "immintrin.h"
+#include <iostream>
+
+/**
+ * Scans forward through a number and finds the first set bit.
+ *
+ * Note that the behavior is undefined should no bits be set (value = 0).
+ *
+ * @tparam I Integer type of the number. Must be 16, 32 or 64 bit.
+ * @param value Number to scan through
+ * @return Index of first set bit
+ */
+template<class I>
+I bitScanForward(const I& value)
+{
+	I r;
+	asm("bsfl %1,%0" : "=r" (r) : "rm" (value));
+	return r;
+}
+
 
 namespace Rtree
 {
@@ -172,11 +191,9 @@ namespace Rtree
 
 						while (index < node->getSize()) {
 
-							// Find least significant non-zero bit
-							unsigned i = __builtin_ffsll(bitset[block]);
-
-							if (i > 0) {
-								i -= 1;
+							if (bitset[block]) {
+								// Find least significant non-zero bit
+								unsigned i = bitScanForward<BS>(bitset[block]);
 								bitset[block] ^= (1ll << i);
 								index = bss * block + i;
 								break;
