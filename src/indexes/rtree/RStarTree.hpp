@@ -124,7 +124,7 @@ class RStarTree : public Rtree<Node, m>
 
 						// Reinsert
 						for (Entry<N>& i : extracted) {
-							insert(i, top - path.rbegin(), true);
+							insert(i, top - path.rbegin() + level, true);
 						}
 
 						return;
