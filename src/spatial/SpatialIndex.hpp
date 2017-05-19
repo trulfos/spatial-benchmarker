@@ -71,7 +71,7 @@ class SpatialIndex
 		 * @param query Query to use for searching
 		 * @return Results matching query
 		 */
-		Results search(const Query& query) const;
+		void search(Results& results, const Query& query) const;
 
 
 		/**
@@ -84,21 +84,29 @@ class SpatialIndex
 		 * @param collector Object in which statistics should be recorded
 		 * @return Results matching query
 		 */
-		Results search(const Query& query, StatsCollector& collector) const;
+		void search(StatsCollector& collector, const Query& query) const;
 
 	protected:
-		virtual Results rangeSearch(const Box& box) const = 0;
-		virtual Results knnSearch(unsigned k, const Point& point) const = 0;
+		virtual void rangeSearch(
+				Results& r,
+				const Box& box
+			) const = 0;
 
-		virtual Results rangeSearch(
-				const Box& box,
-				StatsCollector& collector
+		virtual void knnSearch(
+				Results& r,
+				unsigned k,
+				const Point& point
+			) const = 0;
+
+		virtual void rangeSearch(
+				StatsCollector& collector,
+				const Box& box
 			) const;
 
-		virtual Results knnSearch(
+		virtual void knnSearch(
+				StatsCollector& collector,
 				unsigned k,
-				const Point& point,
-				StatsCollector& collector
+				const Point& point
 			) const;
 };
 

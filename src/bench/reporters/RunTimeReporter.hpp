@@ -31,6 +31,13 @@ class RunTimeReporter
 		static const unsigned CACHE_LINE_SIZE = 64; // bytes
 
 		/**
+		 * Size of result set to reserve space for.
+		 *
+		 * This avoids calling malloc during time measurements.
+		 */
+		static const unsigned MIN_RESULT_SIZE = 4096;
+
+		/**
 		 * "Clears" the cache by writing data to a large array.
 		 * To save time, only one value in each cache line is written.
 		 */

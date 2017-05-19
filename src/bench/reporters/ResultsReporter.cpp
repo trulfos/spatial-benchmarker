@@ -15,9 +15,9 @@ void ResultsReporter::run(
 
 	for (auto query : queries) {
 
-		resultSet.push_back(
-				index.search(query)
-			);
+		Results r;
+		index.search(r, query);
+		resultSet.push_back(r);
 
 		std::sort(resultSet.back().begin(), resultSet.back().end());
 

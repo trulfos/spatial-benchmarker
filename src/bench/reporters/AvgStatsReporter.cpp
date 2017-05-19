@@ -19,7 +19,7 @@ void AvgStatsReporter::run(
 
 		// Collect statistics
 		StatsCollector stats;
-		index.search(query, stats);
+		index.search(stats, query);
 
 		// Accumulate
 		if (!i) {

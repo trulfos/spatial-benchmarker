@@ -24,14 +24,13 @@ class SpatialIndex : public ::SpatialIndex
 		void insert(const DataObject& object);
 
 	protected:
-		Results rangeSearch(const Box& box) const;
-		Results knnSearch(unsigned k, const Point& point) const;
+		void rangeSearch(Results& results, const Box& box) const;
+		void knnSearch(Results& results, unsigned k, const Point& point) const;
 
 	private:
 		unsigned nBlocks;
 		unsigned long long nObjects = 0;
 		unsigned dimension;
-		void * buffer;
 		Coordinate * positions;
 		DataObject::Id * ids;
 };

@@ -118,20 +118,19 @@ class Rtree : public ::SpatialIndex
 		/**
 		 * Range search with Guttman's algorithm.
 		 */
-		Results rangeSearch(const Box& box) const;
+		void rangeSearch(Results& results, const Box& box) const override;
 
 
 		/**
 		 * Range search with Guttman's algorithm - with instrumentation.
 		 */
-		Results rangeSearch(const Box& box, StatsCollector& stats) const;
+		void rangeSearch(StatsCollector& stats, const Box& box) const override;
 
 
 		/**
-		 * Knn search using the optimal algorithm in the number of nodes
-		 * accessed.
+		 * k-NN search is currently not implemented, but throws when called.
 		 */
-		Results knnSearch(unsigned k, const Point& point) const;
+		void knnSearch(Results&, unsigned, const Point&) const override;
 
 	private:
 
@@ -158,9 +157,6 @@ class Rtree : public ::SpatialIndex
 |___|_| |_| |_| .__/|_|\___|_| |_| |_|\___|_| |_|\__\__,_|\__|_|\___/|_| |_|
               |_|                                                           
 */
-/**
- * Construct a new index from the given data set.
- */
 template <class N, unsigned m>
 Rtree<N, m>::Rtree() : height(0)
 {
@@ -173,11 +169,6 @@ Rtree<N, m>::~Rtree()
 };
 
 
-/**
- * Get the tree height.
- *
- * @return Height of tree
- */
 template <class N, unsigned m>
 const unsigned& Rtree<N, m>::getHeight() const
 {
@@ -185,11 +176,6 @@ const unsigned& Rtree<N, m>::getHeight() const
 };
 
 
-/**
- * Get root node.
- *
- * @return Pointer to root
- */
 template <class N, unsigned m>
 Entry<N>& Rtree<N, m>::getRoot()
 {
@@ -197,9 +183,6 @@ Entry<N>& Rtree<N, m>::getRoot()
 };
 
 
-/**
- * Add a new level by replacing the root.
- */
 template <class N, unsigned m>
 void Rtree<N, m>::addLevel(const Entry<N>& newRoot)
 {
@@ -208,14 +191,6 @@ void Rtree<N, m>::addLevel(const Entry<N>& newRoot)
 };
 
 
-/**
- * Sanity checks on the structure of this R-tree.
- *
- * Currently checks the following:
- *  - All MBRs are contained within their parents MBR,
- *  - MBRs are as tight as possible and
- *  - the upper and lower number of children is respected
- */
 template <class N, unsigned m>
 void Rtree<N, m>::checkStructure() const
 {
@@ -267,14 +242,6 @@ void Rtree<N, m>::checkStructure() const
 }
 
 
-/**
- * Collects tree statistics.
- *
- * Walks through the tree and e.g. counts the number of nodes at each
- * level.
- *
- * @return Statistics collected
- */
 template <class N, unsigned m>
 StatsCollector Rtree<N, m>::collectStatistics() const
 {
@@ -348,11 +315,8 @@ void Rtree<N, m>::traverse(F visitor) const
 }
 
 
-/**
- * Range search with Guttman's algorithm.
- */
 template <class N, unsigned m>
-Results Rtree<N, m>::rangeSearch(const Box& box) const
+void Rtree<N, m>::rangeSearch(Results& results, const Box& box) const
 {
 	assert(getHeight() > 0);
 	using NIt = typename N::ScanIterator;
@@ -360,8 +324,7 @@ Results Rtree<N, m>::rangeSearch(const Box& box) const
 	const typename N::Mbr query (box);
 
 	unsigned depth = 0;
-	Results resultSet;
-	std::vector<std::pair<NIt, NIt>> path (getHeight());
+	std::pair<NIt, NIt> path [getHeight()];
 
 	// "Scan" root node
 	path[depth++] = root.getNode().scan(query);
@@ -381,19 +344,14 @@ Results Rtree<N, m>::rangeSearch(const Box& box) const
 		if (depth < getHeight() - 1) {
 			path[depth++] = link.getNode().scan(query);
 		} else {
-			resultSet.push_back(link.getId());
+			results.push_back(link.getId());
 		}
 	}
-
-	return resultSet;
 };
 
 
-/**
- * Range search with Guttman's algorithm - with instrumentation.
- */
 template <class N, unsigned m>
-Results Rtree<N, m>::rangeSearch(const Box& box, StatsCollector& stats) const
+void Rtree<N, m>::rangeSearch(StatsCollector& stats, const Box& box) const
 {
 	Results resultSet;
 	stats["leaf_accesses"] = 0;
@@ -473,16 +431,11 @@ Results Rtree<N, m>::rangeSearch(const Box& box, StatsCollector& stats) const
 	}
 
 	stats["results"] = resultSet.size();
-	return resultSet;
 };
 
 
-/**
- * Knn search using the optimal algorithm in the number of nodes
- * accessed.
- */
 template <class N, unsigned m>
-Results Rtree<N, m>::knnSearch(unsigned k, const Point& point) const
+void Rtree<N, m>::knnSearch(Results&, unsigned, const Point&) const
 {
 	throw std::runtime_error("k-NN search not implemented");
 };

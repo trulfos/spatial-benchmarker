@@ -3,9 +3,8 @@
 namespace Scanning
 {
 
-Results Parallel::rangeSearch(const Box& box) const
+void Parallel::rangeSearch(Results& results, const Box& box) const
 {
-	Results results;
 	const Point& bottom = box.getPoints().first;
 	const Point& top = box.getPoints().second;
 
@@ -25,12 +24,10 @@ Results Parallel::rangeSearch(const Box& box) const
 			results.push_back(ids[i]);
 		}
 	}
-
-	return results;
 };
 
 
-Results Parallel::knnSearch(unsigned k, const Point& point) const
+void Parallel::knnSearch(Results&, unsigned k, const Point& point) const
 {
 	throw std::logic_error("Not implemented");
 };

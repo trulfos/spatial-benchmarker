@@ -5,9 +5,8 @@
 namespace Scanning
 {
 
-Results Sequential::rangeSearch(const Box& box) const
+void Sequential::rangeSearch(Results& results, const Box& box) const
 {
-	Results results;
 	const Point& bottom = box.getPoints().first;
 	const Point& top = box.getPoints().second;
 
@@ -26,12 +25,10 @@ Results Sequential::rangeSearch(const Box& box) const
 			results.push_back(ids[i]);
 		}
 	}
-
-	return results;
 };
 
 
-Results Sequential::knnSearch(unsigned k, const Point& point) const
+void Sequential::knnSearch(Results&, unsigned k, const Point& point) const
 {
 	throw std::logic_error("KNN search not implemented");
 };

@@ -14,8 +14,8 @@ class Sequential : public Scanning
 		using Scanning::Scanning;
 
 	protected:
-		Results rangeSearch(const Box& box) const override;
-		Results knnSearch(unsigned k, const Point& point) const override;
+		void rangeSearch(Results& results, const Box& box) const override;
+		void knnSearch(Results& results, unsigned k, const Point& point) const override;
 };
 
 }

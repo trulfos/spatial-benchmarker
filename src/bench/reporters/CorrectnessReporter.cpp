@@ -30,7 +30,8 @@ void CorrectnessReporter::run(
 	unsigned i = 0;
 
 	for (auto testCase : zip(queries, results)) {
-		Results results = index.search(testCase.first);
+		Results results;
+		index.search(results, testCase.first);
 
 		// Sort results
 		std::sort(results.begin(), results.end());

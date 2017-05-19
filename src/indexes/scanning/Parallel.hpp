@@ -15,8 +15,8 @@ class Parallel : public Scanning
 		using Scanning::Scanning;
 
 	protected:
-		Results rangeSearch(const Box& box) const;
-		Results knnSearch(unsigned k, const Point& point) const;
+		void rangeSearch(Results& results, const Box& box) const;
+		void knnSearch(Results& results, unsigned k, const Point& point) const;
 };
 
 }

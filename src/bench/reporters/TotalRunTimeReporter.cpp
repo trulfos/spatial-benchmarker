@@ -41,10 +41,13 @@ void TotalRunTimeReporter::run(
 
 
 		// Time queries
+		Results r;
+		r.reserve(MIN_RESULT_SIZE);
 		auto startTime = clock::now();
 
 		for (const RangeQuery& query : queries) {
-			index.search(query);
+			r.clear();
+			index.search(r, query);
 		}
 
 		auto endTime = clock::now();

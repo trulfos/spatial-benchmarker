@@ -3,6 +3,7 @@
 #include <queue>
 #include <memory>
 #include "immintrin.h"
+#include "malloc.h"
 
 namespace Vectorized
 {
@@ -11,41 +12,19 @@ namespace Vectorized
 constexpr unsigned blockSize = sizeof(__m256) / sizeof(Coordinate);
 
 
-/**
- * Allocates aligned memory.
- *
- * Remember to free the memory using the buffer pointer, not the returned
- * pointer. Also note that the space will not be initialized.
- *
- * @param aligment Must be power of 2
- * @param size Size of memory area to allocate
- * @param buffer Will hold pointer to original buffer after allocation
- */
-template <typename T>
-T * aligned_alloc(std::size_t alignment, std::size_t size, void *& buffer)
-{
-	size_t total = size + alignment - 1;
-	buffer = ::operator new (total);
-	uintptr_t aligned = (
-			reinterpret_cast<uintptr_t>(buffer) - 1u + alignment
-		) & (-alignment);
-
-	return reinterpret_cast<T *>(aligned);
-}
-
-
 SpatialIndex::SpatialIndex(unsigned dimension, unsigned long long size)
+	: dimension(dimension)
 {
 	// Allocate buffers
-	nBlocks = (nObjects - 1) / blockSize + 1;
+	nBlocks = (size - 1) / blockSize + 1;
 
-	positions = aligned_alloc<Coordinate>(
+	positions = reinterpret_cast<decltype(positions)>(
+			memalign(
 			sizeof(__m256),
-			2 * dimension * nBlocks * sizeof(__m256),
-			buffer
-		);
+			2 * dimension * nBlocks * sizeof(__m256)
+		));
 
-	ids = new DataObject::Id[nObjects];
+	ids = new DataObject::Id[size];
 
 }
 
@@ -57,15 +36,13 @@ void SpatialIndex::insert(const DataObject& object)
 			"Vectorized is currently adapted for doubles"
 		);
 
-	auto& i = nObjects;
-
 	// Copy object id
-	ids[i] = object.getId();
+	ids[nObjects] = object.getId();
 
 	// Insert box data
 	const auto& points = object.getBox().getPoints();
-	unsigned base = 2 * blockSize * dimension * (i / blockSize)
-			+ i % blockSize;
+	unsigned base = 2 * blockSize * dimension * (nObjects / blockSize)
+			+ nObjects % blockSize;
 
 	for (unsigned j = 0; j < dimension; j++) {
 		const unsigned k = base + 2 * blockSize * j;
@@ -73,21 +50,20 @@ void SpatialIndex::insert(const DataObject& object)
 		positions[k + blockSize] = points.second[j];
 	}
 
-	i++;
+	nObjects++;
 };
 
 SpatialIndex::~SpatialIndex()
 {
-	::operator delete(buffer);
+	free(positions);
 	delete[] ids;
 };
 
 
-Results SpatialIndex::rangeSearch(const Box& box) const
+void SpatialIndex::rangeSearch(Results& results, const Box& box) const
 {
 	constexpr unsigned short mask = (1u << blockSize) - 1u;
 	const auto points = box.getPoints();
-	Results results;
 
 #	pragma omp parallel for schedule(static)
 	for (unsigned b = 0; b < nBlocks; ++b) {
@@ -133,12 +109,10 @@ Results SpatialIndex::rangeSearch(const Box& box) const
 			results.push_back(ids[index]);
 		}
 	}
-
-	return results;
 };
 
 
-Results SpatialIndex::knnSearch(unsigned k, const Point& point) const
+void SpatialIndex::knnSearch(Results&, unsigned, const Point&) const
 {
 	throw std::logic_error("KNN search not implemented");
 };

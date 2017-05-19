@@ -17,7 +17,7 @@ void StatsReporter::run(
 
 		// Collect statistics
 		StatsCollector stats;
-		Results results = index.search(query, stats);
+		index.search(stats, query);
 
 		// Store statistics
 		for (auto stat : stats) {

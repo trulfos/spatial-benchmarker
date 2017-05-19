@@ -23,10 +23,12 @@ void QueryRunTimeReporter::run(
 
 		while (runs-- && total < MIN_TOTAL_TIME) {
 			clearCache();
+			Results newResults;
+			newResults.reserve(MIN_RESULT_SIZE);
 
 			// Time task
 			auto startTime = clock::now();
-			Results newResults = index.search(query);
+			index.search(newResults, query);
 			auto endTime = clock::now();
 
 			// Calculate runtime

@@ -69,6 +69,9 @@ namespace Bench
 				// Clear cache
 				clearCache();
 
+				Results r;
+				r.reserve(MIN_RESULT_SIZE);
+
 				std::array<int long long, events.size()> results = {};
 
 				// Start measurements
@@ -78,7 +81,8 @@ namespace Bench
 
 				// Run the code to 
 				for (const RangeQuery& query : queries) {
-					index.search(query);
+					r.clear();
+					index.search(r, query);
 				}
 
 				// Stop measurements

@@ -26,19 +26,21 @@ void SpatialIndex::prepare()
 };
 
 
-Results SpatialIndex::search(const Query& query) const
+void SpatialIndex::search(Results& results, const Query& query) const
 {
 	switch (query.getType()) {
 		case Query::Type::RANGE:
 		{
 			const RangeQuery * rq = static_cast<const RangeQuery *>(&query);
-			return rangeSearch(rq->getBox());
+			rangeSearch(results, rq->getBox());
+			return;
 		}
 
 		case Query::Type::KNN:
 		{
 			const KnnQuery * kq = static_cast<const KnnQuery *>(&query);
-			return knnSearch(kq->k, kq->point);
+			knnSearch(results, kq->k, kq->point);
+			return;
 		}
 	}
 
@@ -46,34 +48,36 @@ Results SpatialIndex::search(const Query& query) const
 }
 
 
-Results SpatialIndex::search(const Query& query, StatsCollector& stats) const
+void SpatialIndex::search(StatsCollector& stats, const Query& query) const
 {
 	switch (query.getType()) {
 		case Query::Type::RANGE:
 		{
 			const RangeQuery * rq = static_cast<const RangeQuery *>(&query);
-			return rangeSearch(rq->getBox(), stats);
+			rangeSearch(stats, rq->getBox());
+			return;
 		}
 
 		case Query::Type::KNN:
 		{
 			const KnnQuery * kq = static_cast<const KnnQuery *>(&query);
-			return knnSearch(kq->k, kq->point, stats);
+			knnSearch(stats, kq->k, kq->point);
+			return;
 		}
 	}
 
 	throw std::runtime_error("Unknown query type");
 }
 
-Results SpatialIndex::rangeSearch(const Box& box, StatsCollector&) const
+void SpatialIndex::rangeSearch(StatsCollector& stats, const Box& box) const
 {
 	throw std::runtime_error("Range search instrumentation not implemented");
 }
 
-Results SpatialIndex::knnSearch(
+void SpatialIndex::knnSearch(
+		StatsCollector&,
 		unsigned k,
-		const Point& point,
-		StatsCollector&
+		const Point& point
 	) const
 {
 	throw std::runtime_error("k-NN search instrumentation not implemented");
