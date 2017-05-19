@@ -1,14 +1,11 @@
 #pragma once
-#include "bench/LazyDataSet.hpp"
 #include "spatial/SpatialIndex.hpp"
 #include "spatial/InvalidStructureError.hpp"
 #include "KnnQueueEntry.hpp"
 #include "Mbr.hpp"
 #include "Entry.hpp"
 #include <algorithm>
-#include <forward_list>
-#include <queue>
-#include <stack>
+#include <vector>
 
 
 namespace Rtree
