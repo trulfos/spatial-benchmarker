@@ -41,7 +41,7 @@ class BasicRtree : public Rtree<N, m>
 		 * @return Best fitting node in parent
 		 */
 		virtual typename N::iterator chooseSubtree(
-				BaseEntry<N>& parent,
+				Entry<N> parent,
 				const Entry<N>& entry
 			) = 0;
 
@@ -58,8 +58,8 @@ class BasicRtree : public Rtree<N, m>
 		 * @param enclosing MBR enclosing all items
 		 */
 		virtual void redistribute(
-				BaseEntry<N>& a,
-				BaseEntry<N>& b,
+				Entry<N> a,
+				Entry<N> b,
 				unsigned level
 			) = 0;
 

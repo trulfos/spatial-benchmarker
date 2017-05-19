@@ -50,7 +50,7 @@ class RRStarTree : public BasicRtree<Node, m>
 		 * @param node Node in which the subtree should be
 		 */
 		NIt chooseSubtree(
-				BaseEntry<N>& parent,
+				Entry<N> parent,
 				const Entry<N>& newEntry
 			) override;
 
@@ -62,7 +62,7 @@ class RRStarTree : public BasicRtree<Node, m>
 		 * @param b The new entry (with the new child)
 		 * @param level Level of entries
 		 */
-		void redistribute(BaseEntry<N>& a, BaseEntry<N>& b, unsigned level) override;
+		void redistribute(Entry<N> a, Entry<N> b, unsigned level) override;
 };
 
 
@@ -88,7 +88,7 @@ StatsCollector RRStarTree<N, m>::collectStatistics() const
 
 template<class N, unsigned m>
 typename RRStarTree<N, m>::NIt RRStarTree<N, m>::chooseSubtree(
-		BaseEntry<N>& parent,
+		Entry<N> parent,
 		const Entry<N>& newEntry
 	)
 {
@@ -147,7 +147,7 @@ typename RRStarTree<N, m>::NIt RRStarTree<N, m>::chooseSubtree(
 
 
 template<class N, unsigned m>
-void RRStarTree<N, m>::redistribute(BaseEntry<N>& a, BaseEntry<N>& b, unsigned level)
+void RRStarTree<N, m>::redistribute(Entry<N> a, Entry<N> b, unsigned level)
 {
 	// Functions for evaluating splits
 	GoalFunction wg (a.getMbr() + b.getMbr());

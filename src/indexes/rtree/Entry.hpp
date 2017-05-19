@@ -18,10 +18,11 @@ namespace Rtree
 	 * format, but is requried to be able to reconstruct the entries stored at
 	 * request.
 	 *
+	 * @tparam E Entry type (for static inheritance)
 	 * @tparam N Node type for link pointer
 	 * @tparam D Derived class (for static polymorphism)
 	 */
-	template<class N>
+	template<class E, class N>
 	class BaseEntry
 	{
 		public:
@@ -54,7 +55,8 @@ namespace Rtree
 			 *
 			 * @param entry New entry to include
 			 */
-			void include(const BaseEntry& entry)
+			template<class Ep>
+			void include(const Ep& entry)
 			{
 				setMbr(getMbr() + entry.getMbr());
 
@@ -142,7 +144,10 @@ namespace Rtree
 			 *
 			 * @return MBR of this entry.
 			 */
-			virtual const Mbr getMbr() const = 0;
+			const Mbr getMbr() const
+			{
+				return static_cast<const E *>(this)->getMbr();
+			}
 
 
 			/**
@@ -150,7 +155,10 @@ namespace Rtree
 			 *
 			 * @return Link of this entry
 			 */
-			virtual const Link getLink() const = 0;
+			const Link getLink() const
+			{
+				return static_cast<const E *>(this)->getLink();
+			}
 
 
 			/**
@@ -158,15 +166,27 @@ namespace Rtree
 			 *
 			 * @return Plugin of this entry
 			 */
-			virtual const Plugin getPlugin() const = 0;
+			const Plugin getPlugin() const
+			{
+				return static_cast<const E *>(this)->getPlugin();
+			}
 
 		protected:
 
-			virtual void setMbr(const Mbr& m) = 0;
+			void setMbr(const Mbr& m)
+			{
+				static_cast<E *>(this)->setMbr(m);
+			}
 
-			virtual void setPlugin(const Plugin& p) = 0;
+			void setPlugin(const Plugin& p)
+			{
+				static_cast<E *>(this)->setPlugin(p);
+			}
 
-			virtual void setLink(const Link& l) = 0;
+			void setLink(const Link& l)
+			{
+				static_cast<E *>(this)->setLink(l);
+			}
 	};
 
 
@@ -176,9 +196,11 @@ namespace Rtree
 	 * @see Rtree::BaseEntry
 	 */
 	template<class N>
-	class Entry : public BaseEntry<N>
+	class Entry : public BaseEntry<Entry<N>, N>
 	{
-		using Base = BaseEntry<N>;
+		using Base = BaseEntry<Entry<N>, N>;
+
+		friend Base;
 
 		public:
 			// Types
@@ -284,35 +306,35 @@ namespace Rtree
 
 
 
-			const Mbr getMbr() const override
+			const Mbr getMbr() const
 			{
 				return mbr;
 			}
 
 
-			const Link getLink() const override
+			const Link getLink() const
 			{
 				return link;
 			}
 
 
-			const Plugin getPlugin() const override
+			const Plugin getPlugin() const
 			{
 				return plugin;
 			}
 
 		protected:
-			void setMbr(const Mbr& m) override
+			void setMbr(const Mbr& m)
 			{
 				mbr = m;
 			}
 
-			void setPlugin(const Plugin& p) override
+			void setPlugin(const Plugin& p)
 			{
 				plugin = p;
 			}
 
-			void setLink(const Link& l) override
+			void setLink(const Link& l)
 			{
 				link = l;
 			}

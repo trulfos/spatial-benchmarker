@@ -34,7 +34,7 @@ class QuadraticRtree : public BasicRtree<Node, m>
 		 * @return Entry requiring the least enlargement to include mbr
 		 */
 		typename N::iterator chooseSubtree(
-				BaseEntry<N>& parent,
+				Entry<N> parent,
 				const Entry<N>& newEntry
 			) override
 		{
@@ -58,8 +58,8 @@ class QuadraticRtree : public BasicRtree<Node, m>
 
 
 		void redistribute(
-				BaseEntry<N>& original,
-				BaseEntry<N>& newEntry,
+				Entry<N> original,
+				Entry<N> newEntry,
 				unsigned
 			) override
 		{

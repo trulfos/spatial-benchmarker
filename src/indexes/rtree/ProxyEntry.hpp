@@ -16,9 +16,11 @@ namespace Rtree
 	 * @see Rtree::BaseEntry
 	 */
 	template<class Node>
-	class ProxyEntry : public BaseEntry<Node>
+	class ProxyEntry : public BaseEntry<ProxyEntry<Node>, Node>
 	{
-		using Base = BaseEntry<Node>;
+		using Base = BaseEntry<ProxyEntry<Node>, Node>;
+
+		friend Base;
 
 		public:
 
@@ -92,34 +94,34 @@ namespace Rtree
 				b = tmp;
 			}
 
-			const Mbr getMbr() const override
+			const Mbr getMbr() const
 			{
 				return node->getMbr(index);
 			}
 
 
-			const Link getLink() const override
+			const Link getLink() const
 			{
 				return node->getLink(index);
 			}
 
-			const Plugin getPlugin() const override
+			const Plugin getPlugin() const
 			{
 				return node->getPlugin(index);
 			}
 
 		protected:
-			void setMbr(const Mbr& m) override
+			void setMbr(const Mbr& m)
 			{
 				node->setMbr(index, m);
 			}
 
-			void setPlugin(const Plugin& p) override
+			void setPlugin(const Plugin& p)
 			{
 				node->setPlugin(index, p);
 			}
 
-			void setLink(const Link& l) override
+			void setLink(const Link& l)
 			{
 				node->setLink(index, l);
 			}

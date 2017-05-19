@@ -30,8 +30,8 @@ class GreeneRtree : public QuadraticRtree<Node, m> //TODO: Not logical inheritan
 		 * @param b The second entry (with children)
 		 */
 		void redistribute(
-				BaseEntry<N>& original,
-			   	BaseEntry<N>& newEntry,
+				Entry<N> original,
+				Entry<N> newEntry,
 			   	unsigned
 			) override
 		{
