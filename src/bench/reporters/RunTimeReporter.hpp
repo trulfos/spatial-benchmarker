@@ -25,12 +25,6 @@ class RunTimeReporter
 
 	protected:
 		/**
-		 * Used to determine how the cache should be cleared.
-		 */
-		static const unsigned CACHE_SIZE = 4096; // kilobytes
-		static const unsigned CACHE_LINE_SIZE = 64; // bytes
-
-		/**
 		 * Size of result set to reserve space for.
 		 *
 		 * This avoids calling malloc during time measurements.

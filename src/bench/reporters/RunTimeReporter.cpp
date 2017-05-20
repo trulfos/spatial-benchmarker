@@ -1,4 +1,5 @@
 #include "RunTimeReporter.hpp"
+#include "mmap/MemoryMap.hpp"
 
 namespace Bench
 {
@@ -18,22 +19,13 @@ RunTimeReporter::RunTimeReporter()
 
 void RunTimeReporter::clearCache()
 {
-	const unsigned size = CACHE_SIZE * 1024;
-	volatile char * buffer = new char[size];
+	MMap::MemoryMap map;
 
-	// Write bullshit
-	for (unsigned i = 0; i < size; i += CACHE_LINE_SIZE) {
-		buffer[i] = (char) i;
-	}
-
-	// Read bullshit and write it again
-	for (unsigned j = 0; j < CACHE_LINE_SIZE - 1; ++j) {
-		for (unsigned i = 0; i < size; i += CACHE_LINE_SIZE) {
-			buffer[i + j + 1] = buffer[i + j];
+	for (auto region : map) {
+		if (region.isReadable() && !region.isVvar()) {
+			region.invalidate();
 		}
 	}
-
-	delete[] buffer;
 }
 
 }

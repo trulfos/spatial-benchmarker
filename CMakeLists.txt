@@ -60,6 +60,12 @@ add_library(spatial OBJECT
 	src/spatial/Results.cpp
 )
 
+add_library(mmap OBJECT
+	src/mmap/CacheLineIterator.cpp
+	src/mmap/MemoryRegion.cpp
+	src/mmap/MemoryMap.cpp
+)
+
 target_compile_options(spatial PRIVATE -fPIC)
 
 # Main executable
@@ -88,6 +94,7 @@ add_executable(bench
 	src/bench/reporters/PapiReporter.cpp
 
 	$<TARGET_OBJECTS:spatial>
+	$<TARGET_OBJECTS:mmap>
 )
 
 target_link_libraries(bench m dl papi)
