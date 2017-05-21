@@ -29,7 +29,6 @@ namespace Bench
 		)
 	{
 		ProgressLogger progress(logStream, runs * REORDER_RUNS);
-		std::default_random_engine engine (11);
 
 		// Set up performance counters (move to constructor?)
 		std::array<int, 4> events = {
@@ -53,8 +52,12 @@ namespace Bench
 				originalQueries.begin()
 			);
 
+		Results r;
+		r.reserve(MIN_RESULT_SIZE);
+
 		// Make space for results
 		for (unsigned j = 0; j < runs; j++) {
+			std::default_random_engine engine (11);
 
 			// Make a copy that can be reshuffeled
 			std::vector<RangeQuery> queries = originalQueries;
@@ -68,9 +71,6 @@ namespace Bench
 
 				// Clear cache
 				clearCache();
-
-				Results r;
-				r.reserve(MIN_RESULT_SIZE);
 
 				std::array<int long long, events.size()> results = {};
 
