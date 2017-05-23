@@ -24,6 +24,14 @@ namespace Bench
 		}
 	}
 
+	PapiReporter::PapiReporter(
+			const std::string& queryPath,
+			unsigned runs,
+			const std::vector<std::string>& events
+		) : QueryReporter(queryPath), runs(runs), events(events)
+	{
+	}
+
 	void PapiReporter::run(
 			const SpatialIndex& index,
 			std::ostream& logStream
@@ -31,17 +39,22 @@ namespace Bench
 	{
 		ProgressLogger progress(logStream, runs * REORDER_RUNS);
 
-		// Set up performance counters (move to constructor?)
-		std::array<int, 4> events = {
-				PAPI_TOT_INS,
-				PAPI_L3_TCM,
-				PAPI_RES_STL,
-				PAPI_TLB_DM
-			};
+		// Initialize PAPI and set up event set
+		if (PAPI_library_init(PAPI_VER_CURRENT) != PAPI_VER_CURRENT) {
+			throw std::runtime_error("Failed to initialize PAPI library");
+		}
+		
+		int eventSet = PAPI_NULL;
+		check(PAPI_create_eventset(&eventSet));
 
-		int nHardwareCounters = PAPI_num_counters();
-		if (nHardwareCounters < int(events.size())) {
-			throw std::runtime_error("Too few hardware counters");
+		for (auto event : events) {
+			// Find event code
+			int code;
+			check(PAPI_event_name_to_code(
+						const_cast<char *>(event.c_str()),
+						&code
+					));
+			check(PAPI_add_event(eventSet, code));
 		}
 
 		// Load queries into memory
@@ -63,7 +76,8 @@ namespace Bench
 			// Make a copy that can be reshuffeled
 			std::vector<RangeQuery> queries = originalQueries;
 
-			std::array<int long long, events.size()> totals = {};
+			std::vector<int long long> totals (events.size());
+			std::vector<int long long> results (events.size());
 			int long long runtime = 0;
 			int long long virtRuntime = 0;
 			int long long switches = 0;
@@ -76,7 +90,6 @@ namespace Bench
 				// Clear cache
 				clearCache();
 
-				std::array<int long long, events.size()> results = {};
 				rusage startUsage, endUsage;
 
 				// Start measurements
@@ -84,7 +97,7 @@ namespace Bench
 					throw std::runtime_error("Could not get usage info");
 				}
 
-				check(PAPI_start_counters(events.data(), events.size()));
+				check(PAPI_start(eventSet));
 				int long long startTime = PAPI_get_real_nsec();
 				int long long virtStartTime = PAPI_get_virt_nsec();
 
@@ -97,7 +110,7 @@ namespace Bench
 				// Stop measurements
 				int long long endTime = PAPI_get_real_nsec();
 				int long long virtEndTime = PAPI_get_virt_nsec();
-				check(PAPI_stop_counters(results.data(), results.size()));
+				check(PAPI_stop(eventSet, results.data()));
 
 				if (getrusage(RUSAGE_SELF, &endUsage)) {
 					throw std::runtime_error("Could not get usage info :(");
@@ -127,12 +140,7 @@ namespace Bench
 
 			// Store metrics
 			for (unsigned i = 0; i < events.size(); ++i) {
-				char name[PAPI_MAX_STR_LEN];
-				if (PAPI_event_code_to_name(events[i], name) != PAPI_OK) {
-					throw std::runtime_error("Could not translate event name");
-				}
-
-				addEntry(std::string(name), totals[i] / REORDER_RUNS);
+				addEntry(std::string(events[i]), totals[i] / REORDER_RUNS);
 			}
 
 			addEntry("PAPI_REAL_NSEC", runtime / REORDER_RUNS);
@@ -142,6 +150,7 @@ namespace Bench
 
 		}
 
+		PAPI_shutdown();
 	}
 
 }

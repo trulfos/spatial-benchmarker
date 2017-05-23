@@ -12,10 +12,11 @@ namespace Bench
 	{
 		public:
 
-			PapiReporter(const std::string& queryPath, unsigned runs = 1)
-				: QueryReporter(queryPath), runs(runs)
-			{
-			}
+			PapiReporter(
+					const std::string& queryPath,
+					unsigned runs = 1,
+					const std::vector<std::string>& events = {"PAPI_TOT_INS"}
+				);
 
 			void run(
 					const SpatialIndex& index,
@@ -34,6 +35,11 @@ namespace Bench
 			 * Number of times to repeat the reodering and running of queries.
 			 */
 			unsigned runs;
+
+			/**
+			 * Events to record
+			 */
+			std::vector<std::string> events;
 
 	};
 
