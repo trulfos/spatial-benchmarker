@@ -7,6 +7,7 @@
 #include "reporters/CorrectnessReporter.hpp"
 #include "reporters/StructReporter.hpp"
 #include "reporters/PapiReporter.hpp"
+#include "reporters/PerfReporter.hpp"
 
 namespace Bench
 {
@@ -145,6 +146,14 @@ std::shared_ptr<Reporter> ReporterArg::createReporter(
 				);
 		}
 
+	}
+
+	if (name == "perf") {
+		return std::make_shared<PerfReporter>(
+				arguments[0],
+				arguments[1],
+				arguments.size() > 2 ? std::stoul(arguments[2]) : 0
+			);
 	}
 
 	throw TCLAP::ArgParseException("No reporter named " + name, "reporterarg");

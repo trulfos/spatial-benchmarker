@@ -95,6 +95,7 @@ add_executable(bench
 	src/bench/reporters/ProgressLogger.cpp
 	src/bench/reporters/ResultsReporter.cpp
 	src/bench/reporters/PapiReporter.cpp
+	src/bench/reporters/PerfReporter.cpp
 
 	$<TARGET_OBJECTS:spatial>
 	$<TARGET_OBJECTS:mmap>
