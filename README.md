@@ -54,7 +54,7 @@ reporter definitions on the command line.
 A reporter definition consists of the reporter name and (possibly) extra
 arguments for the reporter, separated  by a `:` character:
 ```
-<reporter definition> := <reporter name>[<argument>(':'<argument>)*]
+<reporter definition> := <reporter name>[:<argument>(','<argument>)*]
 ```
 
 For example, to run the statisitcs reporter for the `querysets/queryset1`
