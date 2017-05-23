@@ -3,22 +3,24 @@ cmake_minimum_required(VERSION 3.2)
 project("Spatial Indexing Framework")
 include(ExternalProject)
 
+# Store external projects in "external"
+set(EXTERNAL_DIR ${CMAKE_CURRENT_BINARY_DIR}/external)
+set_property(GLOBAL PROPERTY EP_PREFIX ${EXTERNAL_DIR})
 
 # We need PAPI
 ExternalProject_Add(Papi
 	URL http://icl.utk.edu/projects/papi/downloads/papi-5.5.1.tar.gz
 	URL_HASH SHA1=92dfb479fb025177e5eb56df76afc96cd11eb81f
-	SOURCE_DIR papi
 	BUILD_IN_SOURCE 1
-	CONFIGURE_COMMAND cd src && ./configure
+	CONFIGURE_COMMAND cd src && ./configure --prefix=${EXTERNAL_DIR}
 	BUILD_COMMAND cd src && make
-	INSTALL_COMMAND ""
+	INSTALL_COMMAND cd src && make install
 )
 
 
 add_library(papi STATIC IMPORTED)
 set_property(TARGET papi PROPERTY IMPORTED_LOCATION
-	${CMAKE_CURRENT_BINARY_DIR}/papi/src/libpapi.a)
+	${EXTERNAL_DIR}/lib/libpapi.a)
 add_dependencies(papi Papi)
 
 
@@ -26,14 +28,15 @@ add_dependencies(papi Papi)
 ExternalProject_Add(Tclap
 	URL https://downloads.sourceforge.net/project/tclap/tclap-1.2.1.tar.gz
 	URL_HASH SHA1=4f124216dd6e6936f5af6372d921a6c51563f8fd
-	SOURCE_DIR tclap
-	CONFIGURE_COMMAND ""
-	BUILD_COMMAND ""
-	INSTALL_COMMAND ""
+	BUILD_IN_SOURCE 1
+	CONFIGURE_COMMAND ./configure --prefix=${EXTERNAL_DIR}
+	BUILD_COMMAND make
+	TEST_COMMAND make check
+	INSTALL_COMMAND make install
 )
 
 
-include_directories(src ${CMAKE_CURRENT_BINARY_DIR}/papi/src ${CMAKE_CURRENT_BINARY_DIR}/tclap/include)
+include_directories(src ${EXTERNAL_DIR}/include)
 set(optimized_flags -O3 -flto -fuse-linker-plugin)
 set(CMAKE_EXE_LINKER_FLAGS "-O3 -flto -fuse-linker-plugin")
 set(CMAKE_MODULE_LINKER_FLAGS "-O3 -flto -fuse-linker-plugin")
