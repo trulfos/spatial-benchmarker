@@ -124,26 +124,32 @@ std::shared_ptr<Reporter> ReporterArg::createReporter(
 		return std::make_shared<CorrectnessReporter>(arguments[0], arguments[1]);
 	}
 	if (name == "papi") {
-		if (arguments.size() == 1) {
-			return std::make_shared<PapiReporter>(arguments[0]);
-		}
+		switch (arguments.size()) {
+			case 1:
+				return std::make_shared<PapiReporter>(arguments[0]);
 
-		if (arguments.size() == 2) {
-			return std::make_shared<PapiReporter>(
-					arguments[0],
-					std::stoul(arguments[1])
-				);
-		}
+			case 2:
+				return std::make_shared<PapiReporter>(
+						arguments[0],
+						std::stoul(arguments[1])
+					);
+			case 3:
+				return std::make_shared<PapiReporter>(
+						arguments[0],
+						std::stoul(arguments[1]),
+						std::stoul(arguments[2])
+					);
 
-		if (arguments.size() > 2) {
-			return std::make_shared<PapiReporter>(
-					arguments[0],
-					std::stoul(arguments[1]),
-					std::vector<std::string>(
-							arguments.begin() + 2,
-							arguments.end()
-						)
-				);
+			default:
+				return std::make_shared<PapiReporter>(
+						arguments[0],
+						std::stoul(arguments[1]),
+						std::stoul(arguments[2]),
+						std::vector<std::string>(
+								arguments.begin() + 2,
+								arguments.end()
+							)
+					);
 		}
 
 	}

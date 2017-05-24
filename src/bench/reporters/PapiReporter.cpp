@@ -27,8 +27,9 @@ namespace Bench
 	PapiReporter::PapiReporter(
 			const std::string& queryPath,
 			unsigned runs,
+			unsigned burns,
 			const std::vector<std::string>& events
-		) : QueryReporter(queryPath), runs(runs), events(events)
+		) : QueryReporter(queryPath), runs(runs), burns(burns), events(events)
 	{
 	}
 
@@ -37,7 +38,7 @@ namespace Bench
 			std::ostream& logStream
 		)
 	{
-		ProgressLogger progress(logStream, runs * REORDER_RUNS);
+		ProgressLogger progress(logStream, (runs + burns) * REORDER_RUNS);
 
 		// Initialize PAPI and set up event set
 		if (PAPI_library_init(PAPI_VER_CURRENT) != PAPI_VER_CURRENT) {
@@ -68,21 +69,23 @@ namespace Bench
 
 		Results r;
 		r.reserve(MIN_RESULT_SIZE);
+		std::vector<int long long> totals (events.size());
+		std::vector<int long long> results (events.size());
 
 		// Make space for results
-		for (unsigned j = 0; j < runs; j++) {
+		for (unsigned j = 0; j < runs + burns; j++) {
 			std::default_random_engine engine (11);
 
 			// Make a copy that can be reshuffeled
 			std::vector<RangeQuery> queries = originalQueries;
 
-			std::vector<int long long> totals (events.size());
-			std::vector<int long long> results (events.size());
 			int long long runtime = 0;
 			int long long virtRuntime = 0;
 			int long long switches = 0;
 			int long long pageFaults = 0;
 
+			std::fill(totals.begin(), totals.end(), 0);
+			std::fill(results.begin(), results.end(), 0);
 
 			// Test multiple times
 			for (unsigned i = 0; i < REORDER_RUNS; ++i) {
@@ -121,12 +124,14 @@ namespace Bench
 					totals[k] += results[k];
 				}
 
-
-				runtime += endTime - startTime;
-				virtRuntime += virtEndTime - virtStartTime;
-				switches += endUsage.ru_nivcsw - startUsage.ru_nivcsw;
-				switches += endUsage.ru_nvcsw - startUsage.ru_nvcsw;
-				pageFaults += endUsage.ru_majflt - startUsage.ru_majflt;
+				// Record data on all runs after the burns
+				if (j >= burns) {
+					runtime += endTime - startTime;
+					virtRuntime += virtEndTime - virtStartTime;
+					switches += endUsage.ru_nivcsw - startUsage.ru_nivcsw;
+					switches += endUsage.ru_nvcsw - startUsage.ru_nvcsw;
+					pageFaults += endUsage.ru_majflt - startUsage.ru_majflt;
+				}
 
 				// Rearrange queries
 				std::shuffle(
@@ -139,14 +144,16 @@ namespace Bench
 			}
 
 			// Store metrics
-			for (unsigned i = 0; i < events.size(); ++i) {
-				addEntry(std::string(events[i]), totals[i] / REORDER_RUNS);
-			}
+			if (j >= burns) {
+				for (unsigned i = 0; i < events.size(); ++i) {
+					addEntry(std::string(events[i]), totals[i] / REORDER_RUNS);
+				}
 
-			addEntry("PAPI_REAL_NSEC", runtime / REORDER_RUNS);
-			addEntry("PAPI_VIRT_NSEC", virtRuntime / REORDER_RUNS);
-			addEntry("PAPI_CTX_SW", switches);
-			addEntry("PAPI_PG_FLT", pageFaults);
+				addEntry("PAPI_REAL_NSEC", runtime / REORDER_RUNS);
+				addEntry("PAPI_VIRT_NSEC", virtRuntime / REORDER_RUNS);
+				addEntry("PAPI_CTX_SW", switches);
+				addEntry("PAPI_PG_FLT", pageFaults);
+			}
 
 		}
 

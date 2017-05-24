@@ -15,6 +15,7 @@ namespace Bench
 			PapiReporter(
 					const std::string& queryPath,
 					unsigned runs = 1,
+					unsigned burns = 0,
 					const std::vector<std::string>& events = {"PAPI_TOT_INS"}
 				);
 
@@ -35,6 +36,11 @@ namespace Bench
 			 * Number of times to repeat the reodering and running of queries.
 			 */
 			unsigned runs;
+
+			/**
+			 * Number of runs to burn before starting measurements.
+			 */
+			unsigned burns;
 
 			/**
 			 * Events to record
