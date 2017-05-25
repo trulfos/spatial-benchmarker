@@ -51,10 +51,13 @@ namespace Bench
 		for (auto event : events) {
 			// Find event code
 			int code;
-			check(PAPI_event_name_to_code(
+			int ret = PAPI_event_name_to_code(
 						const_cast<char *>(event.c_str()),
 						&code
-					));
+					);
+			if (ret != PAPI_OK) {
+				throw std::runtime_error("Error when getting code for " + event);
+			}
 			check(PAPI_add_event(eventSet, code));
 		}
 
