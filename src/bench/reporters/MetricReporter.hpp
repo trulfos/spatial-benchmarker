@@ -43,12 +43,22 @@ class MetricReporter : public Reporter
 			);
 
 
+		/**
+		 * Increment the index number.
+		 *
+		 * This is the number assigned to all added entries.
+		 */
+		void increment();
+
 	private:
+
+		unsigned index;
 
 		struct ResultEntry
 		{
 			std::string name;
 			value_type value;
+			unsigned index;
 		};
 
 		std::vector<ResultEntry> results;
@@ -71,8 +81,14 @@ void MetricReporter<T>::addEntry(
 	)
 {
 	results.emplace_back(
-			ResultEntry {name, value}
+			ResultEntry {name, value, index}
 		);
+}
+
+template<typename T>
+void MetricReporter<T>::increment()
+{
+	++index;
 }
 
 
@@ -80,12 +96,13 @@ template<typename T>
 void MetricReporter<T>::generate(std::ostream& stream) const
 {
 	// Print header
-	stream << "name\tvalue\n";
+	stream << "name\tvalue\tindex\n";
 
 	// Print data
 	for (const auto& r : results) {
 		stream << r.name << '\t'
-			<< r.value << '\n';
+			<< r.value << '\t'
+			<< r.index << '\n';
 	}
 
 	stream << std::flush;

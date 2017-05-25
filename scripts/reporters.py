@@ -11,17 +11,8 @@ def create(db, config_id, definition):
 
 
 def get(db, benchmark_id):
-    rows = db.connection.execute(
-            """
-            select `reporter_id`, `name`, `arguments`
-            from `benchmark`
-            inner join `reporter` using (`benchmark_id`)
-            where `benchmark_id` = ?
-            """,
-            [benchmark_id]
-        ).fetchall()
-
-    return [{'id': r[0], 'name': r[1], 'arguments': r[2]} for r in rows]
+    rows = db.get_where('reporter', benchmark_id=benchmark_id)
+    return sorted(rows, key=lambda r: r['order'])
 
 
 def print_all(records):

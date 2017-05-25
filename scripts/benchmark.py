@@ -176,7 +176,7 @@ def run_benchmark(db, task, use_stdout, dry):
     for result in results:
         db.insertmany(
                 'result',
-                (dict(r, run_id=run_id, reporter_id=result[1]['id'])
+                (dict(r, run_id=run_id, reporter_id=result[1]['reporter_id'])
                     for r in result[0])
             )
 

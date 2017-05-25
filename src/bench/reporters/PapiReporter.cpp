@@ -153,6 +153,8 @@ namespace Bench
 				addEntry("PAPI_VIRT_NSEC", virtRuntime / REORDER_RUNS);
 				addEntry("PAPI_CTX_SW", switches);
 				addEntry("PAPI_PG_FLT", pageFaults);
+
+				increment();
 			}
 
 		}

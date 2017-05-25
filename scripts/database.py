@@ -77,6 +77,7 @@ class Database:
                     `benchmark_id` integer not null,
                     `name` text not null,
                     `arguments` text not null,
+                    `order` integer,
 
                     unique (`benchmark_id`, `name`, `arguments`),
                     foreign key (`benchmark_id`)
@@ -89,6 +90,7 @@ class Database:
                     `reporter_id` integer not null,
                     `name` text not null,
                     `value` real not null,
+                    `index` integer,
 
                     foreign key (`run_id`) references `run` (`run_id`),
                     foreign key (`reporter_id`)

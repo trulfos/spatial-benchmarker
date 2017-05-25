@@ -44,11 +44,6 @@ def parse_arguments():
         )
 
     parser.add_argument(
-            '--suites', '-s', metavar='suite_id', nargs='+',
-            help='Suite whos benchmarks to optimize for'
-        )
-
-    parser.add_argument(
             '--restrictions', '-r', nargs='*', default=[],
             help='Restrictions on the parameters'
         )
