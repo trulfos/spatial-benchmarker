@@ -146,7 +146,7 @@ std::shared_ptr<Reporter> ReporterArg::createReporter(
 						std::stoul(arguments[1]),
 						std::stoul(arguments[2]),
 						std::vector<std::string>(
-								arguments.begin() + 2,
+								arguments.begin() + 3,
 								arguments.end()
 							)
 					);

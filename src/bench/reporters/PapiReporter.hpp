@@ -16,7 +16,7 @@ namespace Bench
 					const std::string& queryPath,
 					unsigned runs = 1,
 					unsigned burns = 0,
-					const std::vector<std::string>& events = {"PAPI_TOT_INS"}
+					const std::vector<std::string>& events = {"PAPI_L3_TCM"}
 				);
 
 			void run(
