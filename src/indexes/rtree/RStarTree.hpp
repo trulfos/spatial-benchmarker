@@ -308,8 +308,11 @@ class RStarTree : public Rtree<Node, m>
 						// Resolve ties using volume enlargement
 						return std::make_tuple(
 								o,
-								entry.getMbr().volume(),
-								entry.getMbr().delta(&M::volume, newEntry.getMbr())
+								entry.getMbr().delta(
+										&M::volume,
+										newEntry.getMbr()
+									),
+								entry.getMbr().volume()
 							);
 					}
 				);
