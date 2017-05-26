@@ -260,11 +260,11 @@ class RStarTree : public Rtree<Node, m>
 				return covering.minBy(&M::volume);
 			}
 
-			if (elevation != 2) {
-				return leastVolumeEnlargement(parent, newEntry);
+			if (elevation == 2) {
+				return leastOverlapEnlargement(parent, newEntry);
 			}
 
-			return leastOverlapEnlargement(parent, newEntry);
+			return leastVolumeEnlargement(parent, newEntry);
 		};
 
 
@@ -298,27 +298,6 @@ class RStarTree : public Rtree<Node, m>
 		 */
 		NIt leastOverlapEnlargement(N& parent, const Entry<N>& newEntry)
 		{
-			// Sort by volume
-			std::sort(
-					parent.begin(), parent.end(),
-					[](const Entry<N>& a, const Entry<N>&b) {
-						return a.getMbr().volume() < b.getMbr().volume();
-					}
-				);
-
-			// Find entry with no enlargement (if any)
-			auto noEnlargementEntry = std::find_if(
-					parent.begin(), parent.end(),
-					[&](typename N::reference e) {
-						return overlap(parent, e.getMbr() + newEntry.getMbr())
-								== overlap(parent, e.getMbr());
-					}
-				);
-
-			if (noEnlargementEntry != parent.end()) {
-				return noEnlargementEntry;
-			}
-
 			return argmin(
 					parent.begin(), parent.end(),
 					[&](typename N::reference entry) {
@@ -329,6 +308,7 @@ class RStarTree : public Rtree<Node, m>
 						// Resolve ties using volume enlargement
 						return std::make_tuple(
 								o,
+								entry.getMbr().volume(),
 								entry.getMbr().delta(&M::volume, newEntry.getMbr())
 							);
 					}
