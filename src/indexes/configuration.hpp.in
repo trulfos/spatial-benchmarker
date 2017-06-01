@@ -4,6 +4,7 @@
 #include "indexes/rtree/PointerArrayNode.hpp"
 #include "indexes/rtree/VectorizedNode.hpp"
 #include "indexes/rtree/FullScanNode.hpp"
+#include "indexes/rtree/PruningNode.hpp"
 
 /**
  * This file defines options that may be passed to the indexes.

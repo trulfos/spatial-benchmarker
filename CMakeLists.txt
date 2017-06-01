@@ -174,6 +174,11 @@ add_executable(test_fullscannode
 	src/indexes/rtree/FullScanNode.test.cpp
 )
 
+add_executable(test_pruningnode
+	$<TARGET_OBJECTS:spatial>
+	src/indexes/rtree/PruningNode.test.cpp
+)
+
 foreach(name
 		point
 		box
@@ -189,6 +194,7 @@ foreach(name
 		quadraticseeds
 		vectorizednode
 		fullscannode
+		pruningnode
 	)
 	add_test(NAME ${name} COMMAND test_${name})
 	target_link_libraries(test_${name} criterion)
