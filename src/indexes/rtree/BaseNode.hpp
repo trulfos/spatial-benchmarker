@@ -4,6 +4,7 @@
 #include "Mbr.hpp"
 #include "Entry.hpp"
 #include "ProxyEntry.hpp"
+#include "ProxyIterator.hpp"
 
 
 namespace Rtree

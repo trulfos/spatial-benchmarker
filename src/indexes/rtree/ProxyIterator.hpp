@@ -1,5 +1,6 @@
 #pragma once
 #include "Entry.hpp"
+#include "ProxyEntry.hpp"
 
 namespace Rtree
 {

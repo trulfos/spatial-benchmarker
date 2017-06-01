@@ -1,5 +1,6 @@
 #pragma once
 #include "BaseNode.hpp"
+#include "ProxyScanIterator.hpp"
 #include "spatial/Coordinate.hpp"
 #include "immintrin.h"
 #include <iostream>
@@ -62,21 +63,17 @@ namespace Rtree
 			using Base::getSize;
 
 
-			class ScanIterator
+			class ScanIterator : public ProxyScanIterator<FullScanNode>
 			{
 				// Bit set block type
 				using BS = unsigned;
+				using Base = ProxyScanIterator<FullScanNode>;
+				using Base::entry;
 
 				// Number of bits in each bit set block
 				static constexpr unsigned bss = 8 * sizeof(BS);
 
 				public:
-					using iterator_category = std::input_iterator_tag;
-					using value_type = Link;
-					using difference_type = int;
-					using pointer = const Link *;
-					using reference = const Link&;
-
 					ScanIterator() = default;
 
 					/**
@@ -87,7 +84,7 @@ namespace Rtree
 							const FullScanNode * node,
 							const Mbr& mbr,
 							unsigned index
-						) : node(node), index(index)
+						) : Base(node, index)
 					{
 						if (index >= node->getSize()) {
 							return;
@@ -129,12 +126,17 @@ namespace Rtree
 						findNext();
 					};
 
+					ScanIterator& operator=(const ScanIterator& other)
+					{
+						ProxyScanIterator<FullScanNode>::operator=(other);
+						bitset = other.bitset;
+						return *this;
+					}
+
 					ScanIterator& operator++()
 					{
-						assert(index < node->getSize());
-
+						assert(entry.index < entry.node->getSize());
 						findNext();
-
 						return *this;
 					}
 
@@ -145,34 +147,7 @@ namespace Rtree
 						return it;
 					}
 
-					reference operator*()
-					{
-						assert(index < node->getSize());
-						return node->links[index];
-					}
-
-					pointer operator->()
-					{
-						return &operator*();
-					}
-
-					bool operator==(const ScanIterator& other) const
-					{
-						assert(other.node == node);
-						return other.index == index;
-					}
-
-					bool operator!=(const ScanIterator& other) const
-					{
-						return !(*this == other);
-					}
-
 				private:
-					const FullScanNode * node;;
-
-					// Current index (as seen from the outside)
-					unsigned index;
-
 					// Entries intersecting query
 					std::array<BS, (C + 63)/bss> bitset;
 
@@ -187,6 +162,8 @@ namespace Rtree
 					 */
 					void findNext()
 					{
+						unsigned& index = entry.index;
+						const FullScanNode * node = entry.node;
 						unsigned block = index / bss;
 
 						while (index < node->getSize()) {
@@ -282,7 +259,11 @@ namespace Rtree
 			/**
 			 * Scan node and return set of matching entries.
 			 */
-			std::pair<ScanIterator, ScanIterator> scan(const Mbr& mbr) const
+			template<class E>
+			std::pair<ScanIterator, ScanIterator> scan(
+					const Mbr& mbr,
+					const E&
+				) const
 			{
 				return std::make_pair(
 						ScanIterator(this, mbr, 0),

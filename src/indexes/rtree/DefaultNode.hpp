@@ -1,5 +1,6 @@
 #pragma once
 #include "BaseNode.hpp"
+#include "ProxyScanIterator.hpp"
 
 
 namespace Rtree
@@ -31,21 +32,16 @@ namespace Rtree
 			/**
 			 * Iterator running through links in this node matching a query.
 			 */
-			class ScanIterator
-				: public std::iterator<std::forward_iterator_tag, const Link>
+			class ScanIterator : public ProxyScanIterator<DefaultNode>
 			{
-				using Base = std::iterator<std::forward_iterator_tag, const Link>;
+				using Base = ProxyScanIterator<DefaultNode>;
+				using Base::entry;
 
 				public:
-					using reference = typename Base::reference;
-					using pointer = typename Base::pointer;
-
 					/**
 					 * Construct a singular iterator.
 					 */
-					ScanIterator()
-					{
-					}
+					ScanIterator() = default;
 
 					/**
 					 * Construct a scan iterator yielding entries overlapping
@@ -63,7 +59,7 @@ namespace Rtree
 							const DefaultNode * node,
 							const Mbr * mbr,
 							unsigned index
-						) : node(node), mbr(mbr), index(index)
+						) : Base(node, index), mbr(mbr)
 					{
 						findNext();
 					};
@@ -78,7 +74,7 @@ namespace Rtree
 					 */
 					ScanIterator& operator++()
 					{
-						++index;
+						++entry.index;
 						findNext();
 						return *this;
 					}
@@ -99,56 +95,8 @@ namespace Rtree
 						return it;
 					}
 
-
-					/**
-					 * Check if this iterator is equal with another.
-					 *
-					 * This is the case if they are at the same position in the
-					 * scan.
-					 *
-					 * @return True if equal
-					 */
-					bool operator==(const ScanIterator& other)
-					{
-						assert(node == other.node);
-						return index == other.index;
-					}
-
-					/**
-					 * Check if two iterators are unequal.
-					 *
-					 * The opposite of the equal operation, as expected.
-					 *
-					 * @return True if they are unequal
-					 */
-					bool operator!=(const ScanIterator& other)
-					{
-						assert(node == other.node);
-						return index != other.index;
-					}
-
-					/**
-					 * Retreive the link pointed to by this iterator.
-					 *
-					 * @return Reference to link
-					 */
-					reference operator*()
-					{
-						return node->entries[index].link;
-					}
-
-					/**
-					 * Access the link pointed to by this iterator.
-					 */
-					pointer operator->()
-					{
-						return &node->entries[index].links;
-					}
-
 				private:
-					const DefaultNode * node;
 					const Mbr * mbr;
-					unsigned index;
 
 					/**
 					 * Finds the first position intersecting with the MBR.
@@ -158,6 +106,8 @@ namespace Rtree
 					 */
 					void findNext()
 					{
+						unsigned& index = entry.index;
+						const DefaultNode * node = entry.node;
 						while (
 							index < node->getSize() &&
 							!node->entries[index].mbr.intersects(*mbr)
@@ -171,7 +121,11 @@ namespace Rtree
 			/**
 			 * Scan node and return set of matching entries.
 			 */
-			std::pair<ScanIterator, ScanIterator> scan(const Mbr& mbr) const
+			template<class E>
+			std::pair<ScanIterator, ScanIterator> scan(
+					const Mbr& mbr,
+					const E&
+				) const
 			{
 				return std::make_pair(
 						ScanIterator(this, &mbr, 0),

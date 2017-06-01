@@ -1,6 +1,5 @@
 #pragma once
 #include "Entry.hpp"
-#include "ProxyIterator.hpp"
 
 namespace Rtree
 {
@@ -110,6 +109,16 @@ namespace Rtree
 				return node->getPlugin(index);
 			}
 
+			//TODO: Encapsulate?
+			Node * node;
+			unsigned index;
+
+			void reset(const ProxyEntry& other)
+			{
+				node = other.node;
+				index = other.index;
+			}
+
 		protected:
 			void setMbr(const Mbr& m)
 			{
@@ -125,14 +134,6 @@ namespace Rtree
 			{
 				node->setLink(index, l);
 			}
-
-
-		private:
-			Node * node;
-			unsigned index;
-
-			friend ProxyIterator<Node>;
-			friend ConstProxyIterator<Node>;
 	};
 
 };

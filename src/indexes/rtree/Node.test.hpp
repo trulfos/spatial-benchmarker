@@ -69,6 +69,10 @@ template<template<unsigned, unsigned, class> class Node>
 void testScanning()
 {
 	using N = Node<2, 100, EntryPlugin>;
+	Entry<N> parent (
+			Mbr<2>({1e100, 1e100}, {1e-100, 1e-100}),
+			nullptr
+		);
 
 	N node;
 
@@ -94,7 +98,7 @@ void testScanning()
 		}
 
 		// Generate node results
-		auto scanRange = node.scan(mbr);
+		auto scanRange = node.scan(mbr, parent);
 		auto rit = results.begin();
 		auto sit = scanRange.first;
 

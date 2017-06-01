@@ -319,15 +319,17 @@ template <class N, unsigned m>
 void Rtree<N, m>::rangeSearch(Results& results, const Box& box) const
 {
 	assert(getHeight() > 0);
-	using NIt = typename N::ScanIterator;
-	using Link = typename N::Link;
-	const typename N::Mbr query (box);
 
+	using NIt = typename N::ScanIterator;
+	using Ref = typename NIt::reference;
+	using Mbr = typename N::Mbr;
+
+	const Mbr query (box);
 	unsigned depth = 0;
-	std::pair<NIt, NIt> path [getHeight()];
+	std::vector<std::pair<NIt, NIt>> path (getHeight());
 
 	// "Scan" root node
-	path[depth++] = root.getNode().scan(query);
+	path[depth++] = root.getNode().scan(query, root);
 
 	while (depth) {
 		auto& top = path[depth - 1];
@@ -338,14 +340,15 @@ void Rtree<N, m>::rangeSearch(Results& results, const Box& box) const
 		}
 
 		// Find node to descend into
-		const Link link = *top.first;
-		++top.first;
+		const Ref& entry = (*top.first);
 
 		if (depth < getHeight() - 1) {
-			path[depth++] = link.getNode().scan(query);
+			path[depth++] = entry.getNode().scan(query, entry);
 		} else {
-			results.push_back(link.getId());
+			results.push_back(entry.getId());
 		}
+
+		++top.first;
 	}
 };
 

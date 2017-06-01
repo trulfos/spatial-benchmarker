@@ -44,22 +44,19 @@ namespace Rtree
 			using Base::getSize;
 
 
-			class ScanIterator
+			class ScanIterator : public ProxyScanIterator<VectorizedNode>
 			{
-				public:
-					using iterator_category = std::input_iterator_tag;
-					using value_type = Link;
-					using difference_type = int;
-					using pointer = const Link *;
-					using reference = const Link&;
+				using Base = ProxyScanIterator<VectorizedNode>;
+				using Base::entry;
 
+				public:
 					ScanIterator() = default;
 
 					ScanIterator(
 							const VectorizedNode * node,
 							const Mbr& mbr,
 							unsigned index
-						) : node(node), mbr(&mbr), index(index)
+						) : Base(node, index), mbr(&mbr)
 					{
 						if (index < node->getSize()) {
 							bitset = scanBlock();
@@ -69,7 +66,7 @@ namespace Rtree
 
 					ScanIterator& operator++()
 					{
-						assert(index < node->getSize());
+						assert(entry.index < entry.node->getSize());
 
 						next();
 						findNext();
@@ -84,37 +81,8 @@ namespace Rtree
 						return it;
 					}
 
-					reference operator*()
-					{
-						assert(index < node->getSize());
-						return node->links[index];
-					}
-
-					pointer operator->()
-					{
-						return &operator*();
-					}
-
-					bool operator==(const ScanIterator& other) const
-					{
-						assert(other.node == node);
-						return other.index == index;
-					}
-
-					bool operator!=(const ScanIterator& other) const
-					{
-						return !(*this == other);
-					}
-
 				private:
-					const VectorizedNode * node;
-
 					const Mbr * mbr;
-
-					// Current index (as seen from the outside)
-					unsigned index;
-
-					// Entries intersecting query
 					unsigned short bitset;
 
 
@@ -126,6 +94,8 @@ namespace Rtree
 					 */
 					void next()
 					{
+						unsigned& index = entry.index;
+
 						bitset >>= 1;
 						++index;
 
@@ -144,6 +114,9 @@ namespace Rtree
 					 */
 					void findNext()
 					{
+						unsigned& index = entry.index;
+						const VectorizedNode * node = entry.node;
+
 						while (!(bitset & 1) && index < node->getSize()) {
 							next();
 						}
@@ -155,6 +128,9 @@ namespace Rtree
 					 */
 					unsigned short scanBlock() const
 					{
+						const unsigned& index = entry.index;
+						const VectorizedNode * node = entry.node;
+
 						auto highs = mbr->getTop();
 						auto lows = mbr->getBottom();
 						unsigned block = index / BLOCK_SIZE;
@@ -193,7 +169,11 @@ namespace Rtree
 			/**
 			 * Scan node and return set of matching entries.
 			 */
-			std::pair<ScanIterator, ScanIterator> scan(const Mbr& mbr) const
+			template<class E>
+			std::pair<ScanIterator, ScanIterator> scan(
+					const Mbr& mbr,
+					const E&
+				) const
 			{
 				return std::make_pair(
 						ScanIterator(this, mbr, 0),
