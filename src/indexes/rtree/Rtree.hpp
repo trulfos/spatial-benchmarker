@@ -29,6 +29,8 @@ namespace Rtree
 template <class N, unsigned m = 1>
 class Rtree : public ::SpatialIndex
 {
+	using NIt = typename N::ScanIterator;
+
 	public:
 		using M = typename N::Mbr;
 		using Id = DataObject::Id;
@@ -137,6 +139,8 @@ class Rtree : public ::SpatialIndex
 		unsigned height;
 		Entry<N> root;
 
+		// "Stack" used during search
+		std::pair<NIt, NIt> * path;
 
 		/**
 		 * Deletes the nodes in this tree.
@@ -158,7 +162,7 @@ class Rtree : public ::SpatialIndex
               |_|                                                           
 */
 template <class N, unsigned m>
-Rtree<N, m>::Rtree() : height(0)
+Rtree<N, m>::Rtree() : height(0), path(nullptr)
 {
 };
 
@@ -166,6 +170,9 @@ template <class N, unsigned m>
 Rtree<N, m>::~Rtree()
 {
 	deleteTree(getRoot().getNode(), getHeight());
+	if (path) {
+		delete[] path;
+	}
 };
 
 
@@ -188,6 +195,12 @@ void Rtree<N, m>::addLevel(const Entry<N>& newRoot)
 {
 	root = newRoot;
 	height++;
+
+	// Allocate stack to aviod allocation cost during benchmarking
+	if (path) {
+		delete[] path;
+	}
+	path = new std::pair<NIt, NIt>[height];
 };
 
 
@@ -320,13 +333,11 @@ void Rtree<N, m>::rangeSearch(Results& results, const Box& box) const
 {
 	assert(getHeight() > 0);
 
-	using NIt = typename N::ScanIterator;
 	using Ref = typename NIt::reference;
 	using Mbr = typename N::Mbr;
 
 	const Mbr query (box);
 	unsigned depth = 0;
-	std::vector<std::pair<NIt, NIt>> path (getHeight());
 
 	// "Scan" root node
 	path[depth++] = root.getNode().scan(query, root);
