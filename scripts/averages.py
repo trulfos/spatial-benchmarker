@@ -15,6 +15,11 @@ def parse_arguments():
         )
 
     parser.add_argument(
+            'suite', metavar='suite_id', nargs='+',
+            help='Suite to gather averages from'
+        )
+
+    parser.add_argument(
             '--metric', '-m', metavar='<metric>', default='leaf_accesses',
             help='Metric to calculate averages for'
         )
@@ -35,17 +40,42 @@ def main():
     args = parse_arguments()
     db = Database(args.database)
 
+    db.connection.execute(
+            """
+            create temporary view `annotated_run` as
+                select
+                    `run_id`,
+                    `index`,
+                    cast(substr(`dataset`, -2) as integer) `D`
+                from latest_run
+                inner join suite_member using (`config_id`, `benchmark_id`)
+                where `suite_id` in (%s)
+            """ % ', '.join(args.suite)
+        )
+
     # Calculate averages
     averages = db.connection.execute(
             """
-            select `r1`.`index` `index`, `r1`.`D` `D`, avg(`value`) `value`
-            from (select distinct `D`, `index` from `latest_run`) `r1`
-            left outer join `latest_run` `r2`
+            select
+                `r1`.`index` `index`,
+                `r1`.`D` `D`,
+                avg(`value`) `value`
+
+            from (
+                select distinct `D`, `index` from `annotated_run`
+            ) `r1`
+
+            left outer join `annotated_run` `r2`
                 on `r2`.`D` <= `r1`.`D`
                 and `r2`.`index` = `r1`.`index`
+
             left outer join `result` using (`run_id`)
-            where `name` = ?
-            group by `r1`.`index` , `r1`.`D`
+
+            where
+                `name` = ?
+            group by
+                `r1`.`index`,
+                `r1`.`D`
             """,
             [args.metric]
         ).fetchall()

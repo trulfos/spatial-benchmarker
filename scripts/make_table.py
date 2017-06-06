@@ -14,6 +14,11 @@ def parse_arguments():
         )
 
     parser.add_argument(
+            'suite', metavar='<suite_id>',
+            help='Suite to collect numbers from'
+        )
+
+    parser.add_argument(
             '--database', '-d', metavar='filename', default='results',
             help='Path to sqlite database file'
         )
@@ -32,9 +37,15 @@ def main():
     # Identify relevant runs
     benchmark_runs = db.connection.execute(
             """
-            select * from `latest_run` where `index` = ?
+            select * from `latest_run`
+            inner join `suite_member` using (`benchmark_id`, `config_id`)
+            where `index` = ? and `suite_id` = ? and exists (
+                    select * from reporter
+                    where `benchmark_id` = `latest_run`.`benchmark_id` and
+                        `name` in ('struct', 'stats', 'correctness')
+                )
             """,
-            [args.index]
+            [args.index, args.suite]
         ).fetchall()
 
     benchmark_runs.sort(key=lambda x: x['dataset'])
@@ -49,9 +60,13 @@ def main():
     for run in benchmark_runs:
         values.append(run['dataset'].split('/')[-1])
 
-        reporters = db.get_where(
-                'reporter',
-                benchmark_id=run['benchmark_id']
+        reporters = db.connection.execute(
+                """
+                select * from reporter
+                where `benchmark_id` = ? and
+                `name` in ('struct', 'stats', 'correctness')
+                """,
+                (run['benchmark_id'],)
             )
 
         for reporter in reporters:
