@@ -2,7 +2,7 @@
 
 """
 Optimizes the runtime of an index given a set of configuration parameters using
-hill climbing with random restarts. Does not store results, but prints the
+simulated annealing. Does not store results, but prints the
 (assumed) optimal parameters at the end.
 """
 import argparse
@@ -166,7 +166,7 @@ def anneal(start_solution, validator, evaluator):
 def check_restrictions(restrictions, point):
 
     # Hard coded restriction on M
-    if 'M' in point and point['M'] < 4:
+    if 'M' in point and point['M'] < 8:
         return False
 
     # Hard coded restriction on m
