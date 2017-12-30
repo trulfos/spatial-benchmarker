@@ -1,7 +1,7 @@
 # Spatial index benchmarking framework
 
-The spatial index benchmarking framework contains code needed to benchmark
-spatial indexes and a small set of indexes.
+This spatial index benchmarking framework contains code needed to benchmark
+spatial indexes, as well as a small set of indexes.
 
 Each index is compiled into a dynamic library that is loaded by the benchmarker
 at run time. The benchmarker loads the data, query and result set from a
@@ -9,10 +9,16 @@ benchmark folder. Depending on which reporter is selected, the data is indexed
 and one or several metrics recorded and outputted.
 
 Configuration parameters for the indexes (such as dimension) is set at compile
-time, and to simplify the process of compiling the index and running the
+time such that the compiler can perform optimizations depending on the
+parameters. To simplify the process of compiling the index and running the
 benchmarker, some python scripts are included in the `scripts` directory. In
 addition to simplifying compilation, these scripts also allow results to be
 stored in an SQLite file for later retrieval.
+
+*This code was originally written for
+[my master's thesis](https://brage.bibsys.no/xmlui/handle/11250/2458480), and
+has now been published under the MIT license. Feel free to contact me if
+you have any questions regarding this code or the associated thesis.*
 
 
 ## Dependencies
